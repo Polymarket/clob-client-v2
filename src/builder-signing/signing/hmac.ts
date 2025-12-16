@@ -1,18 +1,18 @@
-import crypto from "crypto";
+import crypto from "node:crypto";
 
 function replaceAll(s: string, search: string, replace: string) {
 	return s.split(search).join(replace);
 }
 
 /**
- * Builds the canonical Polymarket CLOB HMAC signature
+ * Builds an hmac signature
  * @param signer
  * @param key
  * @param secret
  * @param passphrase
  * @returns string
  */
-export const buildPolyHmacSignature = (
+export const buildHmacSignature = (
 	secret: string,
 	timestamp: number,
 	method: string,
@@ -23,6 +23,7 @@ export const buildPolyHmacSignature = (
 	if (body !== undefined) {
 		message += body;
 	}
+
 	const base64Secret = Buffer.from(secret, "base64");
 	const hmac = crypto.createHmac("sha256", base64Secret);
 	const sig = hmac.update(message).digest("base64");

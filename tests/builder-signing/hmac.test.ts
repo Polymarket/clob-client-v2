@@ -1,9 +1,9 @@
 import { describe, it, expect } from "vitest";
-import { buildPolyHmacSignature } from "../../src/signing/hmac";
+import { buildHmacSignature } from "../../src/builder-signing";
 
 describe("hmac", () => {
-	it("buildPolyHmacSignature", () => {
-		const signature = buildPolyHmacSignature(
+	it("buildHmacSignature", () => {
+		const signature = buildHmacSignature(
 			"AAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAA=",
 			1000000,
 			"test-sign",
