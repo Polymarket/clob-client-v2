@@ -13,10 +13,21 @@ jobs:
             - name: Checkout Code
               uses: actions/checkout@v4.1.4
 
-            - run: yarn --frozen-lockfile
-            - run: yarn lint
-            - run: yarn build
-            - run: yarn test
+            - name: Setup pnpm
+              uses: pnpm/action-setup@v4
+              with:
+                  version: 9
+
+            - name: Setup Node.js
+              uses: actions/setup-node@v4
+              with:
+                  node-version: "20"
+                  cache: "pnpm"
+
+            - run: pnpm install --frozen-lockfile
+            - run: pnpm lint
+            - run: pnpm build
+            - run: pnpm test
 
     all-jobs-pass:
         name: All jobs pass

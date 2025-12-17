@@ -41,15 +41,13 @@
 	"scripts": {
 		"build": "make build",
 		"lint": "make lint",
-		"deploy": "yarn build && npm publish",
+		"deploy": "pnpm build && npm publish",
 		"test": "make test"
 	},
 	"dependencies": {
 		"@ethersproject/providers": "^5.7.2",
 		"@ethersproject/units": "^5.7.0",
 		"@ethersproject/wallet": "^5.7.0",
-		"@polymarket/builder-signing-sdk": "^0.0.8",
-		"@polymarket/order-utils": "^3.0.1",
 		"axios": "^1.0.0",
 		"browser-or-node": "^2.1.1",
 		"ethers": "^5.7.1",
@@ -57,31 +55,13 @@
 		"viem": "^2.41.2"
 	},
 	"devDependencies": {
-		"@babel/core": "7.23.2",
-		"@babel/traverse": "^7.28.5",
 		"@biomejs/biome": "^2.3.8",
 		"@types/node": "^18.19.130",
 		"@types/ws": "^8.18.1",
-		"@typescript-eslint/eslint-plugin": "^5.62.0",
-		"@typescript-eslint/parser": "^5.62.0",
 		"dotenv": "^16.6.1",
-		"eslint": "^8.57.1",
-		"eslint-config-prettier": "^8.10.2",
-		"eslint-config-standard-with-typescript": "^23.0.0",
-		"eslint-plugin-import": "^2.32.0",
-		"eslint-plugin-n": "^15.7.0",
-		"eslint-plugin-node": "^11.1.0",
-		"eslint-plugin-promise": "^6.6.0",
-		"eslint-plugin-unused-imports": "^2.0.0",
 		"jsdom": "^20.0.3",
-		"path": "^0.12.7",
-		"prettier": "^2.8.8",
-		"ts-node": "^10.9.2",
 		"typescript": "^5.9.3",
 		"vitest": "^4.0.15",
 		"ws": "^8.18.3"
-	},
-	"resolutions": {
-		"@babel/traverse": ">=7.23.2"
 	}
 }

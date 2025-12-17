@@ -2,7 +2,7 @@
 build:
 	@echo "Building ts code..."
 	rm -rf dist
-	yarn tsc --module commonjs
+	pnpm tsc --module commonjs
 
 .PHONY: test
 test:
@@ -11,4 +11,9 @@ test:
 .PHONY: lint
 lint:
 	@echo "Linting code..."
-	./node_modules/.bin/eslint ./src --ext .js,.ts
+	pnpm biome check ./src ./tests
+
+.PHONY: format
+format:
+	@echo "Formatting code..."
+	pnpm biome check --write ./src ./tests
