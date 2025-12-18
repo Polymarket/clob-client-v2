@@ -1,4 +1,4 @@
-import { RoundConfig, Side } from "../../types";
+import { type RoundConfig, Side } from "../../types";
 import { decimalPlaces, roundDown, roundUp } from "../../utilities";
 
 export const getMarketOrderRawAmounts = (

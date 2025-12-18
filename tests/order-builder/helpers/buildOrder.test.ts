@@ -1,15 +1,15 @@
-import { describe, it, expect, beforeEach } from "vitest";
+import { Wallet } from "@ethersproject/wallet";
+import { beforeEach, describe, expect, it } from "vitest";
 
-import { UserOrder, Side, Chain } from "../../../src/types";
+import { type ContractConfig, getContractConfig } from "../../../src/config";
+import { bytes32Zero } from "../../../src/constants";
 import {
-	buildOrderCreationArgs,
 	buildOrder,
+	buildOrderCreationArgs,
 	ROUNDING_CONFIG,
 } from "../../../src/order-builder/helpers";
-import { Wallet } from "@ethersproject/wallet";
-import { ContractConfig, getContractConfig } from "../../../src/config";
-import { OrderDataV2, SignatureTypeV2 } from "../../../src/order-utils";
-import { bytes32Zero } from "../../../src/constants";
+import { type OrderDataV2, SignatureTypeV2 } from "../../../src/order-utils";
+import { Chain, Side, type UserOrderV2 } from "../../../src/types";
 
 describe("buildOrder", () => {
 	const chainId = Chain.AMOY;
@@ -24,7 +24,7 @@ describe("buildOrder", () => {
 
 	describe("buy order", () => {
 		it("0.1", async () => {
-			const order: UserOrder = {
+			const order: UserOrderV2 = {
 				tokenID: "123",
 				price: 0.5,
 				size: 21.04,

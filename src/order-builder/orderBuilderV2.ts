@@ -2,12 +2,7 @@ import type { JsonRpcSigner } from "@ethersproject/providers";
 import type { Wallet } from "@ethersproject/wallet";
 
 import { SignatureTypeV2, type SignedOrderV2 } from "../order-utils";
-import type {
-	Chain,
-	CreateOrderOptions,
-	UserMarketOrder,
-	UserOrder,
-} from "../types";
+import type { Chain, CreateOrderOptions, UserMarketOrder, UserOrder } from "../types";
 
 import { createMarketOrder, createOrder } from "./helpers";
 
@@ -31,23 +26,18 @@ export class OrderBuilderV2 {
 	 * Should return a Wallet or JsonRpcSigner, or a Promise resolving to one.
 	 * If not provided, the static `signer` property is used.
 	 */
-	private getSigner?: () =>
-		| Promise<Wallet | JsonRpcSigner>
-		| (Wallet | JsonRpcSigner);
+	private getSigner?: () => Promise<Wallet | JsonRpcSigner> | (Wallet | JsonRpcSigner);
 
 	constructor(
 		signer: Wallet | JsonRpcSigner,
 		chainId: Chain,
 		signatureType?: SignatureTypeV2,
 		funderAddress?: string,
-		getSigner?: () =>
-			| Promise<Wallet | JsonRpcSigner>
-			| (Wallet | JsonRpcSigner),
+		getSigner?: () => Promise<Wallet | JsonRpcSigner> | (Wallet | JsonRpcSigner),
 	) {
 		this.signer = signer;
 		this.chainId = chainId;
-		this.signatureType =
-			signatureType === undefined ? SignatureTypeV2.EOA : signatureType;
+		this.signatureType = signatureType === undefined ? SignatureTypeV2.EOA : signatureType;
 		this.funderAddress = funderAddress;
 		this.getSigner = getSigner;
 	}
@@ -92,8 +82,7 @@ export class OrderBuilderV2 {
 	private async resolveSigner(): Promise<Wallet | JsonRpcSigner> {
 		if (this.getSigner) {
 			const s = await this.getSigner();
-			if (!s)
-				throw new Error("getSigner() function returned undefined or null");
+			if (!s) throw new Error("getSigner() function returned undefined or null");
 			return s;
 		}
 		return this.signer;

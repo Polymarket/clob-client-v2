@@ -1,14 +1,13 @@
-import { JsonRpcSigner } from "@ethersproject/providers";
-import { Wallet } from "@ethersproject/wallet";
+import type { JsonRpcSigner } from "@ethersproject/providers";
+import type { Wallet } from "@ethersproject/wallet";
 
 import { getContractConfig } from "../../config";
-import { SignatureTypeV2, SignedOrderV2 } from "../../order-utils";
-import { Chain, CreateOrderOptions, UserMarketOrder } from "../../types";
-
-import { buildMarketOrderCreationArgs } from "./buildMarketOrderCreationArgs";
-import { ROUNDING_CONFIG } from "./roundingConfig";
+import type { SignatureTypeV2, SignedOrderV2 } from "../../order-utils";
+import type { Chain, CreateOrderOptions, UserMarketOrder } from "../../types";
 
 import { buildOrder } from ".";
+import { buildMarketOrderCreationArgs } from "./buildMarketOrderCreationArgs";
+import { ROUNDING_CONFIG } from "./roundingConfig";
 
 export const createMarketOrder = async (
 	eoaSigner: Wallet | JsonRpcSigner,

@@ -1,24 +1,18 @@
-import { describe, it, expect, beforeEach } from "vitest";
+import { Wallet } from "@ethersproject/wallet";
+import { beforeEach, describe, expect, it } from "vitest";
 import { buildClobEip712Signature } from "../../src/signing/eip712";
 import { Chain } from "../../src/types";
-import { Wallet } from "@ethersproject/wallet";
 
 describe("eip712", () => {
 	let wallet: Wallet;
 	beforeEach(() => {
 		// publicly known private key
-		const privateKey =
-			"0xac0974bec39a17e36ba4a6b4d238ff944bacb478cbed5efcae784d7bf4f2ff80";
+		const privateKey = "0xac0974bec39a17e36ba4a6b4d238ff944bacb478cbed5efcae784d7bf4f2ff80";
 		wallet = new Wallet(privateKey);
 	});
 
 	it("buildClobEip712Signature", async () => {
-		const signature = await buildClobEip712Signature(
-			wallet,
-			Chain.AMOY,
-			10000000,
-			23,
-		);
+		const signature = await buildClobEip712Signature(wallet, Chain.AMOY, 10000000, 23);
 		expect(signature).not.toBeNull();
 		expect(signature).toBeDefined();
 		expect(signature).not.toBe("");

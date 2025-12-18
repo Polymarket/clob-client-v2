@@ -1,7 +1,7 @@
-import { describe, it, expect } from "vitest";
+import { describe, expect, it } from "vitest";
 
-import { OrderSummary, OrderType } from "../../../src/types";
 import { calculateBuyMarketPrice } from "../../../src/order-builder/helpers";
+import { type OrderSummary, OrderType } from "../../../src/types";
 
 describe("calculateBuyMarketPrice FOK", () => {
 	it("empty orderbook", () => {

@@ -1,9 +1,9 @@
-import { describe, it, expect } from "vitest";
+import { describe, expect, it } from "vitest";
+import type { DropNotificationParams, OrdersScoringParams } from "../../src";
 import {
 	parseDropNotificationParams,
 	parseOrdersScoringParams,
 } from "../../src/http-helpers/index";
-import { DropNotificationParams, OrdersScoringParams } from "../../src";
 
 describe("utilities", () => {
 	describe("parseOrdersScoringParams", () => {

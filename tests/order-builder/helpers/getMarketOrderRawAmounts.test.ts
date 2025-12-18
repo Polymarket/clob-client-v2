@@ -1,7 +1,6 @@
-import { describe, it, expect } from "vitest";
-
-import { Side } from "../../../src/types";
+import { describe, expect, it } from "vitest";
 import { getMarketOrderRawAmounts, ROUNDING_CONFIG } from "../../../src/order-builder/helpers";
+import { Side } from "../../../src/types";
 import { decimalPlaces, roundNormal } from "../../../src/utilities";
 
 // Test a representative sample of size/price combinations instead of exhaustive loops

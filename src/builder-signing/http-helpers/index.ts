@@ -18,16 +18,7 @@ const request = async (
 	return await axios({ method, url: endpoint, headers, data, params });
 };
 
-export const post = async (
-	endpoint: string,
-	options?: RequestOptions,
-): Promise<any> => {
-	const resp = await request(
-		endpoint,
-		"POST",
-		options?.headers,
-		options?.data,
-		options?.params,
-	);
+export const post = async (endpoint: string, options?: RequestOptions): Promise<any> => {
+	const resp = await request(endpoint, "POST", options?.headers, options?.data, options?.params);
 	return resp.data;
 };

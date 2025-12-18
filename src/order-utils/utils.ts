@@ -1,3 +1,3 @@
 export function generateOrderSalt(): string {
-    return Math.round(Math.random() * Date.now()) + '';
+	return `${Math.round(Math.random() * Date.now())}`;
 }

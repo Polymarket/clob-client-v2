@@ -1,10 +1,9 @@
-import { describe, it, expect } from "vitest";
-
-import { UserMarketOrder, Side } from "../../../src/types";
-import { buildMarketOrderCreationArgs, ROUNDING_CONFIG } from "../../../src/order-builder/helpers";
-import { roundDown } from "../../../src/utilities";
-import { OrderDataV2, SignatureTypeV2 } from "../../../src/order-utils";
+import { describe, expect, it } from "vitest";
 import { bytes32Zero } from "../../../src/constants";
+import { buildMarketOrderCreationArgs, ROUNDING_CONFIG } from "../../../src/order-builder/helpers";
+import { type OrderDataV2, SignatureTypeV2 } from "../../../src/order-utils";
+import { Side, type UserMarketOrder } from "../../../src/types";
+import { roundDown } from "../../../src/utilities";
 
 describe("buildMarketOrderCreationArgs", () => {
 	describe("market buy order", () => {

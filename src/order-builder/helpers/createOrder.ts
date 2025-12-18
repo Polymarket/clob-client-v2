@@ -1,20 +1,20 @@
-import { JsonRpcSigner } from "@ethersproject/providers";
-import { Wallet } from "@ethersproject/wallet";
+import type { JsonRpcSigner } from "@ethersproject/providers";
+import type { Wallet } from "@ethersproject/wallet";
 
 import { getContractConfig } from "../../config";
-import { SignatureTypeV2, SignedOrderV2 } from "../../order-utils";
-import { Chain, CreateOrderOptions, UserOrder } from "../../types";
+import type { SignatureTypeV2, SignedOrderV2 } from "../../order-utils";
+import type { Chain, CreateOrderOptions, UserOrderV2 } from "../../types";
 
+import { buildOrder } from "./buildOrder";
 import { buildOrderCreationArgs } from "./buildOrderCreationArgs";
 import { ROUNDING_CONFIG } from "./roundingConfig";
-import { buildOrder } from "./buildOrder";
 
 export const createOrder = async (
 	eoaSigner: Wallet | JsonRpcSigner,
 	chainId: Chain,
 	signatureType: SignatureTypeV2,
 	funderAddress: string | undefined,
-	userOrder: UserOrder,
+	userOrder: UserOrderV2,
 	options: CreateOrderOptions,
 ): Promise<SignedOrderV2> => {
 	const eoaSignerAddress = await eoaSigner.getAddress();

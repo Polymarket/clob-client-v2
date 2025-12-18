@@ -1,9 +1,8 @@
-import { describe, it, expect } from "vitest";
-
-import { UserOrder, Side } from "../../../src/types";
-import { buildOrderCreationArgs, ROUNDING_CONFIG } from "../../../src/order-builder/helpers";
-import { OrderDataV2, SignatureTypeV2 } from "../../../src/order-utils";
+import { describe, expect, it } from "vitest";
 import { bytes32Zero } from "../../../src/constants";
+import { buildOrderCreationArgs, ROUNDING_CONFIG } from "../../../src/order-builder/helpers";
+import { type OrderDataV2, SignatureTypeV2 } from "../../../src/order-utils";
+import { Side, type UserOrder } from "../../../src/types";
 
 describe("buildOrderCreationArgs", () => {
 	describe("buy order", () => {

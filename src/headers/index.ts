@@ -1,6 +1,6 @@
 import type { JsonRpcSigner } from "@ethersproject/providers";
 import type { Wallet } from "@ethersproject/wallet";
-
+import type { BuilderHeaderPayload } from "../builder-signing";
 import { buildClobEip712Signature, buildPolyHmacSignature } from "../signing";
 import type {
 	ApiKeyCreds,
@@ -10,7 +10,6 @@ import type {
 	L2PolyHeader,
 	L2WithBuilderHeader,
 } from "../types";
-import type { BuilderHeaderPayload } from "../builder-signing";
 
 export const createL1Headers = async (
 	signer: Wallet | JsonRpcSigner,

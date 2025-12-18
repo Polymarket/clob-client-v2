@@ -19,13 +19,7 @@ export class BuilderSigner {
 			ts = timestamp;
 		}
 
-		const builderSig = buildHmacSignature(
-			this.creds.secret,
-			ts,
-			method,
-			path,
-			body,
-		);
+		const builderSig = buildHmacSignature(this.creds.secret, ts, method, path, body);
 
 		return {
 			POLY_BUILDER_API_KEY: this.creds.key,

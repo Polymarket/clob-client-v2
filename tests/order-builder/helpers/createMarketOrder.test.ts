@@ -1,10 +1,9 @@
-import { describe, it, expect, beforeEach } from "vitest";
-
-import { UserMarketOrder, Side, Chain } from "../../../src/types";
-import { createMarketOrder } from "../../../src/order-builder/helpers";
 import { Wallet } from "@ethersproject/wallet";
-import { SignatureTypeV2 } from "../../../src/order-utils";
+import { beforeEach, describe, expect, it } from "vitest";
 import { bytes32Zero } from "../../../src/constants";
+import { createMarketOrder } from "../../../src/order-builder/helpers";
+import { SignatureTypeV2 } from "../../../src/order-utils";
+import { Chain, Side, type UserMarketOrder } from "../../../src/types";
 
 describe("createMarketOrder", () => {
 	let wallet: Wallet;

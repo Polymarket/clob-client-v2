@@ -1,12 +1,9 @@
-import { describe, it, expect, beforeEach } from "vitest";
 import { Wallet } from "@ethersproject/wallet";
+import { beforeEach, describe, expect, it } from "vitest";
 import { ExchangeOrderBuilderV1 } from "../../src/order-utils/exchangeOrderBuilderV1";
-import { generateOrderSalt } from "../../src/order-utils/utils";
-import type {
-	OrderV1,
-	OrderDataV1,
-} from "../../src/order-utils/model/orderDataV1";
+import type { OrderDataV1 } from "../../src/order-utils/model/orderDataV1";
 import { Side } from "../../src/order-utils/model/side";
+import { generateOrderSalt } from "../../src/order-utils/utils";
 
 describe("exchangeOrderBuilderV1", () => {
 	describe("CTFexchange", () => {
@@ -20,8 +17,7 @@ describe("exchangeOrderBuilderV1", () => {
 			const exchangeAddress = "0xdFE02Eb6733538f8Ea35D585af8DE5958AD99E40";
 
 			// publicly known private key
-			const privateKey =
-				"0xac0974bec39a17e36ba4a6b4d238ff944bacb478cbed5efcae784d7bf4f2ff80";
+			const privateKey = "0xac0974bec39a17e36ba4a6b4d238ff944bacb478cbed5efcae784d7bf4f2ff80";
 			wallet = new Wallet(privateKey);
 
 			exchangeOrderBuilder = new ExchangeOrderBuilderV1(
@@ -63,7 +59,7 @@ describe("exchangeOrderBuilderV1", () => {
 			});
 
 			it("specific salt", async () => {
-				(exchangeOrderBuilder as any)["generateSalt"] = () => {
+				(exchangeOrderBuilder as any).generateSalt = () => {
 					return "479249096354";
 				};
 
@@ -166,7 +162,7 @@ describe("exchangeOrderBuilderV1", () => {
 			});
 
 			it("specific salt", async () => {
-				(exchangeOrderBuilder as any)["generateSalt"] = () => {
+				(exchangeOrderBuilder as any).generateSalt = () => {
 					return "479249096354";
 				};
 
@@ -264,7 +260,7 @@ describe("exchangeOrderBuilderV1", () => {
 			});
 
 			it("specific salt", async () => {
-				(exchangeOrderBuilder as any)["generateSalt"] = () => {
+				(exchangeOrderBuilder as any).generateSalt = () => {
 					return "479249096354";
 				};
 
@@ -324,7 +320,7 @@ describe("exchangeOrderBuilderV1", () => {
 			});
 
 			it("specific salt", async () => {
-				(exchangeOrderBuilder as any)["generateSalt"] = () => {
+				(exchangeOrderBuilder as any).generateSalt = () => {
 					return "479249096354";
 				};
 
@@ -374,9 +370,7 @@ describe("exchangeOrderBuilderV1", () => {
 				expect(signedOrder.salt).not.toBe("");
 				expect(signedOrder.maker).toBe(wallet.address);
 				expect(signedOrder.signer).toBe(wallet.address);
-				expect(signedOrder.taker).toBe(
-					"0x0000000000000000000000000000000000000000",
-				);
+				expect(signedOrder.taker).toBe("0x0000000000000000000000000000000000000000");
 				expect(signedOrder.tokenId).toBe("1234");
 				expect(signedOrder.makerAmount).toBe("100000000");
 				expect(signedOrder.takerAmount).toBe("50000000");
@@ -389,7 +383,7 @@ describe("exchangeOrderBuilderV1", () => {
 			});
 
 			it("specific salt", async () => {
-				(exchangeOrderBuilder as any)["generateSalt"] = () => {
+				(exchangeOrderBuilder as any).generateSalt = () => {
 					return "479249096354";
 				};
 
@@ -434,12 +428,10 @@ describe("exchangeOrderBuilderV1", () => {
 			const chainId = 80002;
 
 			// exchange address
-			const negRiskExchangeAddress =
-				"0xC5d563A36AE78145C45a50134d48A1215220f80a";
+			const negRiskExchangeAddress = "0xC5d563A36AE78145C45a50134d48A1215220f80a";
 
 			// publicly known private key
-			const privateKey =
-				"0xac0974bec39a17e36ba4a6b4d238ff944bacb478cbed5efcae784d7bf4f2ff80";
+			const privateKey = "0xac0974bec39a17e36ba4a6b4d238ff944bacb478cbed5efcae784d7bf4f2ff80";
 			wallet = new Wallet(privateKey);
 
 			exchangeOrderBuilder = new ExchangeOrderBuilderV1(
@@ -481,7 +473,7 @@ describe("exchangeOrderBuilderV1", () => {
 			});
 
 			it("specific salt", async () => {
-				(exchangeOrderBuilder as any)["generateSalt"] = () => {
+				(exchangeOrderBuilder as any).generateSalt = () => {
 					return "479249096354";
 				};
 
@@ -584,7 +576,7 @@ describe("exchangeOrderBuilderV1", () => {
 			});
 
 			it("specific salt", async () => {
-				(exchangeOrderBuilder as any)["generateSalt"] = () => {
+				(exchangeOrderBuilder as any).generateSalt = () => {
 					return "479249096354";
 				};
 
@@ -682,7 +674,7 @@ describe("exchangeOrderBuilderV1", () => {
 			});
 
 			it("specific salt", async () => {
-				(exchangeOrderBuilder as any)["generateSalt"] = () => {
+				(exchangeOrderBuilder as any).generateSalt = () => {
 					return "479249096354";
 				};
 
@@ -742,7 +734,7 @@ describe("exchangeOrderBuilderV1", () => {
 			});
 
 			it("specific salt", async () => {
-				(exchangeOrderBuilder as any)["generateSalt"] = () => {
+				(exchangeOrderBuilder as any).generateSalt = () => {
 					return "479249096354";
 				};
 
@@ -792,9 +784,7 @@ describe("exchangeOrderBuilderV1", () => {
 				expect(signedOrder.salt).not.toBe("");
 				expect(signedOrder.maker).toBe(wallet.address);
 				expect(signedOrder.signer).toBe(wallet.address);
-				expect(signedOrder.taker).toBe(
-					"0x0000000000000000000000000000000000000000",
-				);
+				expect(signedOrder.taker).toBe("0x0000000000000000000000000000000000000000");
 				expect(signedOrder.tokenId).toBe("1234");
 				expect(signedOrder.makerAmount).toBe("100000000");
 				expect(signedOrder.takerAmount).toBe("50000000");
@@ -807,7 +797,7 @@ describe("exchangeOrderBuilderV1", () => {
 			});
 
 			it("specific salt", async () => {
-				(exchangeOrderBuilder as any)["generateSalt"] = () => {
+				(exchangeOrderBuilder as any).generateSalt = () => {
 					return "479249096354";
 				};
 

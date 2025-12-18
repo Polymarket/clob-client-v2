@@ -3,13 +3,12 @@ import type { Wallet } from "@ethersproject/wallet";
 import { hashTypedData } from "viem";
 
 import { bytes32Zero } from "../constants";
-
-import { EIP712_DOMAIN, type EIP712TypedData } from "./model/eip712";
 import {
 	CTF_EXCHANGE_V2_DOMAIN_NAME,
 	CTF_EXCHANGE_V2_DOMAIN_VERSION,
 	CTF_EXCHANGE_V2_ORDER_STRUCT,
 } from "./model/ctfExchangeV2TypedData";
+import { EIP712_DOMAIN, type EIP712TypedData } from "./model/eip712";
 import type {
 	OrderDataV2,
 	OrderHash,

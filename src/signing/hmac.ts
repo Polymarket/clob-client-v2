@@ -1,4 +1,4 @@
-import crypto from "crypto";
+import crypto from "node:crypto";
 
 function replaceAll(s: string, search: string, replace: string) {
 	return s.split(search).join(replace);

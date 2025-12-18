@@ -1,7 +1,7 @@
-import { describe, it, expect, beforeEach } from "vitest";
-import { createL1Headers, createL2Headers } from "../../src/headers/index";
 import { Wallet } from "ethers";
-import { ApiKeyCreds, Chain } from "../../src/types";
+import { beforeEach, describe, expect, it } from "vitest";
+import { createL1Headers, createL2Headers } from "../../src/headers/index";
+import { type ApiKeyCreds, Chain } from "../../src/types";
 
 describe("headers", () => {
 	const chainId = Chain.AMOY;
@@ -9,14 +9,12 @@ describe("headers", () => {
 	let creds: ApiKeyCreds;
 	beforeEach(() => {
 		// publicly known private key
-		const privateKey =
-			"0xac0974bec39a17e36ba4a6b4d238ff944bacb478cbed5efcae784d7bf4f2ff80";
+		const privateKey = "0xac0974bec39a17e36ba4a6b4d238ff944bacb478cbed5efcae784d7bf4f2ff80";
 		wallet = new Wallet(privateKey);
 
 		creds = {
 			key: "000000000-0000-0000-0000-000000000000",
-			passphrase:
-				"aaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaa",
+			passphrase: "aaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaa",
 			secret: "AAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAA=",
 		};
 	});
@@ -30,9 +28,9 @@ describe("headers", () => {
 			expect(l1Headers.POLY_ADDRESS).toBe(wallet.address);
 			expect(l1Headers.POLY_SIGNATURE).not.toBe("");
 			expect(l1Headers.POLY_TIMESTAMP).not.toBe("");
-			expect(
-				parseInt(l1Headers.POLY_TIMESTAMP) <= Math.floor(Date.now() / 1000),
-			).toBe(true);
+			expect(parseInt(l1Headers.POLY_TIMESTAMP, 10) <= Math.floor(Date.now() / 1000)).toBe(
+				true,
+			);
 			expect(l1Headers.POLY_NONCE).toBe("0");
 		});
 
@@ -44,9 +42,9 @@ describe("headers", () => {
 			expect(l1Headers.POLY_ADDRESS).toBe(wallet.address);
 			expect(l1Headers.POLY_SIGNATURE).not.toBe("");
 			expect(l1Headers.POLY_TIMESTAMP).not.toBe("");
-			expect(
-				parseInt(l1Headers.POLY_TIMESTAMP) <= Math.floor(Date.now() / 1000),
-			).toBe(true);
+			expect(parseInt(l1Headers.POLY_TIMESTAMP, 10) <= Math.floor(Date.now() / 1000)).toBe(
+				true,
+			);
 			expect(l1Headers.POLY_NONCE).toBe("1012");
 		});
 	});
@@ -63,9 +61,9 @@ describe("headers", () => {
 			expect(l2Headers.POLY_ADDRESS).toBe(wallet.address);
 			expect(l2Headers.POLY_SIGNATURE).not.toBe("");
 			expect(l2Headers.POLY_TIMESTAMP).not.toBe("");
-			expect(
-				parseInt(l2Headers.POLY_TIMESTAMP) <= Math.floor(Date.now() / 1000),
-			).toBe(true);
+			expect(parseInt(l2Headers.POLY_TIMESTAMP, 10) <= Math.floor(Date.now() / 1000)).toBe(
+				true,
+			);
 			expect(l2Headers.POLY_API_KEY).toBe(creds.key);
 			expect(l2Headers.POLY_PASSPHRASE).toBe(creds.passphrase);
 		});
@@ -82,9 +80,9 @@ describe("headers", () => {
 			expect(l2Headers.POLY_ADDRESS).toBe(wallet.address);
 			expect(l2Headers.POLY_SIGNATURE).not.toBe("");
 			expect(l2Headers.POLY_TIMESTAMP).not.toBe("");
-			expect(
-				parseInt(l2Headers.POLY_TIMESTAMP) <= Math.floor(Date.now() / 1000),
-			).toBe(true);
+			expect(parseInt(l2Headers.POLY_TIMESTAMP, 10) <= Math.floor(Date.now() / 1000)).toBe(
+				true,
+			);
 			expect(l2Headers.POLY_API_KEY).toBe(creds.key);
 			expect(l2Headers.POLY_PASSPHRASE).toBe(creds.passphrase);
 		});

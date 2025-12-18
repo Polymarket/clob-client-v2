@@ -1,6 +1,6 @@
 export { buildMarketOrderCreationArgs } from "./buildMarketOrderCreationArgs";
-export { buildOrderCreationArgs } from "./buildOrderCreationArgs";
 export { buildOrder } from "./buildOrder";
+export { buildOrderCreationArgs } from "./buildOrderCreationArgs";
 export { calculateBuyMarketPrice } from "./calculateBuyMarketPrice";
 export { calculateSellMarketPrice } from "./calculateSellMarketPrice";
 export { createMarketOrder } from "./createMarketOrder";

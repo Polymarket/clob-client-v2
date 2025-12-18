@@ -1,14 +1,7 @@
 import { createHash } from "node:crypto";
-
-import type {
-	NewOrderV1,
-	NewOrderV2,
-	OrderBookSummary,
-	OrderType,
-	TickSize,
-} from "./types";
 import type { SignedOrderV2 } from "./order-utils";
 import type { SignedOrderV1 } from "./order-utils/model/orderDataV1";
+import type { NewOrderV1, NewOrderV2, OrderBookSummary, OrderType, TickSize } from "./types";
 
 export function orderToJsonV1<T extends OrderType>(
 	order: SignedOrderV1,
@@ -108,13 +101,9 @@ export const decimalPlaces = (num: number): number => {
  * @param orderbook
  * @returns
  */
-export const generateOrderBookSummaryHash = (
-	orderbook: OrderBookSummary,
-): string => {
+export const generateOrderBookSummaryHash = (orderbook: OrderBookSummary): string => {
 	orderbook.hash = "";
-	const hash = createHash("sha1")
-		.update(JSON.stringify(orderbook))
-		.digest("hex");
+	const hash = createHash("sha1").update(JSON.stringify(orderbook)).digest("hex");
 	orderbook.hash = hash;
 	return hash;
 };

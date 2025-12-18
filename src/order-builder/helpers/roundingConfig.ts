@@ -1,4 +1,4 @@
-import { RoundConfig, TickSize } from "src/types";
+import type { RoundConfig, TickSize } from "../../types";
 
 export const ROUNDING_CONFIG: Record<TickSize, RoundConfig> = {
 	"0.1": {

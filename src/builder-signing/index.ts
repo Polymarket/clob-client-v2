@@ -1,4 +1,4 @@
 export * from "./config";
-export * from "./signing";
 export * from "./signer";
+export * from "./signing";
 export * from "./types";

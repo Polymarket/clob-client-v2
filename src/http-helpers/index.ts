@@ -2,7 +2,7 @@
 import axios, { type AxiosRequestHeaders, type Method } from "axios";
 import { isBrowser } from "browser-or-node";
 
-import { DropNotificationParams, OrdersScoringParams } from "src/types";
+import type { DropNotificationParams, OrdersScoringParams } from "../types";
 
 export const GET = "GET";
 export const POST = "POST";
@@ -18,8 +18,8 @@ const overloadHeaders = (
 	}
 
 	headers["User-Agent"] = `@polymarket/clob-client`;
-	headers["Accept"] = "*/*";
-	headers["Connection"] = "keep-alive";
+	headers.Accept = "*/*";
+	headers.Connection = "keep-alive";
 	headers["Content-Type"] = "application/json";
 
 	if (method === GET) {
@@ -46,10 +46,7 @@ export interface RequestOptions {
 	params?: QueryParams;
 }
 
-export const post = async (
-	endpoint: string,
-	options?: RequestOptions,
-): Promise<any> => {
+export const post = async (endpoint: string, options?: RequestOptions): Promise<any> => {
 	try {
 		const resp = await request(
 			endpoint,
@@ -64,28 +61,16 @@ export const post = async (
 	}
 };
 
-export const get = async (
-	endpoint: string,
-	options?: RequestOptions,
-): Promise<any> => {
+export const get = async (endpoint: string, options?: RequestOptions): Promise<any> => {
 	try {
-		const resp = await request(
-			endpoint,
-			GET,
-			options?.headers,
-			options?.data,
-			options?.params,
-		);
+		const resp = await request(endpoint, GET, options?.headers, options?.data, options?.params);
 		return resp.data;
 	} catch (err: unknown) {
 		return errorHandling(err);
 	}
 };
 
-export const del = async (
-	endpoint: string,
-	options?: RequestOptions,
-): Promise<any> => {
+export const del = async (endpoint: string, options?: RequestOptions): Promise<any> => {
 	try {
 		const resp = await request(
 			endpoint,
@@ -119,9 +104,7 @@ const errorHandling = (err: unknown) => {
 				) {
 					return { error: err.response?.data, status: err.response?.status };
 				}
-				if (
-					!Object.prototype.hasOwnProperty.call(err.response?.data, "error")
-				) {
+				if (!Object.hasOwn(err.response?.data, "error")) {
 					return { error: err.response?.data, status: err.response?.status };
 				}
 				// in this case the field 'error' is included
@@ -144,13 +127,11 @@ const errorHandling = (err: unknown) => {
 	return { error: err };
 };
 
-export const parseOrdersScoringParams = (
-	orderScoringParams?: OrdersScoringParams,
-): QueryParams => {
+export const parseOrdersScoringParams = (orderScoringParams?: OrdersScoringParams): QueryParams => {
 	const params: QueryParams = {};
 	if (orderScoringParams !== undefined) {
 		if (orderScoringParams.orderIds !== undefined) {
-			params["order_ids"] = orderScoringParams?.orderIds.join(",");
+			params.order_ids = orderScoringParams?.orderIds.join(",");
 		}
 	}
 	return params;
@@ -162,7 +143,7 @@ export const parseDropNotificationParams = (
 	const params: QueryParams = {};
 	if (dropNotificationParams !== undefined) {
 		if (dropNotificationParams.ids !== undefined) {
-			params["ids"] = dropNotificationParams?.ids.join(",");
+			params.ids = dropNotificationParams?.ids.join(",");
 		}
 	}
 	return params;

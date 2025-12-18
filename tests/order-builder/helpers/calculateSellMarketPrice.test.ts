@@ -1,18 +1,18 @@
-import { describe, it, expect } from "vitest";
+import { describe, expect, it } from "vitest";
 
-import { OrderSummary, OrderType } from "../../../src/types";
 import { calculateSellMarketPrice } from "../../../src/order-builder/helpers";
+import { type OrderSummary, OrderType } from "../../../src/types";
 
 describe("calculateSellMarketPrice FOK", () => {
 	it("empty orderbook", () => {
-		expect(() => calculateSellMarketPrice([], 100, OrderType.FOK)).to.throw("no match");
+		expect(() => calculateSellMarketPrice([], 100, OrderType.FOK)).toThrow("no match");
 	});
 	it("not enough", () => {
 		const positions = [
 			{ price: "0.4", size: "10" },
 			{ price: "0.5", size: "10" },
 		] as OrderSummary[];
-		expect(() => calculateSellMarketPrice(positions, 100, OrderType.FOK)).to.throw("no match");
+		expect(() => calculateSellMarketPrice(positions, 100, OrderType.FOK)).toThrow("no match");
 	});
 	it("ok", () => {
 		let positions = [
@@ -47,7 +47,7 @@ describe("calculateSellMarketPrice FOK", () => {
 
 describe("calculateSellMarketPrice FAK", () => {
 	it("empty orderbook", () => {
-		expect(() => calculateSellMarketPrice([], 100, OrderType.FAK)).to.throw("no match");
+		expect(() => calculateSellMarketPrice([], 100, OrderType.FAK)).toThrow("no match");
 	});
 	it("not enough", () => {
 		const positions = [

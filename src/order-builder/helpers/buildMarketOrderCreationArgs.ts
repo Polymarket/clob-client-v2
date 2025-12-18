@@ -1,9 +1,9 @@
 import { parseUnits } from "viem";
 
-import type { OrderDataV2, SignatureTypeV2 } from "src/order-utils";
-import type { RoundConfig, UserMarketOrder } from "src/types";
 import { COLLATERAL_TOKEN_DECIMALS } from "../../config";
 import { bytes32Zero } from "../../constants";
+import type { OrderDataV2, SignatureTypeV2 } from "../../order-utils";
+import type { RoundConfig, UserMarketOrder } from "../../types";
 
 import { getMarketOrderRawAmounts } from ".";
 
