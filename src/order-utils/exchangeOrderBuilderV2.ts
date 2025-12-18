@@ -85,7 +85,7 @@ export class ExchangeOrderBuilderV2 {
 			metadata: metadata ?? bytes32Zero,
 			builder: builder ?? bytes32Zero,
 			maxFee: maxFee ?? "0",
-			timestamp: timestamp ?? (Date.now() / 1000).toString(),
+			timestamp: timestamp ?? Math.floor(Date.now() / 1000).toString(),
 		};
 	}
 
@@ -132,11 +132,7 @@ export class ExchangeOrderBuilderV2 {
 	 */
 	buildOrderSignature(typedData: EIP712TypedData): Promise<OrderSignature> {
 		delete typedData.types.EIP712Domain;
-		return this.signer._signTypedData(
-			typedData.domain,
-			typedData.types,
-			typedData.message,
-		);
+		return this.signer._signTypedData(typedData.domain, typedData.types, typedData.message);
 	}
 
 	/**

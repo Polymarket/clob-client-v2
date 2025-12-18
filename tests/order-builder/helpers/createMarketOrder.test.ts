@@ -4,6 +4,7 @@ import { UserMarketOrder, Side, Chain } from "../../../src/types";
 import { createMarketOrder } from "../../../src/order-builder/helpers";
 import { Wallet } from "@ethersproject/wallet";
 import { SignatureTypeV2 } from "../../../src/order-utils";
+import { bytes32Zero } from "../../../src/constants";
 
 describe("createMarketOrder", () => {
 	let wallet: Wallet;
@@ -20,8 +21,6 @@ describe("createMarketOrder", () => {
 					tokenID: "123",
 					price: 0.5,
 					amount: 100,
-					feeRateBps: 111,
-					nonce: 123,
 				};
 
 				const signedOrder = await createMarketOrder(
@@ -38,14 +37,15 @@ describe("createMarketOrder", () => {
 				expect(signedOrder.salt).not.toBe("");
 				expect(signedOrder.maker).toBe("0xf39Fd6e51aad88F6F4ce6aB8827279cffFb92266");
 				expect(signedOrder.signer).toBe("0xf39Fd6e51aad88F6F4ce6aB8827279cffFb92266");
-				expect(signedOrder.taker).toBe("0x0000000000000000000000000000000000000000");
 				expect(signedOrder.tokenId).toBe("123");
 				expect(signedOrder.makerAmount).toBe("100000000");
 				expect(signedOrder.takerAmount).toBe("200000000");
 				expect(signedOrder.side).toBe(Side.BUY);
 				expect(signedOrder.expiration).toBe("0");
-				expect(signedOrder.nonce).toBe("123");
-				expect(signedOrder.feeRateBps).toBe("111");
+				expect(signedOrder.maxFee).toBe("0");
+				expect(signedOrder.timestamp).toBeDefined();
+				expect(signedOrder.builder).toBe(bytes32Zero);
+				expect(signedOrder.metadata).toBe(bytes32Zero);
 				expect(signedOrder.signatureType).toBe(SignatureTypeV2.EOA);
 				expect(signedOrder.signature).not.toBe("");
 			});
@@ -56,8 +56,6 @@ describe("createMarketOrder", () => {
 					tokenID: "123",
 					price: 0.56,
 					amount: 100,
-					feeRateBps: 111,
-					nonce: 123,
 				};
 
 				const signedOrder = await createMarketOrder(
@@ -74,14 +72,15 @@ describe("createMarketOrder", () => {
 				expect(signedOrder.salt).not.toBe("");
 				expect(signedOrder.maker).toBe("0xf39Fd6e51aad88F6F4ce6aB8827279cffFb92266");
 				expect(signedOrder.signer).toBe("0xf39Fd6e51aad88F6F4ce6aB8827279cffFb92266");
-				expect(signedOrder.taker).toBe("0x0000000000000000000000000000000000000000");
 				expect(signedOrder.tokenId).toBe("123");
 				expect(signedOrder.makerAmount).toBe("100000000");
 				expect(signedOrder.takerAmount).toBe("178571400");
 				expect(signedOrder.side).toBe(Side.BUY);
 				expect(signedOrder.expiration).toBe("0");
-				expect(signedOrder.nonce).toBe("123");
-				expect(signedOrder.feeRateBps).toBe("111");
+				expect(signedOrder.maxFee).toBe("0");
+				expect(signedOrder.timestamp).toBeDefined();
+				expect(signedOrder.builder).toBe(bytes32Zero);
+				expect(signedOrder.metadata).toBe(bytes32Zero);
 				expect(signedOrder.signatureType).toBe(SignatureTypeV2.EOA);
 				expect(signedOrder.signature).not.toBe("");
 			});
@@ -92,8 +91,6 @@ describe("createMarketOrder", () => {
 					tokenID: "123",
 					price: 0.056,
 					amount: 100,
-					feeRateBps: 111,
-					nonce: 123,
 				};
 
 				const signedOrder = await createMarketOrder(
@@ -110,14 +107,15 @@ describe("createMarketOrder", () => {
 				expect(signedOrder.salt).not.toBe("");
 				expect(signedOrder.maker).toBe("0xf39Fd6e51aad88F6F4ce6aB8827279cffFb92266");
 				expect(signedOrder.signer).toBe("0xf39Fd6e51aad88F6F4ce6aB8827279cffFb92266");
-				expect(signedOrder.taker).toBe("0x0000000000000000000000000000000000000000");
 				expect(signedOrder.tokenId).toBe("123");
 				expect(signedOrder.makerAmount).toBe("100000000");
 				expect(signedOrder.takerAmount).toBe("1785714280");
 				expect(signedOrder.side).toBe(Side.BUY);
 				expect(signedOrder.expiration).toBe("0");
-				expect(signedOrder.nonce).toBe("123");
-				expect(signedOrder.feeRateBps).toBe("111");
+				expect(signedOrder.maxFee).toBe("0");
+				expect(signedOrder.timestamp).toBeDefined();
+				expect(signedOrder.builder).toBe(bytes32Zero);
+				expect(signedOrder.metadata).toBe(bytes32Zero);
 				expect(signedOrder.signatureType).toBe(SignatureTypeV2.EOA);
 				expect(signedOrder.signature).not.toBe("");
 			});
@@ -128,8 +126,6 @@ describe("createMarketOrder", () => {
 					tokenID: "123",
 					price: 0.0056,
 					amount: 100,
-					feeRateBps: 111,
-					nonce: 123,
 				};
 
 				const signedOrder = await createMarketOrder(
@@ -146,14 +142,15 @@ describe("createMarketOrder", () => {
 				expect(signedOrder.salt).not.toBe("");
 				expect(signedOrder.maker).toBe("0xf39Fd6e51aad88F6F4ce6aB8827279cffFb92266");
 				expect(signedOrder.signer).toBe("0xf39Fd6e51aad88F6F4ce6aB8827279cffFb92266");
-				expect(signedOrder.taker).toBe("0x0000000000000000000000000000000000000000");
 				expect(signedOrder.tokenId).toBe("123");
 				expect(signedOrder.makerAmount).toBe("100000000");
 				expect(signedOrder.takerAmount).toBe("17857142857");
 				expect(signedOrder.side).toBe(Side.BUY);
 				expect(signedOrder.expiration).toBe("0");
-				expect(signedOrder.nonce).toBe("123");
-				expect(signedOrder.feeRateBps).toBe("111");
+				expect(signedOrder.maxFee).toBe("0");
+				expect(signedOrder.timestamp).toBeDefined();
+				expect(signedOrder.builder).toBe(bytes32Zero);
+				expect(signedOrder.metadata).toBe(bytes32Zero);
 				expect(signedOrder.signatureType).toBe(SignatureTypeV2.EOA);
 				expect(signedOrder.signature).not.toBe("");
 			});
@@ -166,8 +163,6 @@ describe("createMarketOrder", () => {
 					tokenID: "123",
 					price: 0.5,
 					amount: 100,
-					feeRateBps: 111,
-					nonce: 123,
 				};
 
 				const signedOrder = await createMarketOrder(
@@ -184,14 +179,15 @@ describe("createMarketOrder", () => {
 				expect(signedOrder.salt).not.toBe("");
 				expect(signedOrder.maker).toBe("0xf39Fd6e51aad88F6F4ce6aB8827279cffFb92266");
 				expect(signedOrder.signer).toBe("0xf39Fd6e51aad88F6F4ce6aB8827279cffFb92266");
-				expect(signedOrder.taker).toBe("0x0000000000000000000000000000000000000000");
 				expect(signedOrder.tokenId).toBe("123");
 				expect(signedOrder.makerAmount).toBe("100000000");
 				expect(signedOrder.takerAmount).toBe("50000000");
 				expect(signedOrder.side).toBe(Side.SELL);
 				expect(signedOrder.expiration).toBe("0");
-				expect(signedOrder.nonce).toBe("123");
-				expect(signedOrder.feeRateBps).toBe("111");
+				expect(signedOrder.maxFee).toBe("0");
+				expect(signedOrder.timestamp).toBeDefined();
+				expect(signedOrder.builder).toBe(bytes32Zero);
+				expect(signedOrder.metadata).toBe(bytes32Zero);
 				expect(signedOrder.signatureType).toBe(SignatureTypeV2.EOA);
 				expect(signedOrder.signature).not.toBe("");
 			});
@@ -202,8 +198,6 @@ describe("createMarketOrder", () => {
 					tokenID: "123",
 					price: 0.56,
 					amount: 100,
-					feeRateBps: 111,
-					nonce: 123,
 				};
 
 				const signedOrder = await createMarketOrder(
@@ -220,14 +214,15 @@ describe("createMarketOrder", () => {
 				expect(signedOrder.salt).not.toBe("");
 				expect(signedOrder.maker).toBe("0xf39Fd6e51aad88F6F4ce6aB8827279cffFb92266");
 				expect(signedOrder.signer).toBe("0xf39Fd6e51aad88F6F4ce6aB8827279cffFb92266");
-				expect(signedOrder.taker).toBe("0x0000000000000000000000000000000000000000");
 				expect(signedOrder.tokenId).toBe("123");
 				expect(signedOrder.makerAmount).toBe("100000000");
 				expect(signedOrder.takerAmount).toBe("56000000");
 				expect(signedOrder.side).toBe(Side.SELL);
 				expect(signedOrder.expiration).toBe("0");
-				expect(signedOrder.nonce).toBe("123");
-				expect(signedOrder.feeRateBps).toBe("111");
+				expect(signedOrder.maxFee).toBe("0");
+				expect(signedOrder.timestamp).toBeDefined();
+				expect(signedOrder.builder).toBe(bytes32Zero);
+				expect(signedOrder.metadata).toBe(bytes32Zero);
 				expect(signedOrder.signatureType).toBe(SignatureTypeV2.EOA);
 				expect(signedOrder.signature).not.toBe("");
 			});
@@ -238,8 +233,6 @@ describe("createMarketOrder", () => {
 					tokenID: "123",
 					price: 0.056,
 					amount: 100,
-					feeRateBps: 111,
-					nonce: 123,
 				};
 
 				const signedOrder = await createMarketOrder(
@@ -256,14 +249,15 @@ describe("createMarketOrder", () => {
 				expect(signedOrder.salt).not.toBe("");
 				expect(signedOrder.maker).toBe("0xf39Fd6e51aad88F6F4ce6aB8827279cffFb92266");
 				expect(signedOrder.signer).toBe("0xf39Fd6e51aad88F6F4ce6aB8827279cffFb92266");
-				expect(signedOrder.taker).toBe("0x0000000000000000000000000000000000000000");
 				expect(signedOrder.tokenId).toBe("123");
 				expect(signedOrder.makerAmount).toBe("100000000");
 				expect(signedOrder.takerAmount).toBe("5600000");
 				expect(signedOrder.side).toBe(Side.SELL);
 				expect(signedOrder.expiration).toBe("0");
-				expect(signedOrder.nonce).toBe("123");
-				expect(signedOrder.feeRateBps).toBe("111");
+				expect(signedOrder.maxFee).toBe("0");
+				expect(signedOrder.timestamp).toBeDefined();
+				expect(signedOrder.builder).toBe(bytes32Zero);
+				expect(signedOrder.metadata).toBe(bytes32Zero);
 				expect(signedOrder.signatureType).toBe(SignatureTypeV2.EOA);
 				expect(signedOrder.signature).not.toBe("");
 			});
@@ -274,8 +268,6 @@ describe("createMarketOrder", () => {
 					tokenID: "123",
 					price: 0.0056,
 					amount: 100,
-					feeRateBps: 111,
-					nonce: 123,
 				};
 
 				const signedOrder = await createMarketOrder(
@@ -292,14 +284,15 @@ describe("createMarketOrder", () => {
 				expect(signedOrder.salt).not.toBe("");
 				expect(signedOrder.maker).toBe("0xf39Fd6e51aad88F6F4ce6aB8827279cffFb92266");
 				expect(signedOrder.signer).toBe("0xf39Fd6e51aad88F6F4ce6aB8827279cffFb92266");
-				expect(signedOrder.taker).toBe("0x0000000000000000000000000000000000000000");
 				expect(signedOrder.tokenId).toBe("123");
 				expect(signedOrder.makerAmount).toBe("100000000");
 				expect(signedOrder.takerAmount).toBe("560000");
 				expect(signedOrder.side).toBe(Side.SELL);
 				expect(signedOrder.expiration).toBe("0");
-				expect(signedOrder.nonce).toBe("123");
-				expect(signedOrder.feeRateBps).toBe("111");
+				expect(signedOrder.maxFee).toBe("0");
+				expect(signedOrder.timestamp).toBeDefined();
+				expect(signedOrder.builder).toBe(bytes32Zero);
+				expect(signedOrder.metadata).toBe(bytes32Zero);
 				expect(signedOrder.signatureType).toBe(SignatureTypeV2.EOA);
 				expect(signedOrder.signature).not.toBe("");
 			});
@@ -314,8 +307,6 @@ describe("createMarketOrder", () => {
 					tokenID: "123",
 					price: 0.5,
 					amount: 100,
-					feeRateBps: 111,
-					nonce: 123,
 				};
 
 				const signedOrder = await createMarketOrder(
@@ -332,14 +323,15 @@ describe("createMarketOrder", () => {
 				expect(signedOrder.salt).not.toBe("");
 				expect(signedOrder.maker).toBe("0xf39Fd6e51aad88F6F4ce6aB8827279cffFb92266");
 				expect(signedOrder.signer).toBe("0xf39Fd6e51aad88F6F4ce6aB8827279cffFb92266");
-				expect(signedOrder.taker).toBe("0x0000000000000000000000000000000000000000");
 				expect(signedOrder.tokenId).toBe("123");
 				expect(signedOrder.makerAmount).toBe("100000000");
 				expect(signedOrder.takerAmount).toBe("200000000");
 				expect(signedOrder.side).toBe(Side.BUY);
 				expect(signedOrder.expiration).toBe("0");
-				expect(signedOrder.nonce).toBe("123");
-				expect(signedOrder.feeRateBps).toBe("111");
+				expect(signedOrder.maxFee).toBe("0");
+				expect(signedOrder.timestamp).toBeDefined();
+				expect(signedOrder.builder).toBe(bytes32Zero);
+				expect(signedOrder.metadata).toBe(bytes32Zero);
 				expect(signedOrder.signatureType).toBe(SignatureTypeV2.EOA);
 				expect(signedOrder.signature).not.toBe("");
 			});
@@ -350,8 +342,6 @@ describe("createMarketOrder", () => {
 					tokenID: "123",
 					price: 0.56,
 					amount: 100,
-					feeRateBps: 111,
-					nonce: 123,
 				};
 
 				const signedOrder = await createMarketOrder(
@@ -368,14 +358,15 @@ describe("createMarketOrder", () => {
 				expect(signedOrder.salt).not.toBe("");
 				expect(signedOrder.maker).toBe("0xf39Fd6e51aad88F6F4ce6aB8827279cffFb92266");
 				expect(signedOrder.signer).toBe("0xf39Fd6e51aad88F6F4ce6aB8827279cffFb92266");
-				expect(signedOrder.taker).toBe("0x0000000000000000000000000000000000000000");
 				expect(signedOrder.tokenId).toBe("123");
 				expect(signedOrder.makerAmount).toBe("100000000");
 				expect(signedOrder.takerAmount).toBe("178571400");
 				expect(signedOrder.side).toBe(Side.BUY);
 				expect(signedOrder.expiration).toBe("0");
-				expect(signedOrder.nonce).toBe("123");
-				expect(signedOrder.feeRateBps).toBe("111");
+				expect(signedOrder.maxFee).toBe("0");
+				expect(signedOrder.timestamp).toBeDefined();
+				expect(signedOrder.builder).toBe(bytes32Zero);
+				expect(signedOrder.metadata).toBe(bytes32Zero);
 				expect(signedOrder.signatureType).toBe(SignatureTypeV2.EOA);
 				expect(signedOrder.signature).not.toBe("");
 			});
@@ -386,8 +377,6 @@ describe("createMarketOrder", () => {
 					tokenID: "123",
 					price: 0.056,
 					amount: 100,
-					feeRateBps: 111,
-					nonce: 123,
 				};
 
 				const signedOrder = await createMarketOrder(
@@ -404,14 +393,15 @@ describe("createMarketOrder", () => {
 				expect(signedOrder.salt).not.toBe("");
 				expect(signedOrder.maker).toBe("0xf39Fd6e51aad88F6F4ce6aB8827279cffFb92266");
 				expect(signedOrder.signer).toBe("0xf39Fd6e51aad88F6F4ce6aB8827279cffFb92266");
-				expect(signedOrder.taker).toBe("0x0000000000000000000000000000000000000000");
 				expect(signedOrder.tokenId).toBe("123");
 				expect(signedOrder.makerAmount).toBe("100000000");
 				expect(signedOrder.takerAmount).toBe("1785714280");
 				expect(signedOrder.side).toBe(Side.BUY);
 				expect(signedOrder.expiration).toBe("0");
-				expect(signedOrder.nonce).toBe("123");
-				expect(signedOrder.feeRateBps).toBe("111");
+				expect(signedOrder.maxFee).toBe("0");
+				expect(signedOrder.timestamp).toBeDefined();
+				expect(signedOrder.builder).toBe(bytes32Zero);
+				expect(signedOrder.metadata).toBe(bytes32Zero);
 				expect(signedOrder.signatureType).toBe(SignatureTypeV2.EOA);
 				expect(signedOrder.signature).not.toBe("");
 			});
@@ -422,8 +412,6 @@ describe("createMarketOrder", () => {
 					tokenID: "123",
 					price: 0.0056,
 					amount: 100,
-					feeRateBps: 111,
-					nonce: 123,
 				};
 
 				const signedOrder = await createMarketOrder(
@@ -440,14 +428,15 @@ describe("createMarketOrder", () => {
 				expect(signedOrder.salt).not.toBe("");
 				expect(signedOrder.maker).toBe("0xf39Fd6e51aad88F6F4ce6aB8827279cffFb92266");
 				expect(signedOrder.signer).toBe("0xf39Fd6e51aad88F6F4ce6aB8827279cffFb92266");
-				expect(signedOrder.taker).toBe("0x0000000000000000000000000000000000000000");
 				expect(signedOrder.tokenId).toBe("123");
 				expect(signedOrder.makerAmount).toBe("100000000");
 				expect(signedOrder.takerAmount).toBe("17857142857");
 				expect(signedOrder.side).toBe(Side.BUY);
 				expect(signedOrder.expiration).toBe("0");
-				expect(signedOrder.nonce).toBe("123");
-				expect(signedOrder.feeRateBps).toBe("111");
+				expect(signedOrder.maxFee).toBe("0");
+				expect(signedOrder.timestamp).toBeDefined();
+				expect(signedOrder.builder).toBe(bytes32Zero);
+				expect(signedOrder.metadata).toBe(bytes32Zero);
 				expect(signedOrder.signatureType).toBe(SignatureTypeV2.EOA);
 				expect(signedOrder.signature).not.toBe("");
 			});
@@ -460,8 +449,6 @@ describe("createMarketOrder", () => {
 					tokenID: "123",
 					price: 0.5,
 					amount: 100,
-					feeRateBps: 111,
-					nonce: 123,
 				};
 
 				const signedOrder = await createMarketOrder(
@@ -478,14 +465,15 @@ describe("createMarketOrder", () => {
 				expect(signedOrder.salt).not.toBe("");
 				expect(signedOrder.maker).toBe("0xf39Fd6e51aad88F6F4ce6aB8827279cffFb92266");
 				expect(signedOrder.signer).toBe("0xf39Fd6e51aad88F6F4ce6aB8827279cffFb92266");
-				expect(signedOrder.taker).toBe("0x0000000000000000000000000000000000000000");
 				expect(signedOrder.tokenId).toBe("123");
 				expect(signedOrder.makerAmount).toBe("100000000");
 				expect(signedOrder.takerAmount).toBe("50000000");
 				expect(signedOrder.side).toBe(Side.SELL);
 				expect(signedOrder.expiration).toBe("0");
-				expect(signedOrder.nonce).toBe("123");
-				expect(signedOrder.feeRateBps).toBe("111");
+				expect(signedOrder.maxFee).toBe("0");
+				expect(signedOrder.timestamp).toBeDefined();
+				expect(signedOrder.builder).toBe(bytes32Zero);
+				expect(signedOrder.metadata).toBe(bytes32Zero);
 				expect(signedOrder.signatureType).toBe(SignatureTypeV2.EOA);
 				expect(signedOrder.signature).not.toBe("");
 			});
@@ -496,8 +484,6 @@ describe("createMarketOrder", () => {
 					tokenID: "123",
 					price: 0.56,
 					amount: 100,
-					feeRateBps: 111,
-					nonce: 123,
 				};
 
 				const signedOrder = await createMarketOrder(
@@ -514,14 +500,15 @@ describe("createMarketOrder", () => {
 				expect(signedOrder.salt).not.toBe("");
 				expect(signedOrder.maker).toBe("0xf39Fd6e51aad88F6F4ce6aB8827279cffFb92266");
 				expect(signedOrder.signer).toBe("0xf39Fd6e51aad88F6F4ce6aB8827279cffFb92266");
-				expect(signedOrder.taker).toBe("0x0000000000000000000000000000000000000000");
 				expect(signedOrder.tokenId).toBe("123");
 				expect(signedOrder.makerAmount).toBe("100000000");
 				expect(signedOrder.takerAmount).toBe("56000000");
 				expect(signedOrder.side).toBe(Side.SELL);
 				expect(signedOrder.expiration).toBe("0");
-				expect(signedOrder.nonce).toBe("123");
-				expect(signedOrder.feeRateBps).toBe("111");
+				expect(signedOrder.maxFee).toBe("0");
+				expect(signedOrder.timestamp).toBeDefined();
+				expect(signedOrder.builder).toBe(bytes32Zero);
+				expect(signedOrder.metadata).toBe(bytes32Zero);
 				expect(signedOrder.signatureType).toBe(SignatureTypeV2.EOA);
 				expect(signedOrder.signature).not.toBe("");
 			});
@@ -532,8 +519,6 @@ describe("createMarketOrder", () => {
 					tokenID: "123",
 					price: 0.056,
 					amount: 100,
-					feeRateBps: 111,
-					nonce: 123,
 				};
 
 				const signedOrder = await createMarketOrder(
@@ -550,14 +535,15 @@ describe("createMarketOrder", () => {
 				expect(signedOrder.salt).not.toBe("");
 				expect(signedOrder.maker).toBe("0xf39Fd6e51aad88F6F4ce6aB8827279cffFb92266");
 				expect(signedOrder.signer).toBe("0xf39Fd6e51aad88F6F4ce6aB8827279cffFb92266");
-				expect(signedOrder.taker).toBe("0x0000000000000000000000000000000000000000");
 				expect(signedOrder.tokenId).toBe("123");
 				expect(signedOrder.makerAmount).toBe("100000000");
 				expect(signedOrder.takerAmount).toBe("5600000");
 				expect(signedOrder.side).toBe(Side.SELL);
 				expect(signedOrder.expiration).toBe("0");
-				expect(signedOrder.nonce).toBe("123");
-				expect(signedOrder.feeRateBps).toBe("111");
+				expect(signedOrder.maxFee).toBe("0");
+				expect(signedOrder.timestamp).toBeDefined();
+				expect(signedOrder.builder).toBe(bytes32Zero);
+				expect(signedOrder.metadata).toBe(bytes32Zero);
 				expect(signedOrder.signatureType).toBe(SignatureTypeV2.EOA);
 				expect(signedOrder.signature).not.toBe("");
 			});
@@ -568,8 +554,6 @@ describe("createMarketOrder", () => {
 					tokenID: "123",
 					price: 0.0056,
 					amount: 100,
-					feeRateBps: 111,
-					nonce: 123,
 				};
 
 				const signedOrder = await createMarketOrder(
@@ -586,14 +570,15 @@ describe("createMarketOrder", () => {
 				expect(signedOrder.salt).not.toBe("");
 				expect(signedOrder.maker).toBe("0xf39Fd6e51aad88F6F4ce6aB8827279cffFb92266");
 				expect(signedOrder.signer).toBe("0xf39Fd6e51aad88F6F4ce6aB8827279cffFb92266");
-				expect(signedOrder.taker).toBe("0x0000000000000000000000000000000000000000");
 				expect(signedOrder.tokenId).toBe("123");
 				expect(signedOrder.makerAmount).toBe("100000000");
 				expect(signedOrder.takerAmount).toBe("560000");
 				expect(signedOrder.side).toBe(Side.SELL);
 				expect(signedOrder.expiration).toBe("0");
-				expect(signedOrder.nonce).toBe("123");
-				expect(signedOrder.feeRateBps).toBe("111");
+				expect(signedOrder.maxFee).toBe("0");
+				expect(signedOrder.timestamp).toBeDefined();
+				expect(signedOrder.builder).toBe(bytes32Zero);
+				expect(signedOrder.metadata).toBe(bytes32Zero);
 				expect(signedOrder.signatureType).toBe(SignatureTypeV2.EOA);
 				expect(signedOrder.signature).not.toBe("");
 			});

@@ -23,9 +23,11 @@ describe("getMarketOrderRawAmounts", () => {
 						ROUNDING_CONFIG["0.1"],
 					);
 
-					expect(decimalPlaces(rawMakerAmt)).to.lte(2);
-					expect(decimalPlaces(rawTakerAmt)).to.lte(3);
-					expect(roundNormal(rawMakerAmt / rawTakerAmt, 2)).to.gte(roundNormal(price, 2));
+					expect(decimalPlaces(rawMakerAmt)).toBeLessThanOrEqual(2);
+					expect(decimalPlaces(rawTakerAmt)).toBeLessThanOrEqual(3);
+					expect(roundNormal(rawMakerAmt / rawTakerAmt, 2)).toBeGreaterThanOrEqual(
+						roundNormal(price, 2),
+					);
 				}
 			}
 		});
@@ -40,9 +42,11 @@ describe("getMarketOrderRawAmounts", () => {
 						ROUNDING_CONFIG["0.01"],
 					);
 
-					expect(decimalPlaces(rawMakerAmt)).to.lte(2);
-					expect(decimalPlaces(rawTakerAmt)).to.lte(4);
-					expect(roundNormal(rawMakerAmt / rawTakerAmt, 4)).to.gte(roundNormal(price, 4));
+					expect(decimalPlaces(rawMakerAmt)).toBeLessThanOrEqual(2);
+					expect(decimalPlaces(rawTakerAmt)).toBeLessThanOrEqual(4);
+					expect(roundNormal(rawMakerAmt / rawTakerAmt, 4)).toBeGreaterThanOrEqual(
+						roundNormal(price, 4),
+					);
 				}
 			}
 		});
@@ -57,9 +61,11 @@ describe("getMarketOrderRawAmounts", () => {
 						ROUNDING_CONFIG["0.001"],
 					);
 
-					expect(decimalPlaces(rawMakerAmt)).to.lte(2);
-					expect(decimalPlaces(rawTakerAmt)).to.lte(5);
-					expect(roundNormal(rawMakerAmt / rawTakerAmt, 6)).to.gte(roundNormal(price, 6));
+					expect(decimalPlaces(rawMakerAmt)).toBeLessThanOrEqual(2);
+					expect(decimalPlaces(rawTakerAmt)).toBeLessThanOrEqual(5);
+					expect(roundNormal(rawMakerAmt / rawTakerAmt, 6)).toBeGreaterThanOrEqual(
+						roundNormal(price, 6),
+					);
 				}
 			}
 		});
@@ -74,9 +80,11 @@ describe("getMarketOrderRawAmounts", () => {
 						ROUNDING_CONFIG["0.0001"],
 					);
 
-					expect(decimalPlaces(rawMakerAmt)).to.lte(2);
-					expect(decimalPlaces(rawTakerAmt)).to.lte(6);
-					expect(roundNormal(rawMakerAmt / rawTakerAmt, 8)).to.gte(roundNormal(price, 8));
+					expect(decimalPlaces(rawMakerAmt)).toBeLessThanOrEqual(2);
+					expect(decimalPlaces(rawTakerAmt)).toBeLessThanOrEqual(6);
+					expect(roundNormal(rawMakerAmt / rawTakerAmt, 8)).toBeGreaterThanOrEqual(
+						roundNormal(price, 8),
+					);
 				}
 			}
 		});
@@ -93,9 +101,11 @@ describe("getMarketOrderRawAmounts", () => {
 						ROUNDING_CONFIG["0.1"],
 					);
 
-					expect(decimalPlaces(rawMakerAmt)).to.lte(2);
-					expect(decimalPlaces(rawTakerAmt)).to.lte(3);
-					expect(roundNormal(rawTakerAmt / rawMakerAmt, 2)).to.lte(roundNormal(price, 2));
+					expect(decimalPlaces(rawMakerAmt)).toBeLessThanOrEqual(2);
+					expect(decimalPlaces(rawTakerAmt)).toBeLessThanOrEqual(3);
+					expect(roundNormal(rawTakerAmt / rawMakerAmt, 2)).toBeLessThanOrEqual(
+						roundNormal(price, 2),
+					);
 				}
 			}
 		});
@@ -110,9 +120,11 @@ describe("getMarketOrderRawAmounts", () => {
 						ROUNDING_CONFIG["0.01"],
 					);
 
-					expect(decimalPlaces(rawMakerAmt)).to.lte(2);
-					expect(decimalPlaces(rawTakerAmt)).to.lte(4);
-					expect(roundNormal(rawTakerAmt / rawMakerAmt, 4)).to.lte(roundNormal(price, 4));
+					expect(decimalPlaces(rawMakerAmt)).toBeLessThanOrEqual(2);
+					expect(decimalPlaces(rawTakerAmt)).toBeLessThanOrEqual(4);
+					expect(roundNormal(rawTakerAmt / rawMakerAmt, 4)).toBeLessThanOrEqual(
+						roundNormal(price, 4),
+					);
 				}
 			}
 		});
@@ -127,9 +139,11 @@ describe("getMarketOrderRawAmounts", () => {
 						ROUNDING_CONFIG["0.001"],
 					);
 
-					expect(decimalPlaces(rawMakerAmt)).to.lte(2);
-					expect(decimalPlaces(rawTakerAmt)).to.lte(5);
-					expect(roundNormal(rawTakerAmt / rawMakerAmt, 6)).to.lte(roundNormal(price, 6));
+					expect(decimalPlaces(rawMakerAmt)).toBeLessThanOrEqual(2);
+					expect(decimalPlaces(rawTakerAmt)).toBeLessThanOrEqual(5);
+					expect(roundNormal(rawTakerAmt / rawMakerAmt, 6)).toBeLessThanOrEqual(
+						roundNormal(price, 6),
+					);
 				}
 			}
 		});
@@ -144,9 +158,11 @@ describe("getMarketOrderRawAmounts", () => {
 						ROUNDING_CONFIG["0.0001"],
 					);
 
-					expect(decimalPlaces(rawMakerAmt)).to.lte(2);
-					expect(decimalPlaces(rawTakerAmt)).to.lte(6);
-					expect(roundNormal(rawTakerAmt / rawMakerAmt, 8)).to.lte(roundNormal(price, 8));
+					expect(decimalPlaces(rawMakerAmt)).toBeLessThanOrEqual(2);
+					expect(decimalPlaces(rawTakerAmt)).toBeLessThanOrEqual(6);
+					expect(roundNormal(rawTakerAmt / rawMakerAmt, 8)).toBeLessThanOrEqual(
+						roundNormal(price, 8),
+					);
 				}
 			}
 		});

@@ -1,11 +1,8 @@
 import type { Side } from "../../types.ts";
 
 import type { EIP712Object } from "./eip712.ts";
+import type { OrderSignature } from "./order.ts";
 import type { SignatureTypeV1 } from "./signatureTypeV1.ts";
-
-export type OrderSignature = string;
-
-export type OrderHash = string;
 
 export interface OrderDataV1 {
 	/**

@@ -5,14 +5,14 @@ import { calculateBuyMarketPrice } from "../../../src/order-builder/helpers";
 
 describe("calculateBuyMarketPrice FOK", () => {
 	it("empty orderbook", () => {
-		expect(() => calculateBuyMarketPrice([], 100, OrderType.FOK)).to.throw("no match");
+		expect(() => calculateBuyMarketPrice([], 100, OrderType.FOK)).toThrow("no match");
 	});
 	it("not enough", () => {
 		const positions = [
 			{ price: "0.5", size: "100" },
 			{ price: "0.4", size: "100" },
 		] as OrderSummary[];
-		expect(() => calculateBuyMarketPrice(positions, 100, OrderType.FOK)).to.throw("no match");
+		expect(() => calculateBuyMarketPrice(positions, 100, OrderType.FOK)).toThrow("no match");
 	});
 	it("ok", () => {
 		let positions = [
@@ -47,7 +47,7 @@ describe("calculateBuyMarketPrice FOK", () => {
 
 describe("calculateBuyMarketPrice FAK", () => {
 	it("empty orderbook", () => {
-		expect(() => calculateBuyMarketPrice([], 100, OrderType.FAK)).to.throw("no match");
+		expect(() => calculateBuyMarketPrice([], 100, OrderType.FAK)).toThrow("no match");
 	});
 	it("not enough", () => {
 		let positions = [

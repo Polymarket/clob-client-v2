@@ -1,84 +1,10 @@
-import type { SignatureType, SignedOrder } from "@polymarket/order-utils";
-import type { AxiosRequestHeaders } from "axios";
-import { SignatureTypeV1, SignatureTypeV2, SignedOrderV2 } from "./order-utils";
-import { Side } from "./order-utils/model/side";
+import type { SignatureTypeV2, SignedOrderV2 } from "../order-utils";
 
-export { Side };
-
-export interface ApiKeyCreds {
-	key: string;
-	secret: string;
-	passphrase: string;
-}
-
-export interface ApiKeyRaw {
-	apiKey: string;
-	secret: string;
-	passphrase: string;
-}
-
-export interface L2HeaderArgs {
-	method: string;
-	requestPath: string;
-	body?: string;
-}
-
-// EIP712 sig verification
-export interface L1PolyHeader extends AxiosRequestHeaders {
-	POLY_ADDRESS: string;
-	POLY_SIGNATURE: string;
-	POLY_TIMESTAMP: string;
-	POLY_NONCE: string;
-}
-
-// API key verification
-export interface L2PolyHeader extends AxiosRequestHeaders {
-	POLY_ADDRESS: string;
-	POLY_SIGNATURE: string;
-	POLY_TIMESTAMP: string;
-	POLY_API_KEY: string;
-	POLY_PASSPHRASE: string;
-}
-
-// Builder API key verification
-export interface L2WithBuilderHeader extends L2PolyHeader {
-	POLY_BUILDER_API_KEY: string;
-	POLY_BUILDER_TIMESTAMP: string;
-	POLY_BUILDER_PASSPHRASE: string;
-	POLY_BUILDER_SIGNATURE: string;
-}
-
-export enum OrderType {
-	GTC = "GTC",
-	FOK = "FOK",
-	GTD = "GTD",
-	FAK = "FAK",
-}
+import type { OrderType, Side } from "./clob";
 
 export interface PostOrdersV2Args {
 	order: SignedOrderV2;
 	orderType: OrderType;
-}
-
-export interface NewOrderV1<T extends OrderType> {
-	readonly order: {
-		readonly salt: number;
-		readonly maker: string;
-		readonly signer: string;
-		readonly taker: string;
-		readonly tokenId: string;
-		readonly makerAmount: string;
-		readonly takerAmount: string;
-		readonly expiration: string;
-		readonly nonce: string;
-		readonly feeRateBps: string;
-		readonly side: Side; // string
-		readonly signatureType: SignatureTypeV1;
-		readonly signature: string;
-	};
-	readonly owner: string;
-	readonly orderType: T;
-	readonly deferExec: boolean;
 }
 
 export interface NewOrderV2<T extends OrderType> {
@@ -102,49 +28,6 @@ export interface NewOrderV2<T extends OrderType> {
 	readonly owner: string;
 	readonly orderType: T;
 	readonly deferExec: boolean;
-}
-
-// Simplified order for users
-export interface UserOrderV1 {
-	/**
-	 * TokenID of the Conditional token asset being traded
-	 */
-	tokenID: string;
-
-	/**
-	 * Price used to create the order
-	 */
-	price: number;
-
-	/**
-	 * Size in terms of the ConditionalToken
-	 */
-	size: number;
-
-	/**
-	 * Side of the order
-	 */
-	side: Side;
-
-	/**
-	 * Fee rate, in basis points, charged to the order maker, charged on proceeds
-	 */
-	feeRateBps?: number;
-
-	/**
-	 * Nonce used for onchain cancellations
-	 */
-	nonce?: number;
-
-	/**
-	 * Timestamp after which the order is expired.
-	 */
-	expiration?: number;
-
-	/**
-	 * Address of the order taker. The zero address is used to indicate a public order
-	 */
-	taker?: string;
 }
 
 // Simplified order for users
@@ -178,15 +61,10 @@ export interface UserOrderV2 {
 	 * Timestamp after which the order is expired.
 	 */
 	expiration?: number;
-
-	/**
-	 * Address of the order taker. The zero address is used to indicate a public order
-	 */
-	taker?: string;
 }
 
 // Simplified market order for users
-export interface UserMarketOrder {
+export interface UserMarketOrderv2 {
 	/**
 	 * TokenID of the Conditional token asset being traded
 	 */
@@ -209,20 +87,7 @@ export interface UserMarketOrder {
 	 */
 	side: Side;
 
-	/**
-	 * Fee rate, in basis points, charged to the order maker, charged on proceeds
-	 */
-	feeRateBps?: number;
-
-	/**
-	 * Nonce used for onchain cancellations
-	 */
-	nonce?: number;
-
-	/**
-	 * Address of the order taker. The zero address is used to indicate a public order
-	 */
-	taker?: string;
+	maxFee?: number;
 
 	/**
 	 * Specifies the type of order execution:
@@ -232,6 +97,10 @@ export interface UserMarketOrder {
 	orderType?: OrderType.FOK | OrderType.FAK;
 }
 
+export interface OrderPayload {
+	orderID: string;
+}
+
 export interface ApiKeysResponse {
 	apiKeys: ApiKeyCreds[];
 }
@@ -239,6 +108,36 @@ export interface ApiKeysResponse {
 export interface BanStatus {
 	closed_only: boolean;
 }
+
+export interface OrderResponse {
+	success: boolean;
+	errorMsg: string;
+	orderID: string;
+	transactionsHashes: string[];
+	status: string;
+	takingAmount: string;
+	makingAmount: string;
+}
+
+export interface OpenOrder {
+	id: string;
+	status: string;
+	owner: string;
+	maker_address: string;
+	market: string;
+	asset_id: string;
+	side: string;
+	original_size: string;
+	size_matched: string;
+	price: string;
+	associate_trades: string[];
+	outcome: string;
+	created_at: number;
+	expiration: string;
+	order_type: string;
+}
+
+export type OpenOrdersResponse = OpenOrder[];
 
 export interface TradeParams {
 	id?: string;
@@ -253,6 +152,41 @@ export interface OpenOrderParams {
 	id?: string;
 	market?: string;
 	asset_id?: string;
+}
+
+export interface MakerOrder {
+	order_id: string;
+	owner: string;
+	maker_address: string;
+	matched_amount: string;
+	price: string;
+	fee_rate_bps: string;
+	asset_id: string;
+	outcome: string;
+	side: Side;
+}
+
+export interface Trade {
+	id: string;
+
+	taker_order_id: string;
+
+	market: string;
+	asset_id: string;
+	side: Side;
+	size: string;
+	fee_rate_bps: string;
+	price: string;
+	status: string;
+	match_time: string;
+	last_update: string;
+	outcome: string;
+	bucket_index: number;
+	owner: string;
+	maker_address: string;
+	maker_orders: MakerOrder[];
+	transaction_hash: string;
+	trader_side: "TAKER" | "MAKER";
 }
 
 export enum Chain {

@@ -24,14 +24,8 @@ export const buildOrderCreationArgs = async (
 		roundConfig,
 	);
 
-	const makerAmount = parseUnits(
-		rawMakerAmt.toString(),
-		COLLATERAL_TOKEN_DECIMALS,
-	).toString();
-	const takerAmount = parseUnits(
-		rawTakerAmt.toString(),
-		COLLATERAL_TOKEN_DECIMALS,
-	).toString();
+	const makerAmount = parseUnits(rawMakerAmt.toString(), COLLATERAL_TOKEN_DECIMALS).toString();
+	const takerAmount = parseUnits(rawTakerAmt.toString(), COLLATERAL_TOKEN_DECIMALS).toString();
 
 	return {
 		maker,
@@ -43,7 +37,7 @@ export const buildOrderCreationArgs = async (
 		expiration: userOrder.expiration ? userOrder.expiration.toString() : "0",
 		signatureType,
 		maxFee: "0",
-		timestamp: (Date.now() / 1000).toString(),
+		timestamp: Math.floor(Date.now() / 1000).toString(),
 		metadata: bytes32Zero,
 		builder: bytes32Zero,
 	};
