@@ -2,6 +2,51 @@ import { Side } from "../order-utils/model/side";
 
 export { Side };
 
+export interface ApiKeyCreds {
+	key: string;
+	secret: string;
+	passphrase: string;
+}
+
+export interface ApiKeyRaw {
+	apiKey: string;
+	secret: string;
+	passphrase: string;
+}
+
+export interface L2HeaderArgs {
+	method: string;
+	requestPath: string;
+	body?: string;
+}
+
+export type SimpleHeaders = Record<string, string | number | boolean>;
+
+// EIP712 sig verification
+export interface L1PolyHeader extends SimpleHeaders {
+	POLY_ADDRESS: string;
+	POLY_SIGNATURE: string;
+	POLY_TIMESTAMP: string;
+	POLY_NONCE: string;
+}
+
+// API key verification
+export interface L2PolyHeader extends SimpleHeaders {
+	POLY_ADDRESS: string;
+	POLY_SIGNATURE: string;
+	POLY_TIMESTAMP: string;
+	POLY_API_KEY: string;
+	POLY_PASSPHRASE: string;
+}
+
+// Builder API key verification
+export interface L2WithBuilderHeader extends L2PolyHeader {
+	POLY_BUILDER_API_KEY: string;
+	POLY_BUILDER_TIMESTAMP: string;
+	POLY_BUILDER_PASSPHRASE: string;
+	POLY_BUILDER_SIGNATURE: string;
+}
+
 export enum OrderType {
 	GTC = "GTC",
 	FOK = "FOK",

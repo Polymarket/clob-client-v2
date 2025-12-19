@@ -2,7 +2,7 @@ import type { JsonRpcSigner } from "@ethersproject/providers";
 import type { Wallet } from "@ethersproject/wallet";
 
 import { SignatureTypeV2, type SignedOrderV2 } from "../order-utils";
-import type { Chain, CreateOrderOptions, UserMarketOrder, UserOrder } from "../types";
+import type { Chain, CreateOrderOptions, UserMarketOrderV2, UserOrderV2 } from "../types";
 
 import { createMarketOrder, createOrder } from "./helpers";
 
@@ -46,7 +46,7 @@ export class OrderBuilderV2 {
 	 * Generate and sign a order
 	 */
 	public async buildOrder(
-		userOrder: UserOrder,
+		userOrder: UserOrderV2,
 		options: CreateOrderOptions,
 	): Promise<SignedOrderV2> {
 		const signer = await this.resolveSigner();
@@ -64,7 +64,7 @@ export class OrderBuilderV2 {
 	 * Generate and sign a market order
 	 */
 	public async buildMarketOrder(
-		userMarketOrder: UserMarketOrder,
+		userMarketOrder: UserMarketOrderV2,
 		options: CreateOrderOptions,
 	): Promise<SignedOrderV2> {
 		const signer = await this.resolveSigner();

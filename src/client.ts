@@ -120,8 +120,8 @@ import type {
 	Trade,
 	TradeParams,
 	UserEarning,
-	UserMarketOrder,
-	UserOrder,
+	UserMarketOrderV2,
+	UserOrderV2,
 	UserRewardsEarning,
 } from "./types";
 import { OrderType, Side } from "./types";
@@ -707,7 +707,7 @@ export class ClobClient {
 	}
 
 	public async createOrder(
-		userOrder: UserOrder,
+		userOrder: UserOrderV2,
 		options?: Partial<CreateOrderOptions>,
 	): Promise<SignedOrderV2> {
 		this.canL1Auth();
@@ -715,9 +715,6 @@ export class ClobClient {
 		const { tokenID } = userOrder;
 
 		const tickSize = await this._resolveTickSize(tokenID, options?.tickSize);
-
-		const feeRateBps = await this._resolveFeeRateBps(tokenID, userOrder.feeRateBps);
-		userOrder.feeRateBps = feeRateBps;
 
 		if (!priceValid(userOrder.price, tickSize)) {
 			throw new Error(
@@ -736,7 +733,7 @@ export class ClobClient {
 	}
 
 	public async createMarketOrder(
-		userMarketOrder: UserMarketOrder,
+		userMarketOrder: UserMarketOrderV2,
 		options?: Partial<CreateOrderOptions>,
 	): Promise<SignedOrderV2> {
 		this.canL1Auth();
@@ -744,9 +741,6 @@ export class ClobClient {
 		const { tokenID } = userMarketOrder;
 
 		const tickSize = await this._resolveTickSize(tokenID, options?.tickSize);
-
-		const feeRateBps = await this._resolveFeeRateBps(tokenID, userMarketOrder.feeRateBps);
-		userMarketOrder.feeRateBps = feeRateBps;
 
 		if (!userMarketOrder.price) {
 			userMarketOrder.price = await this.calculateMarketPrice(
@@ -774,7 +768,7 @@ export class ClobClient {
 	}
 
 	public async createAndPostOrder<T extends OrderType.GTC | OrderType.GTD = OrderType.GTC>(
-		userOrder: UserOrder,
+		userOrder: UserOrderV2,
 		options?: Partial<CreateOrderOptions>,
 		orderType: T = OrderType.GTC as T,
 		deferExec = false,
@@ -784,7 +778,7 @@ export class ClobClient {
 	}
 
 	public async createAndPostMarketOrder<T extends OrderType.FOK | OrderType.FAK = OrderType.FOK>(
-		userMarketOrder: UserMarketOrder,
+		userMarketOrder: UserMarketOrderV2,
 		options?: Partial<CreateOrderOptions>,
 		orderType: T = OrderType.FOK as T,
 		deferExec = false,
@@ -1299,19 +1293,19 @@ export class ClobClient {
 		return tickSize;
 	}
 
-	private async _resolveFeeRateBps(tokenID: string, userFeeRateBps?: number): Promise<number> {
-		const marketFeeRateBps = await this.getFeeRateBps(tokenID);
-		if (
-			marketFeeRateBps > 0 &&
-			userFeeRateBps !== undefined &&
-			userFeeRateBps !== marketFeeRateBps
-		) {
-			throw new Error(
-				`invalid user provided fee rate: ${userFeeRateBps}, fee rate for the market must be ${marketFeeRateBps}`,
-			);
-		}
-		return marketFeeRateBps;
-	}
+	// private async _resolveFeeRateBps(tokenID: string, userFeeRateBps?: number): Promise<number> {
+	// 	const marketFeeRateBps = await this.getFeeRateBps(tokenID);
+	// 	if (
+	// 		marketFeeRateBps > 0 &&
+	// 		userFeeRateBps !== undefined &&
+	// 		userFeeRateBps !== marketFeeRateBps
+	// 	) {
+	// 		throw new Error(
+	// 			`invalid user provided fee rate: ${userFeeRateBps}, fee rate for the market must be ${marketFeeRateBps}`,
+	// 		);
+	// 	}
+	// 	return marketFeeRateBps;
+	// }
 
 	private async _generateBuilderHeaders(
 		headers: L2PolyHeader,

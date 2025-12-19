@@ -3,7 +3,7 @@ import { parseUnits } from "viem";
 import { COLLATERAL_TOKEN_DECIMALS } from "../../config";
 import { bytes32Zero } from "../../constants";
 import type { OrderDataV2, SignatureTypeV2 } from "../../order-utils";
-import type { RoundConfig, UserMarketOrder } from "../../types";
+import type { RoundConfig, UserMarketOrderV2 } from "../../types";
 
 import { getMarketOrderRawAmounts } from ".";
 
@@ -14,7 +14,7 @@ export const buildMarketOrderCreationArgs = async (
 	signer: string,
 	maker: string,
 	signatureType: SignatureTypeV2,
-	userMarketOrder: UserMarketOrder,
+	userMarketOrder: UserMarketOrderV2,
 	roundConfig: RoundConfig,
 ): Promise<OrderDataV2> => {
 	const { side, rawMakerAmt, rawTakerAmt } = getMarketOrderRawAmounts(

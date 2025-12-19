@@ -9,13 +9,8 @@ import {
 	CTF_EXCHANGE_V2_ORDER_STRUCT,
 } from "./model/ctfExchangeV2TypedData";
 import { EIP712_DOMAIN, type EIP712TypedData } from "./model/eip712";
-import type {
-	OrderDataV2,
-	OrderHash,
-	OrderSignature,
-	OrderV2,
-	SignedOrderV2,
-} from "./model/orderDataV2.js";
+import type { OrderHash, OrderSignature } from "./model/order";
+import type { OrderDataV2, OrderV2, SignedOrderV2 } from "./model/orderDataV2.js";
 import { SignatureTypeV2 } from "./model/signatureTypeV2.js";
 import { generateOrderSalt } from "./utils";
 

@@ -1,4 +1,4 @@
-import type { Side } from "../../types.ts";
+import type { Side } from "../../types/index.ts";
 
 import type { EIP712Object } from "./eip712.ts";
 import type { OrderSignature } from "./order.ts";

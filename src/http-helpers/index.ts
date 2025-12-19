@@ -1,5 +1,5 @@
 /* eslint-disable max-depth */
-import axios, { type AxiosRequestHeaders, type Method } from "axios";
+import axios, { type Method, type RawAxiosRequestHeaders } from "axios";
 import { isBrowser } from "browser-or-node";
 
 import type { DropNotificationParams, OrdersScoringParams } from "../types";
@@ -41,7 +41,7 @@ export const request = async (
 export type QueryParams = Record<string, any>;
 
 export interface RequestOptions {
-	headers?: AxiosRequestHeaders;
+	headers?: RawAxiosRequestHeaders;
 	data?: any;
 	params?: QueryParams;
 }
@@ -104,7 +104,8 @@ const errorHandling = (err: unknown) => {
 				) {
 					return { error: err.response?.data, status: err.response?.status };
 				}
-				if (!Object.hasOwn(err.response?.data, "error")) {
+				// biome-ignore lint/suspicious/noPrototypeBuiltins: ES2022 Object.hasOwn not available with current target
+				if (!Object.prototype.hasOwnProperty.call(err.response?.data, "error")) {
 					return { error: err.response?.data, status: err.response?.status };
 				}
 				// in this case the field 'error' is included
