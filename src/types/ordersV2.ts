@@ -17,7 +17,6 @@ export interface NewOrderV2<T extends OrderType> {
 		readonly makerAmount: string;
 		readonly takerAmount: string;
 		readonly expiration: string;
-		readonly maxFee: string;
 		readonly side: Side; // string
 		readonly signatureType: SignatureTypeV2;
 		readonly timestamp: string;
@@ -53,11 +52,6 @@ export interface UserOrderV2 {
 	side: Side;
 
 	/**
-	 * Fee rate, in basis points, charged to the order maker, charged on proceeds
-	 */
-	maxFee?: number;
-
-	/**
 	 * Timestamp after which the order is expired.
 	 */
 	expiration?: number;
@@ -86,8 +80,6 @@ export interface UserMarketOrderV2 {
 	 * Side of the order
 	 */
 	side: Side;
-
-	maxFee?: number;
 
 	/**
 	 * Specifies the type of order execution:

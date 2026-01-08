@@ -36,7 +36,6 @@ export const buildMarketOrderCreationArgs = async (
 		signer,
 		expiration: "0",
 		signatureType,
-		maxFee: "0",
 		timestamp: Math.floor(Date.now() / 1000).toString(),
 		metadata: bytes32Zero,
 		builder: bytes32Zero,

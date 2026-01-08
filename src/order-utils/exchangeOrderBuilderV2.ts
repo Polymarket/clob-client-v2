@@ -52,7 +52,6 @@ export class ExchangeOrderBuilderV2 {
 		signer,
 		expiration,
 		signatureType,
-		maxFee,
 		timestamp,
 		metadata,
 		builder,
@@ -78,7 +77,6 @@ export class ExchangeOrderBuilderV2 {
 			signatureType: signatureType ?? SignatureTypeV2.EOA,
 			metadata: metadata ?? bytes32Zero,
 			builder: builder ?? bytes32Zero,
-			maxFee: maxFee ?? "0",
 			timestamp: timestamp ?? Math.floor(Date.now() / 1000).toString(),
 		};
 	}
@@ -109,7 +107,6 @@ export class ExchangeOrderBuilderV2 {
 				makerAmount: order.makerAmount,
 				takerAmount: order.takerAmount,
 				expiration: order.expiration,
-				maxFee: order.maxFee,
 				timestamp: order.timestamp,
 				side: order.side,
 				signatureType: order.signatureType,

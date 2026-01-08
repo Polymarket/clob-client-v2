@@ -28,7 +28,6 @@ describe("buildOrderCreationArgs", () => {
 			expect(orderData.takerAmount).toBe("21040000");
 			expect(orderData.side).toBe(Side.BUY);
 			expect(orderData.expiration).toBe("50000");
-			expect(orderData.maxFee).toBe("0");
 			expect(orderData.timestamp).toBeDefined();
 			expect(orderData.builder).toBe(bytes32Zero);
 			expect(orderData.metadata).toBe(bytes32Zero);
@@ -57,7 +56,6 @@ describe("buildOrderCreationArgs", () => {
 			expect(orderData.takerAmount).toBe("21040000");
 			expect(orderData.side).toBe(Side.BUY);
 			expect(orderData.expiration).toBe("50000");
-			expect(orderData.maxFee).toBe("0");
 			expect(orderData.timestamp).toBeDefined();
 			expect(orderData.builder).toBe(bytes32Zero);
 			expect(orderData.metadata).toBe(bytes32Zero);
@@ -86,7 +84,6 @@ describe("buildOrderCreationArgs", () => {
 			expect(orderData.takerAmount).toBe("21040000");
 			expect(orderData.side).toBe(Side.BUY);
 			expect(orderData.expiration).toBe("50000");
-			expect(orderData.maxFee).toBe("0");
 			expect(orderData.timestamp).toBeDefined();
 			expect(orderData.builder).toBe(bytes32Zero);
 			expect(orderData.metadata).toBe(bytes32Zero);
@@ -115,7 +112,6 @@ describe("buildOrderCreationArgs", () => {
 			expect(orderData.takerAmount).toBe("21040000");
 			expect(orderData.side).toBe(Side.BUY);
 			expect(orderData.expiration).toBe("50000");
-			expect(orderData.maxFee).toBe("0");
 			expect(orderData.timestamp).toBeDefined();
 			expect(orderData.builder).toBe(bytes32Zero);
 			expect(orderData.metadata).toBe(bytes32Zero);
@@ -145,7 +141,6 @@ describe("buildOrderCreationArgs", () => {
 			expect(orderData.takerAmount).toBe("10520000");
 			expect(orderData.side).toBe(Side.SELL);
 			expect(orderData.expiration).toBe("0");
-			expect(orderData.maxFee).toBe("0");
 			expect(orderData.timestamp).toBeDefined();
 			expect(orderData.builder).toBe(bytes32Zero);
 			expect(orderData.metadata).toBe(bytes32Zero);
@@ -173,7 +168,6 @@ describe("buildOrderCreationArgs", () => {
 			expect(orderData.takerAmount).toBe("11782400");
 			expect(orderData.side).toBe(Side.SELL);
 			expect(orderData.expiration).toBe("0");
-			expect(orderData.maxFee).toBe("0");
 			expect(orderData.timestamp).toBeDefined();
 			expect(orderData.builder).toBe(bytes32Zero);
 			expect(orderData.metadata).toBe(bytes32Zero);
@@ -201,7 +195,6 @@ describe("buildOrderCreationArgs", () => {
 			expect(orderData.takerAmount).toBe("1178240");
 			expect(orderData.side).toBe(Side.SELL);
 			expect(orderData.expiration).toBe("0");
-			expect(orderData.maxFee).toBe("0");
 			expect(orderData.timestamp).toBeDefined();
 			expect(orderData.builder).toBe(bytes32Zero);
 			expect(orderData.metadata).toBe(bytes32Zero);
@@ -229,7 +222,6 @@ describe("buildOrderCreationArgs", () => {
 			expect(orderData.takerAmount).toBe("117824");
 			expect(orderData.side).toBe(Side.SELL);
 			expect(orderData.expiration).toBe("0");
-			expect(orderData.maxFee).toBe("0");
 			expect(orderData.timestamp).toBeDefined();
 			expect(orderData.builder).toBe(bytes32Zero);
 			expect(orderData.metadata).toBe(bytes32Zero);

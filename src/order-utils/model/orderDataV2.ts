@@ -32,8 +32,6 @@ export interface OrderDataV2 {
 	 */
 	side: Side;
 
-	maxFee?: string;
-
 	/**
 	 * Signer of the order. Optional, if it is not present the signer is the maker of the order.
 	 */
@@ -103,11 +101,6 @@ export interface OrderV2 extends EIP712Object {
 	 * Timestamp after which the order is expired
 	 */
 	readonly expiration: string;
-
-	/**
-	 * Maximum fee charged to the order maker, charged in USDC
-	 */
-	readonly maxFee: string;
 
 	/**
 	 * The side of the order, BUY or SELL

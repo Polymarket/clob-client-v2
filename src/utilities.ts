@@ -50,7 +50,6 @@ export function orderToJsonV2<T extends OrderType>(
 			side: order.side,
 			expiration: order.expiration,
 			nonce: order.nonce,
-			maxFee: order.maxFee,
 			signatureType: order.signatureType,
 			timestamp: order.timestamp,
 			metadata: order.metadata,
