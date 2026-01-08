@@ -214,6 +214,19 @@ const exchangeV2Abi = [
 	},
 	{
 		type: "function",
+		name: "getMaxFeeRate",
+		inputs: [],
+		outputs: [
+			{
+				name: "",
+				type: "uint256",
+				internalType: "uint256",
+			},
+		],
+		stateMutability: "view",
+	},
+	{
+		type: "function",
 		name: "getOrderStatus",
 		inputs: [
 			{
@@ -391,11 +404,6 @@ const exchangeV2Abi = [
 						internalType: "uint256",
 					},
 					{
-						name: "maxFee",
-						type: "uint256",
-						internalType: "uint256",
-					},
-					{
 						name: "side",
 						type: "uint8",
 						internalType: "enum Side",
@@ -539,11 +547,6 @@ const exchangeV2Abi = [
 						internalType: "uint256",
 					},
 					{
-						name: "maxFee",
-						type: "uint256",
-						internalType: "uint256",
-					},
-					{
 						name: "side",
 						type: "uint8",
 						internalType: "enum Side",
@@ -612,11 +615,6 @@ const exchangeV2Abi = [
 					},
 					{
 						name: "expiration",
-						type: "uint256",
-						internalType: "uint256",
-					},
-					{
-						name: "maxFee",
 						type: "uint256",
 						internalType: "uint256",
 					},
@@ -965,6 +963,19 @@ const exchangeV2Abi = [
 	},
 	{
 		type: "function",
+		name: "setMaxFeeRate",
+		inputs: [
+			{
+				name: "rate",
+				type: "uint256",
+				internalType: "uint256",
+			},
+		],
+		outputs: [],
+		stateMutability: "nonpayable",
+	},
+	{
+		type: "function",
 		name: "setProxyFactory",
 		inputs: [
 			{
@@ -1068,6 +1079,24 @@ const exchangeV2Abi = [
 	},
 	{
 		type: "function",
+		name: "validateFee",
+		inputs: [
+			{
+				name: "fee",
+				type: "uint256",
+				internalType: "uint256",
+			},
+			{
+				name: "cashValue",
+				type: "uint256",
+				internalType: "uint256",
+			},
+		],
+		outputs: [],
+		stateMutability: "view",
+	},
+	{
+		type: "function",
 		name: "validateOrder",
 		inputs: [
 			{
@@ -1111,11 +1140,6 @@ const exchangeV2Abi = [
 						internalType: "uint256",
 					},
 					{
-						name: "maxFee",
-						type: "uint256",
-						internalType: "uint256",
-					},
-					{
 						name: "side",
 						type: "uint8",
 						internalType: "enum Side",
@@ -1150,24 +1174,6 @@ const exchangeV2Abi = [
 		],
 		outputs: [],
 		stateMutability: "view",
-	},
-	{
-		type: "function",
-		name: "validateOrderFee",
-		inputs: [
-			{
-				name: "maxFillFee",
-				type: "uint256",
-				internalType: "uint256",
-			},
-			{
-				name: "operatorFee",
-				type: "uint256",
-				internalType: "uint256",
-			},
-		],
-		outputs: [],
-		stateMutability: "pure",
 	},
 	{
 		type: "function",
@@ -1215,11 +1221,6 @@ const exchangeV2Abi = [
 					},
 					{
 						name: "expiration",
-						type: "uint256",
-						internalType: "uint256",
-					},
-					{
-						name: "maxFee",
 						type: "uint256",
 						internalType: "uint256",
 					},
@@ -1273,6 +1274,7 @@ const exchangeV2Abi = [
 		stateMutability: "view",
 	},
 	{
+		anonymous: false,
 		type: "event",
 		name: "FeeCharged",
 		inputs: [
@@ -1289,9 +1291,9 @@ const exchangeV2Abi = [
 				internalType: "uint256",
 			},
 		],
-		anonymous: false,
 	},
 	{
+		anonymous: false,
 		type: "event",
 		name: "FeeReceiverUpdated",
 		inputs: [
@@ -1302,9 +1304,22 @@ const exchangeV2Abi = [
 				internalType: "address",
 			},
 		],
-		anonymous: false,
 	},
 	{
+		anonymous: false,
+		type: "event",
+		name: "MaxFeeRateUpdated",
+		inputs: [
+			{
+				name: "maxFeeRate",
+				type: "uint256",
+				indexed: false,
+				internalType: "uint256",
+			},
+		],
+	},
+	{
+		anonymous: false,
 		type: "event",
 		name: "NewAdmin",
 		inputs: [
@@ -1321,9 +1336,9 @@ const exchangeV2Abi = [
 				internalType: "address",
 			},
 		],
-		anonymous: false,
 	},
 	{
+		anonymous: false,
 		type: "event",
 		name: "NewOperator",
 		inputs: [
@@ -1340,9 +1355,9 @@ const exchangeV2Abi = [
 				internalType: "address",
 			},
 		],
-		anonymous: false,
 	},
 	{
+		anonymous: false,
 		type: "event",
 		name: "OrderFilled",
 		inputs: [
@@ -1407,9 +1422,9 @@ const exchangeV2Abi = [
 				internalType: "bytes32",
 			},
 		],
-		anonymous: false,
 	},
 	{
+		anonymous: false,
 		type: "event",
 		name: "OrdersMatched",
 		inputs: [
@@ -1450,9 +1465,9 @@ const exchangeV2Abi = [
 				internalType: "uint256",
 			},
 		],
-		anonymous: false,
 	},
 	{
+		anonymous: false,
 		type: "event",
 		name: "ProxyFactoryUpdated",
 		inputs: [
@@ -1469,9 +1484,9 @@ const exchangeV2Abi = [
 				internalType: "address",
 			},
 		],
-		anonymous: false,
 	},
 	{
+		anonymous: false,
 		type: "event",
 		name: "RemovedAdmin",
 		inputs: [
@@ -1488,9 +1503,9 @@ const exchangeV2Abi = [
 				internalType: "address",
 			},
 		],
-		anonymous: false,
 	},
 	{
+		anonymous: false,
 		type: "event",
 		name: "RemovedOperator",
 		inputs: [
@@ -1507,9 +1522,9 @@ const exchangeV2Abi = [
 				internalType: "address",
 			},
 		],
-		anonymous: false,
 	},
 	{
+		anonymous: false,
 		type: "event",
 		name: "SafeFactoryUpdated",
 		inputs: [
@@ -1526,9 +1541,9 @@ const exchangeV2Abi = [
 				internalType: "address",
 			},
 		],
-		anonymous: false,
 	},
 	{
+		anonymous: false,
 		type: "event",
 		name: "TokenRegistered",
 		inputs: [
@@ -1551,9 +1566,9 @@ const exchangeV2Abi = [
 				internalType: "bytes32",
 			},
 		],
-		anonymous: false,
 	},
 	{
+		anonymous: false,
 		type: "event",
 		name: "TradingPaused",
 		inputs: [
@@ -1564,9 +1579,9 @@ const exchangeV2Abi = [
 				internalType: "address",
 			},
 		],
-		anonymous: false,
 	},
 	{
+		anonymous: false,
 		type: "event",
 		name: "TradingUnpaused",
 		inputs: [
@@ -1577,9 +1592,9 @@ const exchangeV2Abi = [
 				internalType: "address",
 			},
 		],
-		anonymous: false,
 	},
 	{
+		anonymous: false,
 		type: "event",
 		name: "UserPauseBlockIntervalUpdated",
 		inputs: [
@@ -1596,9 +1611,9 @@ const exchangeV2Abi = [
 				internalType: "uint256",
 			},
 		],
-		anonymous: false,
 	},
 	{
+		anonymous: false,
 		type: "event",
 		name: "UserPaused",
 		inputs: [
@@ -1615,9 +1630,9 @@ const exchangeV2Abi = [
 				internalType: "uint256",
 			},
 		],
-		anonymous: false,
 	},
 	{
+		anonymous: false,
 		type: "event",
 		name: "UserUnpaused",
 		inputs: [
@@ -1628,87 +1643,91 @@ const exchangeV2Abi = [
 				internalType: "address",
 			},
 		],
-		anonymous: false,
 	},
 	{
-		type: "error",
+		inputs: [],
 		name: "AlreadyRegistered",
-		inputs: [],
+		type: "error",
 	},
 	{
+		inputs: [],
+		name: "FeeExceedsMaxRate",
 		type: "error",
+	},
+	{
+		inputs: [],
 		name: "FeeExceedsProceeds",
-		inputs: [],
+		type: "error",
 	},
 	{
-		type: "error",
+		inputs: [],
 		name: "InvalidComplement",
-		inputs: [],
+		type: "error",
 	},
 	{
-		type: "error",
+		inputs: [],
 		name: "InvalidSignature",
-		inputs: [],
+		type: "error",
 	},
 	{
-		type: "error",
+		inputs: [],
 		name: "InvalidTokenId",
-		inputs: [],
+		type: "error",
 	},
 	{
-		type: "error",
+		inputs: [],
 		name: "MakingGtRemaining",
-		inputs: [],
+		type: "error",
 	},
 	{
-		type: "error",
-		name: "MaxFeeExceeded",
 		inputs: [],
+		name: "MaxFeeRateExceedsCeiling",
+		type: "error",
 	},
 	{
-		type: "error",
+		inputs: [],
 		name: "MismatchedTokenIds",
-		inputs: [],
+		type: "error",
 	},
 	{
-		type: "error",
+		inputs: [],
 		name: "NotAdmin",
-		inputs: [],
+		type: "error",
 	},
 	{
-		type: "error",
+		inputs: [],
 		name: "NotCrossing",
-		inputs: [],
+		type: "error",
 	},
 	{
-		type: "error",
+		inputs: [],
 		name: "NotOperator",
-		inputs: [],
+		type: "error",
 	},
 	{
-		type: "error",
+		inputs: [],
 		name: "OrderAlreadyFilled",
-		inputs: [],
+		type: "error",
 	},
 	{
-		type: "error",
+		inputs: [],
 		name: "OrderExpired",
-		inputs: [],
+		type: "error",
 	},
 	{
-		type: "error",
+		inputs: [],
 		name: "Paused",
-		inputs: [],
+		type: "error",
 	},
 	{
-		type: "error",
+		inputs: [],
 		name: "TooLittleTokensReceived",
-		inputs: [],
+		type: "error",
 	},
 	{
-		type: "error",
-		name: "UserIsPaused",
 		inputs: [],
+		name: "UserIsPaused",
+		type: "error",
 	},
 ] as const;
 
