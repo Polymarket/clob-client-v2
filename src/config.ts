@@ -7,9 +7,9 @@ type ContractConfig = {
 };
 
 const AMOY_CONTRACTS: ContractConfig = {
-	exchange: "0xdFE02Eb6733538f8Ea35D585af8DE5958AD99E40",
+	exchange: "0x47Cd67DA01D0d6c74C126BcEDD79699065270f74",
 	negRiskAdapter: "0xd91E80cF2E7be2e162c6513ceD06f1dD0dA35296",
-	negRiskExchange: "0xC5d563A36AE78145C45a50134d48A1215220f80a",
+	negRiskExchange: "0x106b5741320792c7e51153A96ba9cd8bEB888429",
 	collateral: "0x9c4e1703476e875070ee25b56a58b008cfb8fa78",
 	conditionalTokens: "0x69308FB512518e39F9b16112fA8d994F4e2Bf8bB",
 };
