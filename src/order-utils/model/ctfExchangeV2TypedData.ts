@@ -9,7 +9,6 @@ export const CTF_EXCHANGE_V2_ORDER_STRUCT = [
 	{ name: "tokenId", type: "uint256" },
 	{ name: "makerAmount", type: "uint256" },
 	{ name: "takerAmount", type: "uint256" },
-	{ name: "expiration", type: "uint256" },
 	{ name: "side", type: "uint8" },
 	{ name: "signatureType", type: "uint8" },
 	{ name: "timestamp", type: "uint256" },

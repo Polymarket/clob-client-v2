@@ -106,7 +106,6 @@ export class ExchangeOrderBuilderV2 {
 				tokenId: order.tokenId,
 				makerAmount: order.makerAmount,
 				takerAmount: order.takerAmount,
-				expiration: order.expiration,
 				timestamp: order.timestamp,
 				side: order.side,
 				signatureType: order.signatureType,

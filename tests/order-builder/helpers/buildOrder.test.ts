@@ -66,7 +66,7 @@ describe("buildOrder", () => {
 		});
 
 		it("0.01", async () => {
-			const order: UserOrder = {
+			const order: UserOrderV2 = {
 				tokenID: "123",
 				price: 0.56,
 				size: 21.04,
@@ -108,7 +108,7 @@ describe("buildOrder", () => {
 		});
 
 		it("0.001", async () => {
-			const order: UserOrder = {
+			const order: UserOrderV2 = {
 				tokenID: "123",
 				price: 0.056,
 				size: 21.04,
@@ -150,7 +150,7 @@ describe("buildOrder", () => {
 		});
 
 		it("0.0001", async () => {
-			const order: UserOrder = {
+			const order: UserOrderV2 = {
 				tokenID: "123",
 				price: 0.0056,
 				size: 21.04,
@@ -192,7 +192,7 @@ describe("buildOrder", () => {
 		});
 
 		it("precision", async () => {
-			const order: UserOrder = {
+			const order: UserOrderV2 = {
 				tokenID: "123",
 				price: 0.82,
 				size: 20.0,
@@ -236,7 +236,7 @@ describe("buildOrder", () => {
 
 	describe("sell order", () => {
 		it("0.1", async () => {
-			const order: UserOrder = {
+			const order: UserOrderV2 = {
 				tokenID: "5",
 				price: 0.5,
 				size: 21.04,
@@ -277,7 +277,7 @@ describe("buildOrder", () => {
 		});
 
 		it("0.01", async () => {
-			const order: UserOrder = {
+			const order: UserOrderV2 = {
 				tokenID: "5",
 				price: 0.56,
 				size: 21.04,
@@ -318,7 +318,7 @@ describe("buildOrder", () => {
 		});
 
 		it("0.001", async () => {
-			const order: UserOrder = {
+			const order: UserOrderV2 = {
 				tokenID: "5",
 				price: 0.056,
 				size: 21.04,
@@ -359,7 +359,7 @@ describe("buildOrder", () => {
 		});
 
 		it("0.0001", async () => {
-			const order: UserOrder = {
+			const order: UserOrderV2 = {
 				tokenID: "5",
 				price: 0.0056,
 				size: 21.04,

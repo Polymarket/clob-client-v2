@@ -17,7 +17,7 @@ export interface NewOrderV2<T extends OrderType> {
 		readonly makerAmount: string;
 		readonly takerAmount: string;
 		readonly expiration: string;
-		readonly side: Side; // string
+		readonly side: string;
 		readonly signatureType: SignatureTypeV2;
 		readonly timestamp: string;
 		readonly metadata: string;

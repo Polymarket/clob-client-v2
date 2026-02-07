@@ -248,8 +248,7 @@ describe("buildMarketOrderCreationArgs", () => {
 				expect(orderData.makerAmount).toBe("100000000");
 				expect(orderData.takerAmount).toBe("200000000");
 				expect(orderData.side).toBe(Side.BUY);
-				expect(orderData.expiration).toBe("0");
-					expect(orderData.timestamp).toBeDefined();
+				expect(orderData.timestamp).toBeDefined();
 				expect(orderData.builder).toBe(bytes32Zero);
 				expect(orderData.metadata).toBe(bytes32Zero);
 				expect(orderData.signatureType).toBe(SignatureTypeV2.EOA);
@@ -435,8 +434,7 @@ describe("buildMarketOrderCreationArgs", () => {
 				expect(orderData.makerAmount).toBe("100000000");
 				expect(orderData.takerAmount).toBe("2000000000");
 				expect(orderData.side).toBe(Side.BUY);
-				expect(orderData.expiration).toBe("0");
-					expect(orderData.timestamp).toBeDefined();
+						expect(orderData.timestamp).toBeDefined();
 				expect(orderData.builder).toBe(bytes32Zero);
 				expect(orderData.metadata).toBe(bytes32Zero);
 				expect(orderData.signatureType).toBe(SignatureTypeV2.EOA);
@@ -622,8 +620,7 @@ describe("buildMarketOrderCreationArgs", () => {
 				expect(orderData.makerAmount).toBe("100000000");
 				expect(orderData.takerAmount).toBe("20000000000");
 				expect(orderData.side).toBe(Side.BUY);
-				expect(orderData.expiration).toBe("0");
-					expect(orderData.timestamp).toBeDefined();
+						expect(orderData.timestamp).toBeDefined();
 				expect(orderData.builder).toBe(bytes32Zero);
 				expect(orderData.metadata).toBe(bytes32Zero);
 				expect(orderData.signatureType).toBe(SignatureTypeV2.EOA);
@@ -809,8 +806,7 @@ describe("buildMarketOrderCreationArgs", () => {
 				expect(orderData.makerAmount).toBe("100000000");
 				expect(orderData.takerAmount).toBe("200000000000");
 				expect(orderData.side).toBe(Side.BUY);
-				expect(orderData.expiration).toBe("0");
-					expect(orderData.timestamp).toBeDefined();
+						expect(orderData.timestamp).toBeDefined();
 				expect(orderData.builder).toBe(bytes32Zero);
 				expect(orderData.metadata).toBe(bytes32Zero);
 				expect(orderData.signatureType).toBe(SignatureTypeV2.EOA);

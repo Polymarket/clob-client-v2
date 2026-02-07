@@ -3,7 +3,7 @@ import { beforeEach, describe, expect, it } from "vitest";
 import { bytes32Zero } from "../../../src/constants";
 import { createOrder } from "../../../src/order-builder/helpers";
 import { SignatureTypeV2 } from "../../../src/order-utils";
-import { Chain, Side, type UserOrder } from "../../../src/types";
+import { Chain, Side, type UserOrderV2 } from "../../../src/types";
 
 describe("createOrder", () => {
 	let wallet: Wallet;
@@ -15,7 +15,7 @@ describe("createOrder", () => {
 	describe("CTF Exchange", () => {
 		describe("buy order", () => {
 			it("0.1", async () => {
-				const order: UserOrder = {
+				const order: UserOrderV2 = {
 					tokenID: "123",
 					price: 0.5,
 					size: 21.04,
@@ -50,7 +50,7 @@ describe("createOrder", () => {
 			});
 
 			it("0.01", async () => {
-				const order: UserOrder = {
+				const order: UserOrderV2 = {
 					tokenID: "123",
 					price: 0.56,
 					size: 21.04,
@@ -85,7 +85,7 @@ describe("createOrder", () => {
 			});
 
 			it("0.001", async () => {
-				const order: UserOrder = {
+				const order: UserOrderV2 = {
 					tokenID: "123",
 					price: 0.056,
 					size: 21.04,
@@ -120,7 +120,7 @@ describe("createOrder", () => {
 			});
 
 			it("0.0001", async () => {
-				const order: UserOrder = {
+				const order: UserOrderV2 = {
 					tokenID: "123",
 					price: 0.0056,
 					size: 21.04,
@@ -157,7 +157,7 @@ describe("createOrder", () => {
 
 		describe("sell order", () => {
 			it("0.1", async () => {
-				const order: UserOrder = {
+				const order: UserOrderV2 = {
 					tokenID: "5",
 					price: 0.5,
 					size: 21.04,
@@ -189,7 +189,7 @@ describe("createOrder", () => {
 			});
 
 			it("0.01", async () => {
-				const order: UserOrder = {
+				const order: UserOrderV2 = {
 					tokenID: "5",
 					price: 0.56,
 					size: 21.04,
@@ -221,7 +221,7 @@ describe("createOrder", () => {
 			});
 
 			it("0.001", async () => {
-				const order: UserOrder = {
+				const order: UserOrderV2 = {
 					tokenID: "5",
 					price: 0.056,
 					size: 21.04,
@@ -253,7 +253,7 @@ describe("createOrder", () => {
 			});
 
 			it("0.0001", async () => {
-				const order: UserOrder = {
+				const order: UserOrderV2 = {
 					tokenID: "5",
 					price: 0.0056,
 					size: 21.04,
@@ -289,7 +289,7 @@ describe("createOrder", () => {
 	describe("Neg RiskCTF Exchange", () => {
 		describe("buy order", () => {
 			it("0.1", async () => {
-				const order: UserOrder = {
+				const order: UserOrderV2 = {
 					tokenID: "123",
 					price: 0.5,
 					size: 21.04,
@@ -324,7 +324,7 @@ describe("createOrder", () => {
 			});
 
 			it("0.01", async () => {
-				const order: UserOrder = {
+				const order: UserOrderV2 = {
 					tokenID: "123",
 					price: 0.56,
 					size: 21.04,
@@ -359,7 +359,7 @@ describe("createOrder", () => {
 			});
 
 			it("0.001", async () => {
-				const order: UserOrder = {
+				const order: UserOrderV2 = {
 					tokenID: "123",
 					price: 0.056,
 					size: 21.04,
@@ -394,7 +394,7 @@ describe("createOrder", () => {
 			});
 
 			it("0.0001", async () => {
-				const order: UserOrder = {
+				const order: UserOrderV2 = {
 					tokenID: "123",
 					price: 0.0056,
 					size: 21.04,
@@ -431,7 +431,7 @@ describe("createOrder", () => {
 
 		describe("sell order", () => {
 			it("0.1", async () => {
-				const order: UserOrder = {
+				const order: UserOrderV2 = {
 					tokenID: "5",
 					price: 0.5,
 					size: 21.04,
@@ -463,7 +463,7 @@ describe("createOrder", () => {
 			});
 
 			it("0.01", async () => {
-				const order: UserOrder = {
+				const order: UserOrderV2 = {
 					tokenID: "5",
 					price: 0.56,
 					size: 21.04,
@@ -495,7 +495,7 @@ describe("createOrder", () => {
 			});
 
 			it("0.001", async () => {
-				const order: UserOrder = {
+				const order: UserOrderV2 = {
 					tokenID: "5",
 					price: 0.056,
 					size: 21.04,
@@ -527,7 +527,7 @@ describe("createOrder", () => {
 			});
 
 			it("0.0001", async () => {
-				const order: UserOrder = {
+				const order: UserOrderV2 = {
 					tokenID: "5",
 					price: 0.0056,
 					size: 21.04,
