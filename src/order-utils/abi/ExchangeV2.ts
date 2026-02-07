@@ -10,42 +10,42 @@ const exchangeV2Abi = [
 					{
 						name: "admin",
 						type: "address",
-						internalType: "address",
+						internalType: "address"
 					},
 					{
 						name: "collateral",
 						type: "address",
-						internalType: "address",
+						internalType: "address"
 					},
 					{
 						name: "ctf",
 						type: "address",
-						internalType: "address",
+						internalType: "address"
 					},
 					{
 						name: "outcomeTokenFactory",
 						type: "address",
-						internalType: "address",
+						internalType: "address"
 					},
 					{
 						name: "proxyFactory",
 						type: "address",
-						internalType: "address",
+						internalType: "address"
 					},
 					{
 						name: "safeFactory",
 						type: "address",
-						internalType: "address",
+						internalType: "address"
 					},
 					{
 						name: "feeReceiver",
 						type: "address",
-						internalType: "address",
-					},
-				],
-			},
+						internalType: "address"
+					}
+				]
+			}
 		],
-		stateMutability: "nonpayable",
+		stateMutability: "nonpayable"
 	},
 	{
 		type: "function",
@@ -54,11 +54,11 @@ const exchangeV2Abi = [
 			{
 				name: "admin_",
 				type: "address",
-				internalType: "address",
-			},
+				internalType: "address"
+			}
 		],
 		outputs: [],
-		stateMutability: "nonpayable",
+		stateMutability: "nonpayable"
 	},
 	{
 		type: "function",
@@ -67,11 +67,11 @@ const exchangeV2Abi = [
 			{
 				name: "operator_",
 				type: "address",
-				internalType: "address",
-			},
+				internalType: "address"
+			}
 		],
 		outputs: [],
-		stateMutability: "nonpayable",
+		stateMutability: "nonpayable"
 	},
 	{
 		type: "function",
@@ -80,17 +80,17 @@ const exchangeV2Abi = [
 			{
 				name: "",
 				type: "address",
-				internalType: "address",
-			},
+				internalType: "address"
+			}
 		],
 		outputs: [
 			{
 				name: "",
 				type: "uint256",
-				internalType: "uint256",
-			},
+				internalType: "uint256"
+			}
 		],
-		stateMutability: "view",
+		stateMutability: "view"
 	},
 	{
 		type: "function",
@@ -100,40 +100,40 @@ const exchangeV2Abi = [
 			{
 				name: "fields",
 				type: "bytes1",
-				internalType: "bytes1",
+				internalType: "bytes1"
 			},
 			{
 				name: "name",
 				type: "string",
-				internalType: "string",
+				internalType: "string"
 			},
 			{
 				name: "version",
 				type: "string",
-				internalType: "string",
+				internalType: "string"
 			},
 			{
 				name: "chainId",
 				type: "uint256",
-				internalType: "uint256",
+				internalType: "uint256"
 			},
 			{
 				name: "verifyingContract",
 				type: "address",
-				internalType: "address",
+				internalType: "address"
 			},
 			{
 				name: "salt",
 				type: "bytes32",
-				internalType: "bytes32",
+				internalType: "bytes32"
 			},
 			{
 				name: "extensions",
 				type: "uint256[]",
-				internalType: "uint256[]",
-			},
+				internalType: "uint256[]"
+			}
 		],
-		stateMutability: "view",
+		stateMutability: "view"
 	},
 	{
 		type: "function",
@@ -143,48 +143,10 @@ const exchangeV2Abi = [
 			{
 				name: "",
 				type: "address",
-				internalType: "address",
-			},
+				internalType: "address"
+			}
 		],
-		stateMutability: "view",
-	},
-	{
-		type: "function",
-		name: "getComplement",
-		inputs: [
-			{
-				name: "token",
-				type: "uint256",
-				internalType: "uint256",
-			},
-		],
-		outputs: [
-			{
-				name: "",
-				type: "uint256",
-				internalType: "uint256",
-			},
-		],
-		stateMutability: "view",
-	},
-	{
-		type: "function",
-		name: "getConditionId",
-		inputs: [
-			{
-				name: "token",
-				type: "uint256",
-				internalType: "uint256",
-			},
-		],
-		outputs: [
-			{
-				name: "",
-				type: "bytes32",
-				internalType: "bytes32",
-			},
-		],
-		stateMutability: "view",
+		stateMutability: "view"
 	},
 	{
 		type: "function",
@@ -194,10 +156,10 @@ const exchangeV2Abi = [
 			{
 				name: "",
 				type: "address",
-				internalType: "address",
-			},
+				internalType: "address"
+			}
 		],
-		stateMutability: "view",
+		stateMutability: "view"
 	},
 	{
 		type: "function",
@@ -207,10 +169,10 @@ const exchangeV2Abi = [
 			{
 				name: "",
 				type: "address",
-				internalType: "address",
-			},
+				internalType: "address"
+			}
 		],
-		stateMutability: "view",
+		stateMutability: "view"
 	},
 	{
 		type: "function",
@@ -220,10 +182,10 @@ const exchangeV2Abi = [
 			{
 				name: "",
 				type: "uint256",
-				internalType: "uint256",
-			},
+				internalType: "uint256"
+			}
 		],
-		stateMutability: "view",
+		stateMutability: "view"
 	},
 	{
 		type: "function",
@@ -232,8 +194,8 @@ const exchangeV2Abi = [
 			{
 				name: "orderHash",
 				type: "bytes32",
-				internalType: "bytes32",
-			},
+				internalType: "bytes32"
+			}
 		],
 		outputs: [
 			{
@@ -244,17 +206,17 @@ const exchangeV2Abi = [
 					{
 						name: "filled",
 						type: "bool",
-						internalType: "bool",
+						internalType: "bool"
 					},
 					{
 						name: "remaining",
-						type: "uint256",
-						internalType: "uint256",
-					},
-				],
-			},
+						type: "uint248",
+						internalType: "uint248"
+					}
+				]
+			}
 		],
-		stateMutability: "view",
+		stateMutability: "view"
 	},
 	{
 		type: "function",
@@ -264,10 +226,10 @@ const exchangeV2Abi = [
 			{
 				name: "",
 				type: "address",
-				internalType: "address",
-			},
+				internalType: "address"
+			}
 		],
-		stateMutability: "view",
+		stateMutability: "view"
 	},
 	{
 		type: "function",
@@ -277,10 +239,10 @@ const exchangeV2Abi = [
 			{
 				name: "",
 				type: "address",
-				internalType: "address",
-			},
+				internalType: "address"
+			}
 		],
-		stateMutability: "view",
+		stateMutability: "view"
 	},
 	{
 		type: "function",
@@ -289,17 +251,17 @@ const exchangeV2Abi = [
 			{
 				name: "_addr",
 				type: "address",
-				internalType: "address",
-			},
+				internalType: "address"
+			}
 		],
 		outputs: [
 			{
 				name: "",
 				type: "address",
-				internalType: "address",
-			},
+				internalType: "address"
+			}
 		],
-		stateMutability: "view",
+		stateMutability: "view"
 	},
 	{
 		type: "function",
@@ -309,10 +271,10 @@ const exchangeV2Abi = [
 			{
 				name: "",
 				type: "address",
-				internalType: "address",
-			},
+				internalType: "address"
+			}
 		],
-		stateMutability: "view",
+		stateMutability: "view"
 	},
 	{
 		type: "function",
@@ -321,17 +283,17 @@ const exchangeV2Abi = [
 			{
 				name: "_addr",
 				type: "address",
-				internalType: "address",
-			},
+				internalType: "address"
+			}
 		],
 		outputs: [
 			{
 				name: "",
 				type: "address",
-				internalType: "address",
-			},
+				internalType: "address"
+			}
 		],
-		stateMutability: "view",
+		stateMutability: "view"
 	},
 	{
 		type: "function",
@@ -341,10 +303,10 @@ const exchangeV2Abi = [
 			{
 				name: "",
 				type: "address",
-				internalType: "address",
-			},
+				internalType: "address"
+			}
 		],
-		stateMutability: "view",
+		stateMutability: "view"
 	},
 	{
 		type: "function",
@@ -354,10 +316,10 @@ const exchangeV2Abi = [
 			{
 				name: "",
 				type: "address",
-				internalType: "address",
-			},
+				internalType: "address"
+			}
 		],
-		stateMutability: "view",
+		stateMutability: "view"
 	},
 	{
 		type: "function",
@@ -371,79 +333,74 @@ const exchangeV2Abi = [
 					{
 						name: "salt",
 						type: "uint256",
-						internalType: "uint256",
+						internalType: "uint256"
 					},
 					{
 						name: "maker",
 						type: "address",
-						internalType: "address",
+						internalType: "address"
 					},
 					{
 						name: "signer",
 						type: "address",
-						internalType: "address",
+						internalType: "address"
 					},
 					{
 						name: "tokenId",
 						type: "uint256",
-						internalType: "uint256",
+						internalType: "uint256"
 					},
 					{
 						name: "makerAmount",
 						type: "uint256",
-						internalType: "uint256",
+						internalType: "uint256"
 					},
 					{
 						name: "takerAmount",
 						type: "uint256",
-						internalType: "uint256",
-					},
-					{
-						name: "expiration",
-						type: "uint256",
-						internalType: "uint256",
+						internalType: "uint256"
 					},
 					{
 						name: "side",
 						type: "uint8",
-						internalType: "enum Side",
+						internalType: "enum Side"
 					},
 					{
 						name: "signatureType",
 						type: "uint8",
-						internalType: "enum SignatureType",
+						internalType: "enum SignatureType"
 					},
 					{
 						name: "timestamp",
 						type: "uint256",
-						internalType: "uint256",
+						internalType: "uint256"
 					},
 					{
 						name: "metadata",
 						type: "bytes32",
-						internalType: "bytes32",
+						internalType: "bytes32"
 					},
 					{
 						name: "builder",
 						type: "bytes32",
-						internalType: "bytes32",
+						internalType: "bytes32"
 					},
 					{
 						name: "signature",
 						type: "bytes",
-						internalType: "bytes",
-					},
-				],
-			},
+						internalType: "bytes"
+					}
+				]
+			}
 		],
 		outputs: [
 			{
 				name: "",
 				type: "bytes32",
-				internalType: "bytes32",
-			},
+				internalType: "bytes32"
+			}
 		],
-		stateMutability: "view",
+		stateMutability: "view"
 	},
 	{
 		type: "function",
@@ -452,17 +409,17 @@ const exchangeV2Abi = [
 			{
 				name: "usr",
 				type: "address",
-				internalType: "address",
-			},
+				internalType: "address"
+			}
 		],
 		outputs: [
 			{
 				name: "",
 				type: "bool",
-				internalType: "bool",
-			},
+				internalType: "bool"
+			}
 		],
-		stateMutability: "view",
+		stateMutability: "view"
 	},
 	{
 		type: "function",
@@ -471,17 +428,17 @@ const exchangeV2Abi = [
 			{
 				name: "usr",
 				type: "address",
-				internalType: "address",
-			},
+				internalType: "address"
+			}
 		],
 		outputs: [
 			{
 				name: "",
 				type: "bool",
-				internalType: "bool",
-			},
+				internalType: "bool"
+			}
 		],
-		stateMutability: "view",
+		stateMutability: "view"
 	},
 	{
 		type: "function",
@@ -490,22 +447,27 @@ const exchangeV2Abi = [
 			{
 				name: "user",
 				type: "address",
-				internalType: "address",
-			},
+				internalType: "address"
+			}
 		],
 		outputs: [
 			{
 				name: "",
 				type: "bool",
-				internalType: "bool",
-			},
+				internalType: "bool"
+			}
 		],
-		stateMutability: "view",
+		stateMutability: "view"
 	},
 	{
 		type: "function",
 		name: "matchOrders",
 		inputs: [
+			{
+				name: "conditionId",
+				type: "bytes32",
+				internalType: "bytes32"
+			},
 			{
 				name: "takerOrder",
 				type: "tuple",
@@ -514,69 +476,64 @@ const exchangeV2Abi = [
 					{
 						name: "salt",
 						type: "uint256",
-						internalType: "uint256",
+						internalType: "uint256"
 					},
 					{
 						name: "maker",
 						type: "address",
-						internalType: "address",
+						internalType: "address"
 					},
 					{
 						name: "signer",
 						type: "address",
-						internalType: "address",
+						internalType: "address"
 					},
 					{
 						name: "tokenId",
 						type: "uint256",
-						internalType: "uint256",
+						internalType: "uint256"
 					},
 					{
 						name: "makerAmount",
 						type: "uint256",
-						internalType: "uint256",
+						internalType: "uint256"
 					},
 					{
 						name: "takerAmount",
 						type: "uint256",
-						internalType: "uint256",
-					},
-					{
-						name: "expiration",
-						type: "uint256",
-						internalType: "uint256",
+						internalType: "uint256"
 					},
 					{
 						name: "side",
 						type: "uint8",
-						internalType: "enum Side",
+						internalType: "enum Side"
 					},
 					{
 						name: "signatureType",
 						type: "uint8",
-						internalType: "enum SignatureType",
+						internalType: "enum SignatureType"
 					},
 					{
 						name: "timestamp",
 						type: "uint256",
-						internalType: "uint256",
+						internalType: "uint256"
 					},
 					{
 						name: "metadata",
 						type: "bytes32",
-						internalType: "bytes32",
+						internalType: "bytes32"
 					},
 					{
 						name: "builder",
 						type: "bytes32",
-						internalType: "bytes32",
+						internalType: "bytes32"
 					},
 					{
 						name: "signature",
 						type: "bytes",
-						internalType: "bytes",
-					},
-				],
+						internalType: "bytes"
+					}
+				]
 			},
 			{
 				name: "makerOrders",
@@ -586,93 +543,88 @@ const exchangeV2Abi = [
 					{
 						name: "salt",
 						type: "uint256",
-						internalType: "uint256",
+						internalType: "uint256"
 					},
 					{
 						name: "maker",
 						type: "address",
-						internalType: "address",
+						internalType: "address"
 					},
 					{
 						name: "signer",
 						type: "address",
-						internalType: "address",
+						internalType: "address"
 					},
 					{
 						name: "tokenId",
 						type: "uint256",
-						internalType: "uint256",
+						internalType: "uint256"
 					},
 					{
 						name: "makerAmount",
 						type: "uint256",
-						internalType: "uint256",
+						internalType: "uint256"
 					},
 					{
 						name: "takerAmount",
 						type: "uint256",
-						internalType: "uint256",
-					},
-					{
-						name: "expiration",
-						type: "uint256",
-						internalType: "uint256",
+						internalType: "uint256"
 					},
 					{
 						name: "side",
 						type: "uint8",
-						internalType: "enum Side",
+						internalType: "enum Side"
 					},
 					{
 						name: "signatureType",
 						type: "uint8",
-						internalType: "enum SignatureType",
+						internalType: "enum SignatureType"
 					},
 					{
 						name: "timestamp",
 						type: "uint256",
-						internalType: "uint256",
+						internalType: "uint256"
 					},
 					{
 						name: "metadata",
 						type: "bytes32",
-						internalType: "bytes32",
+						internalType: "bytes32"
 					},
 					{
 						name: "builder",
 						type: "bytes32",
-						internalType: "bytes32",
+						internalType: "bytes32"
 					},
 					{
 						name: "signature",
 						type: "bytes",
-						internalType: "bytes",
-					},
-				],
+						internalType: "bytes"
+					}
+				]
 			},
 			{
 				name: "takerFillAmount",
 				type: "uint256",
-				internalType: "uint256",
+				internalType: "uint256"
 			},
 			{
 				name: "makerFillAmounts",
 				type: "uint256[]",
-				internalType: "uint256[]",
+				internalType: "uint256[]"
 			},
 			{
 				name: "takerFeeAmount",
 				type: "uint256",
-				internalType: "uint256",
+				internalType: "uint256"
 			},
 			{
 				name: "makerFeeAmounts",
 				type: "uint256[]",
-				internalType: "uint256[]",
-			},
+				internalType: "uint256[]"
+			}
 		],
 		outputs: [],
-		stateMutability: "nonpayable",
+		stateMutability: "nonpayable"
 	},
 	{
 		type: "function",
@@ -681,37 +633,37 @@ const exchangeV2Abi = [
 			{
 				name: "",
 				type: "address",
-				internalType: "address",
+				internalType: "address"
 			},
 			{
 				name: "",
 				type: "address",
-				internalType: "address",
+				internalType: "address"
 			},
 			{
 				name: "",
 				type: "uint256[]",
-				internalType: "uint256[]",
+				internalType: "uint256[]"
 			},
 			{
 				name: "",
 				type: "uint256[]",
-				internalType: "uint256[]",
+				internalType: "uint256[]"
 			},
 			{
 				name: "",
 				type: "bytes",
-				internalType: "bytes",
-			},
+				internalType: "bytes"
+			}
 		],
 		outputs: [
 			{
 				name: "",
 				type: "bytes4",
-				internalType: "bytes4",
-			},
+				internalType: "bytes4"
+			}
 		],
-		stateMutability: "nonpayable",
+		stateMutability: "nonpayable"
 	},
 	{
 		type: "function",
@@ -720,37 +672,37 @@ const exchangeV2Abi = [
 			{
 				name: "",
 				type: "address",
-				internalType: "address",
+				internalType: "address"
 			},
 			{
 				name: "",
 				type: "address",
-				internalType: "address",
+				internalType: "address"
 			},
 			{
 				name: "",
 				type: "uint256",
-				internalType: "uint256",
+				internalType: "uint256"
 			},
 			{
 				name: "",
 				type: "uint256",
-				internalType: "uint256",
+				internalType: "uint256"
 			},
 			{
 				name: "",
 				type: "bytes",
-				internalType: "bytes",
-			},
+				internalType: "bytes"
+			}
 		],
 		outputs: [
 			{
 				name: "",
 				type: "bytes4",
-				internalType: "bytes4",
-			},
+				internalType: "bytes4"
+			}
 		],
-		stateMutability: "nonpayable",
+		stateMutability: "nonpayable"
 	},
 	{
 		type: "function",
@@ -759,17 +711,17 @@ const exchangeV2Abi = [
 			{
 				name: "",
 				type: "address",
-				internalType: "address",
-			},
+				internalType: "address"
+			}
 		],
 		outputs: [
 			{
 				name: "",
 				type: "uint256",
-				internalType: "uint256",
-			},
+				internalType: "uint256"
+			}
 		],
-		stateMutability: "view",
+		stateMutability: "view"
 	},
 	{
 		type: "function",
@@ -778,22 +730,22 @@ const exchangeV2Abi = [
 			{
 				name: "",
 				type: "bytes32",
-				internalType: "bytes32",
-			},
+				internalType: "bytes32"
+			}
 		],
 		outputs: [
 			{
 				name: "filled",
 				type: "bool",
-				internalType: "bool",
+				internalType: "bool"
 			},
 			{
 				name: "remaining",
-				type: "uint256",
-				internalType: "uint256",
-			},
+				type: "uint248",
+				internalType: "uint248"
+			}
 		],
-		stateMutability: "view",
+		stateMutability: "view"
 	},
 	{
 		type: "function",
@@ -803,24 +755,24 @@ const exchangeV2Abi = [
 			{
 				name: "",
 				type: "bytes32",
-				internalType: "bytes32",
-			},
+				internalType: "bytes32"
+			}
 		],
-		stateMutability: "view",
+		stateMutability: "view"
 	},
 	{
 		type: "function",
 		name: "pauseTrading",
 		inputs: [],
 		outputs: [],
-		stateMutability: "nonpayable",
+		stateMutability: "nonpayable"
 	},
 	{
 		type: "function",
 		name: "pauseUser",
 		inputs: [],
 		outputs: [],
-		stateMutability: "nonpayable",
+		stateMutability: "nonpayable"
 	},
 	{
 		type: "function",
@@ -830,70 +782,10 @@ const exchangeV2Abi = [
 			{
 				name: "",
 				type: "bool",
-				internalType: "bool",
-			},
+				internalType: "bool"
+			}
 		],
-		stateMutability: "view",
-	},
-	{
-		type: "function",
-		name: "proxyFactory",
-		inputs: [],
-		outputs: [
-			{
-				name: "",
-				type: "address",
-				internalType: "address",
-			},
-		],
-		stateMutability: "view",
-	},
-	{
-		type: "function",
-		name: "registerToken",
-		inputs: [
-			{
-				name: "token",
-				type: "uint256",
-				internalType: "uint256",
-			},
-			{
-				name: "complement",
-				type: "uint256",
-				internalType: "uint256",
-			},
-			{
-				name: "conditionId",
-				type: "bytes32",
-				internalType: "bytes32",
-			},
-		],
-		outputs: [],
-		stateMutability: "nonpayable",
-	},
-	{
-		type: "function",
-		name: "registry",
-		inputs: [
-			{
-				name: "",
-				type: "uint256",
-				internalType: "uint256",
-			},
-		],
-		outputs: [
-			{
-				name: "complement",
-				type: "uint256",
-				internalType: "uint256",
-			},
-			{
-				name: "conditionId",
-				type: "bytes32",
-				internalType: "bytes32",
-			},
-		],
-		stateMutability: "view",
+		stateMutability: "view"
 	},
 	{
 		type: "function",
@@ -902,11 +794,11 @@ const exchangeV2Abi = [
 			{
 				name: "admin",
 				type: "address",
-				internalType: "address",
-			},
+				internalType: "address"
+			}
 		],
 		outputs: [],
-		stateMutability: "nonpayable",
+		stateMutability: "nonpayable"
 	},
 	{
 		type: "function",
@@ -915,38 +807,25 @@ const exchangeV2Abi = [
 			{
 				name: "operator",
 				type: "address",
-				internalType: "address",
-			},
+				internalType: "address"
+			}
 		],
 		outputs: [],
-		stateMutability: "nonpayable",
+		stateMutability: "nonpayable"
 	},
 	{
 		type: "function",
 		name: "renounceAdminRole",
 		inputs: [],
 		outputs: [],
-		stateMutability: "nonpayable",
+		stateMutability: "nonpayable"
 	},
 	{
 		type: "function",
 		name: "renounceOperatorRole",
 		inputs: [],
 		outputs: [],
-		stateMutability: "nonpayable",
-	},
-	{
-		type: "function",
-		name: "safeFactory",
-		inputs: [],
-		outputs: [
-			{
-				name: "",
-				type: "address",
-				internalType: "address",
-			},
-		],
-		stateMutability: "view",
+		stateMutability: "nonpayable"
 	},
 	{
 		type: "function",
@@ -955,11 +834,11 @@ const exchangeV2Abi = [
 			{
 				name: "receiver",
 				type: "address",
-				internalType: "address",
-			},
+				internalType: "address"
+			}
 		],
 		outputs: [],
-		stateMutability: "nonpayable",
+		stateMutability: "nonpayable"
 	},
 	{
 		type: "function",
@@ -968,37 +847,11 @@ const exchangeV2Abi = [
 			{
 				name: "rate",
 				type: "uint256",
-				internalType: "uint256",
-			},
+				internalType: "uint256"
+			}
 		],
 		outputs: [],
-		stateMutability: "nonpayable",
-	},
-	{
-		type: "function",
-		name: "setProxyFactory",
-		inputs: [
-			{
-				name: "_newProxyFactory",
-				type: "address",
-				internalType: "address",
-			},
-		],
-		outputs: [],
-		stateMutability: "nonpayable",
-	},
-	{
-		type: "function",
-		name: "setSafeFactory",
-		inputs: [
-			{
-				name: "_newSafeFactory",
-				type: "address",
-				internalType: "address",
-			},
-		],
-		outputs: [],
-		stateMutability: "nonpayable",
+		stateMutability: "nonpayable"
 	},
 	{
 		type: "function",
@@ -1007,25 +860,25 @@ const exchangeV2Abi = [
 			{
 				name: "_interval",
 				type: "uint256",
-				internalType: "uint256",
-			},
+				internalType: "uint256"
+			}
 		],
 		outputs: [],
-		stateMutability: "nonpayable",
+		stateMutability: "nonpayable"
 	},
 	{
 		type: "function",
 		name: "unpauseTrading",
 		inputs: [],
 		outputs: [],
-		stateMutability: "nonpayable",
+		stateMutability: "nonpayable"
 	},
 	{
 		type: "function",
 		name: "unpauseUser",
 		inputs: [],
 		outputs: [],
-		stateMutability: "nonpayable",
+		stateMutability: "nonpayable"
 	},
 	{
 		type: "function",
@@ -1035,10 +888,10 @@ const exchangeV2Abi = [
 			{
 				name: "",
 				type: "uint256",
-				internalType: "uint256",
-			},
+				internalType: "uint256"
+			}
 		],
-		stateMutability: "view",
+		stateMutability: "view"
 	},
 	{
 		type: "function",
@@ -1047,35 +900,17 @@ const exchangeV2Abi = [
 			{
 				name: "",
 				type: "address",
-				internalType: "address",
-			},
+				internalType: "address"
+			}
 		],
 		outputs: [
 			{
 				name: "",
 				type: "uint256",
-				internalType: "uint256",
-			},
+				internalType: "uint256"
+			}
 		],
-		stateMutability: "view",
-	},
-	{
-		type: "function",
-		name: "validateComplement",
-		inputs: [
-			{
-				name: "token",
-				type: "uint256",
-				internalType: "uint256",
-			},
-			{
-				name: "complement",
-				type: "uint256",
-				internalType: "uint256",
-			},
-		],
-		outputs: [],
-		stateMutability: "view",
+		stateMutability: "view"
 	},
 	{
 		type: "function",
@@ -1084,16 +919,16 @@ const exchangeV2Abi = [
 			{
 				name: "fee",
 				type: "uint256",
-				internalType: "uint256",
+				internalType: "uint256"
 			},
 			{
 				name: "cashValue",
 				type: "uint256",
-				internalType: "uint256",
-			},
+				internalType: "uint256"
+			}
 		],
 		outputs: [],
-		stateMutability: "view",
+		stateMutability: "view"
 	},
 	{
 		type: "function",
@@ -1107,73 +942,68 @@ const exchangeV2Abi = [
 					{
 						name: "salt",
 						type: "uint256",
-						internalType: "uint256",
+						internalType: "uint256"
 					},
 					{
 						name: "maker",
 						type: "address",
-						internalType: "address",
+						internalType: "address"
 					},
 					{
 						name: "signer",
 						type: "address",
-						internalType: "address",
+						internalType: "address"
 					},
 					{
 						name: "tokenId",
 						type: "uint256",
-						internalType: "uint256",
+						internalType: "uint256"
 					},
 					{
 						name: "makerAmount",
 						type: "uint256",
-						internalType: "uint256",
+						internalType: "uint256"
 					},
 					{
 						name: "takerAmount",
 						type: "uint256",
-						internalType: "uint256",
-					},
-					{
-						name: "expiration",
-						type: "uint256",
-						internalType: "uint256",
+						internalType: "uint256"
 					},
 					{
 						name: "side",
 						type: "uint8",
-						internalType: "enum Side",
+						internalType: "enum Side"
 					},
 					{
 						name: "signatureType",
 						type: "uint8",
-						internalType: "enum SignatureType",
+						internalType: "enum SignatureType"
 					},
 					{
 						name: "timestamp",
 						type: "uint256",
-						internalType: "uint256",
+						internalType: "uint256"
 					},
 					{
 						name: "metadata",
 						type: "bytes32",
-						internalType: "bytes32",
+						internalType: "bytes32"
 					},
 					{
 						name: "builder",
 						type: "bytes32",
-						internalType: "bytes32",
+						internalType: "bytes32"
 					},
 					{
 						name: "signature",
 						type: "bytes",
-						internalType: "bytes",
-					},
-				],
-			},
+						internalType: "bytes"
+					}
+				]
+			}
 		],
 		outputs: [],
-		stateMutability: "view",
+		stateMutability: "view"
 	},
 	{
 		type: "function",
@@ -1182,7 +1012,7 @@ const exchangeV2Abi = [
 			{
 				name: "orderHash",
 				type: "bytes32",
-				internalType: "bytes32",
+				internalType: "bytes32"
 			},
 			{
 				name: "order",
@@ -1192,89 +1022,70 @@ const exchangeV2Abi = [
 					{
 						name: "salt",
 						type: "uint256",
-						internalType: "uint256",
+						internalType: "uint256"
 					},
 					{
 						name: "maker",
 						type: "address",
-						internalType: "address",
+						internalType: "address"
 					},
 					{
 						name: "signer",
 						type: "address",
-						internalType: "address",
+						internalType: "address"
 					},
 					{
 						name: "tokenId",
 						type: "uint256",
-						internalType: "uint256",
+						internalType: "uint256"
 					},
 					{
 						name: "makerAmount",
 						type: "uint256",
-						internalType: "uint256",
+						internalType: "uint256"
 					},
 					{
 						name: "takerAmount",
 						type: "uint256",
-						internalType: "uint256",
-					},
-					{
-						name: "expiration",
-						type: "uint256",
-						internalType: "uint256",
+						internalType: "uint256"
 					},
 					{
 						name: "side",
 						type: "uint8",
-						internalType: "enum Side",
+						internalType: "enum Side"
 					},
 					{
 						name: "signatureType",
 						type: "uint8",
-						internalType: "enum SignatureType",
+						internalType: "enum SignatureType"
 					},
 					{
 						name: "timestamp",
 						type: "uint256",
-						internalType: "uint256",
+						internalType: "uint256"
 					},
 					{
 						name: "metadata",
 						type: "bytes32",
-						internalType: "bytes32",
+						internalType: "bytes32"
 					},
 					{
 						name: "builder",
 						type: "bytes32",
-						internalType: "bytes32",
+						internalType: "bytes32"
 					},
 					{
 						name: "signature",
 						type: "bytes",
-						internalType: "bytes",
-					},
-				],
-			},
+						internalType: "bytes"
+					}
+				]
+			}
 		],
 		outputs: [],
-		stateMutability: "view",
+		stateMutability: "view"
 	},
 	{
-		type: "function",
-		name: "validateTokenId",
-		inputs: [
-			{
-				name: "tokenId",
-				type: "uint256",
-				internalType: "uint256",
-			},
-		],
-		outputs: [],
-		stateMutability: "view",
-	},
-	{
-		anonymous: false,
 		type: "event",
 		name: "FeeCharged",
 		inputs: [
@@ -1282,18 +1093,18 @@ const exchangeV2Abi = [
 				name: "receiver",
 				type: "address",
 				indexed: true,
-				internalType: "address",
+				internalType: "address"
 			},
 			{
 				name: "amount",
 				type: "uint256",
 				indexed: false,
-				internalType: "uint256",
-			},
+				internalType: "uint256"
+			}
 		],
+		anonymous: false
 	},
 	{
-		anonymous: false,
 		type: "event",
 		name: "FeeReceiverUpdated",
 		inputs: [
@@ -1301,12 +1112,12 @@ const exchangeV2Abi = [
 				name: "feeReceiver",
 				type: "address",
 				indexed: true,
-				internalType: "address",
-			},
+				internalType: "address"
+			}
 		],
+		anonymous: false
 	},
 	{
-		anonymous: false,
 		type: "event",
 		name: "MaxFeeRateUpdated",
 		inputs: [
@@ -1314,12 +1125,12 @@ const exchangeV2Abi = [
 				name: "maxFeeRate",
 				type: "uint256",
 				indexed: false,
-				internalType: "uint256",
-			},
+				internalType: "uint256"
+			}
 		],
+		anonymous: false
 	},
 	{
-		anonymous: false,
 		type: "event",
 		name: "NewAdmin",
 		inputs: [
@@ -1327,18 +1138,18 @@ const exchangeV2Abi = [
 				name: "newAdminAddress",
 				type: "address",
 				indexed: true,
-				internalType: "address",
+				internalType: "address"
 			},
 			{
 				name: "admin",
 				type: "address",
 				indexed: true,
-				internalType: "address",
-			},
+				internalType: "address"
+			}
 		],
+		anonymous: false
 	},
 	{
-		anonymous: false,
 		type: "event",
 		name: "NewOperator",
 		inputs: [
@@ -1346,18 +1157,18 @@ const exchangeV2Abi = [
 				name: "newOperatorAddress",
 				type: "address",
 				indexed: true,
-				internalType: "address",
+				internalType: "address"
 			},
 			{
 				name: "admin",
 				type: "address",
 				indexed: true,
-				internalType: "address",
-			},
+				internalType: "address"
+			}
 		],
+		anonymous: false
 	},
 	{
-		anonymous: false,
 		type: "event",
 		name: "OrderFilled",
 		inputs: [
@@ -1365,66 +1176,66 @@ const exchangeV2Abi = [
 				name: "orderHash",
 				type: "bytes32",
 				indexed: true,
-				internalType: "bytes32",
+				internalType: "bytes32"
 			},
 			{
 				name: "maker",
 				type: "address",
 				indexed: true,
-				internalType: "address",
+				internalType: "address"
 			},
 			{
 				name: "taker",
 				type: "address",
 				indexed: true,
-				internalType: "address",
+				internalType: "address"
 			},
 			{
 				name: "side",
 				type: "uint8",
 				indexed: false,
-				internalType: "enum Side",
+				internalType: "enum Side"
 			},
 			{
 				name: "tokenId",
 				type: "uint256",
 				indexed: false,
-				internalType: "uint256",
+				internalType: "uint256"
 			},
 			{
 				name: "makerAmountFilled",
 				type: "uint256",
 				indexed: false,
-				internalType: "uint256",
+				internalType: "uint256"
 			},
 			{
 				name: "takerAmountFilled",
 				type: "uint256",
 				indexed: false,
-				internalType: "uint256",
+				internalType: "uint256"
 			},
 			{
 				name: "fee",
 				type: "uint256",
 				indexed: false,
-				internalType: "uint256",
+				internalType: "uint256"
 			},
 			{
 				name: "builder",
 				type: "bytes32",
 				indexed: false,
-				internalType: "bytes32",
+				internalType: "bytes32"
 			},
 			{
 				name: "metadata",
 				type: "bytes32",
 				indexed: false,
-				internalType: "bytes32",
-			},
+				internalType: "bytes32"
+			}
 		],
+		anonymous: false
 	},
 	{
-		anonymous: false,
 		type: "event",
 		name: "OrdersMatched",
 		inputs: [
@@ -1432,61 +1243,42 @@ const exchangeV2Abi = [
 				name: "takerOrderHash",
 				type: "bytes32",
 				indexed: true,
-				internalType: "bytes32",
+				internalType: "bytes32"
 			},
 			{
 				name: "takerOrderMaker",
 				type: "address",
 				indexed: true,
-				internalType: "address",
+				internalType: "address"
 			},
 			{
 				name: "side",
 				type: "uint8",
 				indexed: false,
-				internalType: "enum Side",
+				internalType: "enum Side"
 			},
 			{
 				name: "tokenId",
 				type: "uint256",
 				indexed: false,
-				internalType: "uint256",
+				internalType: "uint256"
 			},
 			{
 				name: "makerAmountFilled",
 				type: "uint256",
 				indexed: false,
-				internalType: "uint256",
+				internalType: "uint256"
 			},
 			{
 				name: "takerAmountFilled",
 				type: "uint256",
 				indexed: false,
-				internalType: "uint256",
-			},
+				internalType: "uint256"
+			}
 		],
+		anonymous: false
 	},
 	{
-		anonymous: false,
-		type: "event",
-		name: "ProxyFactoryUpdated",
-		inputs: [
-			{
-				name: "oldProxyFactory",
-				type: "address",
-				indexed: true,
-				internalType: "address",
-			},
-			{
-				name: "newProxyFactory",
-				type: "address",
-				indexed: true,
-				internalType: "address",
-			},
-		],
-	},
-	{
-		anonymous: false,
 		type: "event",
 		name: "RemovedAdmin",
 		inputs: [
@@ -1494,18 +1286,18 @@ const exchangeV2Abi = [
 				name: "removedAdmin",
 				type: "address",
 				indexed: true,
-				internalType: "address",
+				internalType: "address"
 			},
 			{
 				name: "admin",
 				type: "address",
 				indexed: true,
-				internalType: "address",
-			},
+				internalType: "address"
+			}
 		],
+		anonymous: false
 	},
 	{
-		anonymous: false,
 		type: "event",
 		name: "RemovedOperator",
 		inputs: [
@@ -1513,62 +1305,18 @@ const exchangeV2Abi = [
 				name: "removedOperator",
 				type: "address",
 				indexed: true,
-				internalType: "address",
+				internalType: "address"
 			},
 			{
 				name: "admin",
 				type: "address",
 				indexed: true,
-				internalType: "address",
-			},
+				internalType: "address"
+			}
 		],
+		anonymous: false
 	},
 	{
-		anonymous: false,
-		type: "event",
-		name: "SafeFactoryUpdated",
-		inputs: [
-			{
-				name: "oldSafeFactory",
-				type: "address",
-				indexed: true,
-				internalType: "address",
-			},
-			{
-				name: "newSafeFactory",
-				type: "address",
-				indexed: true,
-				internalType: "address",
-			},
-		],
-	},
-	{
-		anonymous: false,
-		type: "event",
-		name: "TokenRegistered",
-		inputs: [
-			{
-				name: "token0",
-				type: "uint256",
-				indexed: true,
-				internalType: "uint256",
-			},
-			{
-				name: "token1",
-				type: "uint256",
-				indexed: true,
-				internalType: "uint256",
-			},
-			{
-				name: "conditionId",
-				type: "bytes32",
-				indexed: true,
-				internalType: "bytes32",
-			},
-		],
-	},
-	{
-		anonymous: false,
 		type: "event",
 		name: "TradingPaused",
 		inputs: [
@@ -1576,12 +1324,12 @@ const exchangeV2Abi = [
 				name: "pauser",
 				type: "address",
 				indexed: true,
-				internalType: "address",
-			},
+				internalType: "address"
+			}
 		],
+		anonymous: false
 	},
 	{
-		anonymous: false,
 		type: "event",
 		name: "TradingUnpaused",
 		inputs: [
@@ -1589,12 +1337,12 @@ const exchangeV2Abi = [
 				name: "pauser",
 				type: "address",
 				indexed: true,
-				internalType: "address",
-			},
+				internalType: "address"
+			}
 		],
+		anonymous: false
 	},
 	{
-		anonymous: false,
 		type: "event",
 		name: "UserPauseBlockIntervalUpdated",
 		inputs: [
@@ -1602,18 +1350,18 @@ const exchangeV2Abi = [
 				name: "oldInterval",
 				type: "uint256",
 				indexed: false,
-				internalType: "uint256",
+				internalType: "uint256"
 			},
 			{
 				name: "newInterval",
 				type: "uint256",
 				indexed: false,
-				internalType: "uint256",
-			},
+				internalType: "uint256"
+			}
 		],
+		anonymous: false
 	},
 	{
-		anonymous: false,
 		type: "event",
 		name: "UserPaused",
 		inputs: [
@@ -1621,18 +1369,18 @@ const exchangeV2Abi = [
 				name: "user",
 				type: "address",
 				indexed: true,
-				internalType: "address",
+				internalType: "address"
 			},
 			{
 				name: "effectivePauseBlock",
 				type: "uint256",
 				indexed: false,
-				internalType: "uint256",
-			},
+				internalType: "uint256"
+			}
 		],
+		anonymous: false
 	},
 	{
-		anonymous: false,
 		type: "event",
 		name: "UserUnpaused",
 		inputs: [
@@ -1640,95 +1388,81 @@ const exchangeV2Abi = [
 				name: "user",
 				type: "address",
 				indexed: true,
-				internalType: "address",
-			},
+				internalType: "address"
+			}
 		],
+		anonymous: false
 	},
 	{
-		inputs: [],
-		name: "AlreadyRegistered",
 		type: "error",
-	},
-	{
-		inputs: [],
 		name: "FeeExceedsMaxRate",
-		type: "error",
+		inputs: []
 	},
 	{
-		inputs: [],
+		type: "error",
 		name: "FeeExceedsProceeds",
-		type: "error",
+		inputs: []
 	},
 	{
-		inputs: [],
-		name: "InvalidComplement",
 		type: "error",
-	},
-	{
-		inputs: [],
 		name: "InvalidSignature",
-		type: "error",
+		inputs: []
 	},
 	{
-		inputs: [],
-		name: "InvalidTokenId",
 		type: "error",
-	},
-	{
-		inputs: [],
 		name: "MakingGtRemaining",
-		type: "error",
+		inputs: []
 	},
 	{
-		inputs: [],
+		type: "error",
 		name: "MaxFeeRateExceedsCeiling",
-		type: "error",
+		inputs: []
 	},
 	{
-		inputs: [],
+		type: "error",
 		name: "MismatchedTokenIds",
-		type: "error",
+		inputs: []
 	},
 	{
-		inputs: [],
+		type: "error",
 		name: "NotAdmin",
-		type: "error",
+		inputs: []
 	},
 	{
-		inputs: [],
+		type: "error",
 		name: "NotCrossing",
-		type: "error",
+		inputs: []
 	},
 	{
-		inputs: [],
+		type: "error",
 		name: "NotOperator",
-		type: "error",
+		inputs: []
 	},
 	{
-		inputs: [],
+		type: "error",
 		name: "OrderAlreadyFilled",
-		type: "error",
+		inputs: []
 	},
 	{
-		inputs: [],
+		type: "error",
 		name: "OrderExpired",
-		type: "error",
+		inputs: []
 	},
 	{
-		inputs: [],
+		type: "error",
 		name: "Paused",
-		type: "error",
+		inputs: []
 	},
 	{
-		inputs: [],
+		type: "error",
 		name: "TooLittleTokensReceived",
-		type: "error",
+		inputs: []
 	},
 	{
-		inputs: [],
-		name: "UserIsPaused",
 		type: "error",
-	},
+		name: "UserIsPaused",
+		inputs: []
+	}
 ] as const;
 
 export { exchangeV2Abi };
