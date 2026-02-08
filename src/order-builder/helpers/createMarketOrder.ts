@@ -32,8 +32,8 @@ export const createMarketOrder = async (
 	);
 
 	const exchangeContract = options.negRisk
-		? contractConfig.negRiskExchange
-		: contractConfig.exchange;
+		? contractConfig.negRiskExchangeV2
+		: contractConfig.exchangeV2;
 
 	return buildOrder(eoaSigner, exchangeContract, chainId, orderData);
 };

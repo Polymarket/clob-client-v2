@@ -4,14 +4,19 @@ type ContractConfig = {
 	negRiskExchange: string;
 	collateral: string;
 	conditionalTokens: string;
+
+	exchangeV2: string;
+	negRiskExchangeV2: string;
 };
 
 const AMOY_CONTRACTS: ContractConfig = {
-	exchange: "0x47Cd67DA01D0d6c74C126BcEDD79699065270f74",
-	negRiskAdapter: "0xd91E80cF2E7be2e162c6513ceD06f1dD0dA35296",
-	negRiskExchange: "0x106b5741320792c7e51153A96ba9cd8bEB888429",
+    exchange: "0xdFE02Eb6733538f8Ea35D585af8DE5958AD99E40",
+    negRiskAdapter: "0xd91E80cF2E7be2e162c6513ceD06f1dD0dA35296",
+    negRiskExchange: "0xC5d563A36AE78145C45a50134d48A1215220f80a",
 	collateral: "0x9c4e1703476e875070ee25b56a58b008cfb8fa78",
 	conditionalTokens: "0x69308FB512518e39F9b16112fA8d994F4e2Bf8bB",
+	exchangeV2: "0x2354F404ff6b2953Cd7766e1F260aA3009a0688b",
+	negRiskExchangeV2: "0x449C9e4ce15E83956B47e2ea58612EcEC4317411",
 };
 
 const MATIC_CONTRACTS: ContractConfig = {
@@ -20,6 +25,8 @@ const MATIC_CONTRACTS: ContractConfig = {
 	negRiskExchange: "0xC5d563A36AE78145C45a50134d48A1215220f80a",
 	collateral: "0x2791Bca1f2de4661ED88A30C99A7a9449Aa84174",
 	conditionalTokens: "0x4D97DCd97eC945f40cF65F87097ACe5EA0476045",
+	exchangeV2: "",
+	negRiskExchangeV2: "",
 };
 
 const COLLATERAL_TOKEN_DECIMALS = 6;
