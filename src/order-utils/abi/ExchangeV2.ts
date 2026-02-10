@@ -75,25 +75,6 @@ const exchangeV2Abi = [
 	},
 	{
 		type: "function",
-		name: "admins",
-		inputs: [
-			{
-				name: "",
-				type: "address",
-				internalType: "address"
-			}
-		],
-		outputs: [
-			{
-				name: "",
-				type: "uint256",
-				internalType: "uint256"
-			}
-		],
-		stateMutability: "view"
-	},
-	{
-		type: "function",
 		name: "eip712Domain",
 		inputs: [],
 		outputs: [
@@ -703,25 +684,6 @@ const exchangeV2Abi = [
 			}
 		],
 		stateMutability: "nonpayable"
-	},
-	{
-		type: "function",
-		name: "operators",
-		inputs: [
-			{
-				name: "",
-				type: "address",
-				internalType: "address"
-			}
-		],
-		outputs: [
-			{
-				name: "",
-				type: "uint256",
-				internalType: "uint256"
-			}
-		],
-		stateMutability: "view"
 	},
 	{
 		type: "function",
@@ -1466,3 +1428,4 @@ const exchangeV2Abi = [
 ] as const;
 
 export { exchangeV2Abi };
+
