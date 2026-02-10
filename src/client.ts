@@ -714,8 +714,8 @@ export class ClobClient {
 
 		const { tokenID } = userOrder;
 
-		// const tickSize = await this._resolveTickSize(tokenID, options?.tickSize);
-		const tickSize = options?.tickSize!;
+		const tickSize = await this._resolveTickSize(tokenID, options?.tickSize);
+		// const tickSize = options?.tickSize!;
 
 		if (!priceValid(userOrder.price, tickSize)) {
 			throw new Error(

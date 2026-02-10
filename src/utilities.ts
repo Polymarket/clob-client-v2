@@ -37,13 +37,13 @@ export function orderToJsonV2<T extends OrderType>(
 	orderType: T,
 	deferExec = false,
 ): NewOrderV2<T> {
-	let side;
+	let side: string;
 	// TODO: use actual enum string
-    if (order.side == 0) {
-        side = "BUY";
-    } else {
-        side = "SELL";
-    }
+	if (order.side === 0) {
+		side = "BUY";
+	} else {
+		side = "SELL";
+	}
 
 	return {
 		deferExec,
