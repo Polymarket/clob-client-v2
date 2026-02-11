@@ -22,7 +22,6 @@ export type VersionedPostOrdersArgs =
 	| { version: 1; args: PostOrdersV1Args }
 	| { version: 2; args: PostOrdersV2Args };
 
-
 export function isV2Order(order: SignedOrder | VersionedSignedOrder): order is SignedOrderV2 {
 	if ("version" in order && "order" in order) {
 		// VersionedSignedOrder type
