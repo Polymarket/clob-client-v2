@@ -29,11 +29,8 @@ export class ExchangeOrderBuilderV1 {
 	 */
 	async buildSignedOrder(orderData: OrderDataV1): Promise<SignedOrderV1> {
 		const order = await this.buildOrder(orderData);
-		console.log("created order: ", order);
 		const orderTypedData = this.buildOrderTypedData(order);
-		console.log("orderTypedData: ", orderTypedData);
 		const orderSignature = await this.buildOrderSignature(orderTypedData);
-		console.log("orderSignature: ", orderSignature);
 		return {
 			...order,
 			signature: orderSignature,
