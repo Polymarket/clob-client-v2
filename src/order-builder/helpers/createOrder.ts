@@ -2,7 +2,7 @@ import type { JsonRpcSigner } from "@ethersproject/providers";
 import type { Wallet } from "@ethersproject/wallet";
 
 import { getContractConfig } from "../../config";
-import type { SignatureTypeV2, SignedOrderV2 } from "../../order-utils";
+import type { SignatureTypeV2, SignedOrderV1, SignedOrderV2 } from "../../order-utils";
 import type { Chain, CreateOrderOptions, UserOrderV2 } from "../../types";
 
 import { buildOrder } from "./buildOrder";
@@ -16,7 +16,8 @@ export const createOrder = async (
 	funderAddress: string | undefined,
 	userOrder: UserOrderV2,
 	options: CreateOrderOptions,
-): Promise<SignedOrderV2> => {
+	version: number,
+): Promise<SignedOrderV1 | SignedOrderV2> => {
 	const eoaSignerAddress = await eoaSigner.getAddress();
 
 	// If funder address is not given, use the signer address
@@ -35,5 +36,5 @@ export const createOrder = async (
 		? contractConfig.negRiskExchangeV2
 		: contractConfig.exchangeV2;
 
-	return buildOrder(eoaSigner, exchangeContract, chainId, orderData);
+	return buildOrder(eoaSigner, exchangeContract, chainId, orderData, version);
 };

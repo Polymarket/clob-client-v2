@@ -73,8 +73,7 @@ import {
 	type RequestOptions,
 } from "./http-helpers";
 import { calculateBuyMarketPrice, calculateSellMarketPrice } from "./order-builder/helpers";
-import { OrderBuilderV2 } from "./order-builder/orderBuilderV2";
-import type { SignedOrderV2 } from "./order-utils";
+import { OrderBuilder } from "./order-builder";
 import type { SignatureTypeV2 } from "./order-utils/model/signatureTypeV2";
 import type {
 	ApiKeyCreds,
@@ -98,6 +97,7 @@ import type {
 	MarketReward,
 	MarketTradeEvent,
 	NegRisk,
+	NewOrderV1,
 	NewOrderV2,
 	Notification,
 	OpenOrder,
@@ -111,6 +111,7 @@ import type {
 	OrdersScoring,
 	OrdersScoringParams,
 	PaginationPayload,
+	PostOrdersV1Args,
 	PostOrdersV2Args,
 	PriceHistoryFilterParams,
 	RewardsPercentages,
@@ -128,9 +129,11 @@ import { OrderType, Side } from "./types";
 import {
 	generateOrderBookSummaryHash,
 	isTickSizeSmaller,
+	orderToJsonV1,
 	orderToJsonV2,
 	priceValid,
 } from "./utilities";
+import { SignedOrder, isV1Order, isV2Order } from "./types/unifiedOrder";
 
 export class ClobClient {
 	readonly host: string;
@@ -143,7 +146,7 @@ export class ClobClient {
 	// Used to perform Level 2 authentication
 	readonly creds?: ApiKeyCreds;
 
-	readonly orderBuilder: OrderBuilderV2;
+	readonly orderBuilder: OrderBuilder;
 
 	readonly tickSizes: TickSizes;
 
@@ -157,6 +160,10 @@ export class ClobClient {
 
 	readonly builderConfig?: BuilderConfig;
 
+	readonly version?: number;
+
+	private cachedVersion?: number;
+
 	// eslint-disable-next-line max-params
 	constructor(
 		host: string,
@@ -169,6 +176,7 @@ export class ClobClient {
 		useServerTime?: boolean,
 		builderConfig?: BuilderConfig,
 		getSigner?: () => Promise<Wallet | JsonRpcSigner> | (Wallet | JsonRpcSigner),
+		version?: number,
 	) {
 		this.host = host.endsWith("/") ? host.slice(0, -1) : host;
 		this.chainId = chainId;
@@ -179,7 +187,7 @@ export class ClobClient {
 		if (creds !== undefined) {
 			this.creds = creds;
 		}
-		this.orderBuilder = new OrderBuilderV2(
+		this.orderBuilder = new OrderBuilder(
 			signer as Wallet | JsonRpcSigner,
 			chainId,
 			signatureType,
@@ -194,11 +202,23 @@ export class ClobClient {
 		if (builderConfig !== undefined) {
 			this.builderConfig = builderConfig;
 		}
+
+		if (version !== undefined) {
+			this.version = version;
+		}
 	}
 
 	// Public endpoints
 	public async getOk(): Promise<any> {
 		return this.get(`${this.host}/`);
+	}
+
+	public async getVersion(): Promise<number> {
+		// TODO: not implemented on the API yet
+		// const response = await this.get(`${this.host}/version`);
+		// return response.version;
+		// default to v2
+		return 2;
 	}
 
 	public async getServerTime(): Promise<number> {
@@ -709,13 +729,13 @@ export class ClobClient {
 	public async createOrder(
 		userOrder: UserOrderV2,
 		options?: Partial<CreateOrderOptions>,
-	): Promise<SignedOrderV2> {
+	): Promise<SignedOrder> {
 		this.canL1Auth();
 
 		const { tokenID } = userOrder;
 
-		const tickSize = await this._resolveTickSize(tokenID, options?.tickSize);
-		// const tickSize = options?.tickSize!;
+		// const tickSize = await this._resolveTickSize(tokenID, options?.tickSize);
+		const tickSize = options?.tickSize!;
 
 		if (!priceValid(userOrder.price, tickSize)) {
 			throw new Error(
@@ -726,17 +746,18 @@ export class ClobClient {
 		}
 
 		const negRisk = options?.negRisk ?? (await this.getNegRisk(tokenID));
+		const version = await this.resolveVersion();
 
 		return this.orderBuilder.buildOrder(userOrder, {
 			tickSize,
 			negRisk,
-		});
+		}, version);
 	}
 
 	public async createMarketOrder(
 		userMarketOrder: UserMarketOrderV2,
 		options?: Partial<CreateOrderOptions>,
-	): Promise<SignedOrderV2> {
+	): Promise<SignedOrder> {
 		this.canL1Auth();
 
 		const { tokenID } = userMarketOrder;
@@ -761,11 +782,12 @@ export class ClobClient {
 		}
 
 		const negRisk = options?.negRisk ?? (await this.getNegRisk(tokenID));
+		const version = await this.resolveVersion();
 
 		return this.orderBuilder.buildMarketOrder(userMarketOrder, {
 			tickSize,
 			negRisk,
-		});
+		}, version);
 	}
 
 	public async createAndPostOrder<T extends OrderType.GTC | OrderType.GTD = OrderType.GTC>(
@@ -825,13 +847,16 @@ export class ClobClient {
 	}
 
 	public async postOrder<T extends OrderType = OrderType.GTC>(
-		order: SignedOrderV2,
+		order: SignedOrder,
 		orderType: T = OrderType.GTC as T,
 		deferExec = false,
 	): Promise<any> {
 		this.canL2Auth();
 		const endpoint = POST_ORDER;
-		const orderPayload = orderToJsonV2(order, this.creds?.key || "", orderType, deferExec);
+
+		const orderPayload = isV2Order(order)
+			? orderToJsonV2(order, this.creds?.key || "", orderType, deferExec)
+			: orderToJsonV1(order, this.creds?.key || "", orderType, deferExec);
 
 		const l2HeaderArgs = {
 			method: POST,
@@ -863,12 +888,16 @@ export class ClobClient {
 		});
 	}
 
-	public async postOrders(args: PostOrdersV2Args[], deferExec = false): Promise<any> {
+	public async postOrders(args: (PostOrdersV2Args | PostOrdersV1Args)[], deferExec = false): Promise<any> {
 		this.canL2Auth();
 		const endpoint = POST_ORDERS;
-		const ordersPayload: NewOrderV2<any>[] = [];
-		for (const { order, orderType } of args) {
-			const orderPayload = orderToJsonV2(order, this.creds?.key || "", orderType, deferExec);
+		const ordersPayload: (NewOrderV2<any> | NewOrderV1<any>)[] = [];
+		for (const arg of args) {
+			const { order, orderType } = arg;
+			// Version-aware dispatch
+			const orderPayload = isV2Order(order)
+				? orderToJsonV2(order, this.creds?.key || "", orderType, deferExec)
+				: orderToJsonV1(order, this.creds?.key || "", orderType, deferExec);
 			ordersPayload.push(orderPayload);
 		}
 
@@ -1292,6 +1321,23 @@ export class ClobClient {
 			tickSize = minTickSize;
 		}
 		return tickSize;
+	}
+
+	private async resolveVersion(): Promise<number> {
+		// Use user-provided version override if given
+		if (this.version !== undefined) {
+			return this.version;
+		}
+
+		// Use cached version if given
+		if (this.cachedVersion !== undefined) {
+			return this.cachedVersion;
+		}
+
+		// Query API and cache the result
+		const apiVersion = await this.getVersion();
+		this.cachedVersion = apiVersion;
+		return apiVersion;
 	}
 
 	// private async _resolveFeeRateBps(tokenID: string, userFeeRateBps?: number): Promise<number> {
