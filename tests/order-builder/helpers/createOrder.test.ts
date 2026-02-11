@@ -30,6 +30,7 @@ describe("createOrder", () => {
 					"0xf39Fd6e51aad88F6F4ce6aB8827279cffFb92266",
 					order,
 					{ tickSize: "0.1", negRisk: false },
+					2,
 				);
 				expect(signedOrder).not.toBeNull();
 				expect(signedOrder).toBeDefined();
@@ -65,6 +66,7 @@ describe("createOrder", () => {
 					"0xf39Fd6e51aad88F6F4ce6aB8827279cffFb92266",
 					order,
 					{ tickSize: "0.01", negRisk: false },
+					2,
 				);
 				expect(signedOrder).not.toBeNull();
 				expect(signedOrder).toBeDefined();
@@ -100,6 +102,7 @@ describe("createOrder", () => {
 					"0xf39Fd6e51aad88F6F4ce6aB8827279cffFb92266",
 					order,
 					{ tickSize: "0.001", negRisk: false },
+					2,
 				);
 				expect(signedOrder).not.toBeNull();
 				expect(signedOrder).toBeDefined();
@@ -135,6 +138,7 @@ describe("createOrder", () => {
 					"0xf39Fd6e51aad88F6F4ce6aB8827279cffFb92266",
 					order,
 					{ tickSize: "0.0001", negRisk: false },
+					2,
 				);
 				expect(signedOrder).not.toBeNull();
 				expect(signedOrder).toBeDefined();
@@ -171,6 +175,7 @@ describe("createOrder", () => {
 					"0xf39Fd6e51aad88F6F4ce6aB8827279cffFb92266",
 					order,
 					{ tickSize: "0.1", negRisk: false },
+					2,
 				);
 
 				expect(signedOrder.salt).not.toBe("");
@@ -203,6 +208,7 @@ describe("createOrder", () => {
 					"0xf39Fd6e51aad88F6F4ce6aB8827279cffFb92266",
 					order,
 					{ tickSize: "0.01", negRisk: false },
+					2,
 				);
 
 				expect(signedOrder.salt).not.toBe("");
@@ -235,6 +241,7 @@ describe("createOrder", () => {
 					"0xf39Fd6e51aad88F6F4ce6aB8827279cffFb92266",
 					order,
 					{ tickSize: "0.001", negRisk: false },
+					2,
 				);
 
 				expect(signedOrder.salt).not.toBe("");
@@ -267,6 +274,7 @@ describe("createOrder", () => {
 					"0xf39Fd6e51aad88F6F4ce6aB8827279cffFb92266",
 					order,
 					{ tickSize: "0.0001", negRisk: false },
+					2,
 				);
 
 				expect(signedOrder.salt).not.toBe("");
@@ -304,6 +312,7 @@ describe("createOrder", () => {
 					"0xf39Fd6e51aad88F6F4ce6aB8827279cffFb92266",
 					order,
 					{ tickSize: "0.1", negRisk: true },
+					2,
 				);
 				expect(signedOrder).not.toBeNull();
 				expect(signedOrder).toBeDefined();
@@ -339,6 +348,7 @@ describe("createOrder", () => {
 					"0xf39Fd6e51aad88F6F4ce6aB8827279cffFb92266",
 					order,
 					{ tickSize: "0.01", negRisk: true },
+					2,
 				);
 				expect(signedOrder).not.toBeNull();
 				expect(signedOrder).toBeDefined();
@@ -374,6 +384,7 @@ describe("createOrder", () => {
 					"0xf39Fd6e51aad88F6F4ce6aB8827279cffFb92266",
 					order,
 					{ tickSize: "0.001", negRisk: true },
+					2,
 				);
 				expect(signedOrder).not.toBeNull();
 				expect(signedOrder).toBeDefined();
@@ -409,6 +420,7 @@ describe("createOrder", () => {
 					"0xf39Fd6e51aad88F6F4ce6aB8827279cffFb92266",
 					order,
 					{ tickSize: "0.0001", negRisk: true },
+					2,
 				);
 				expect(signedOrder).not.toBeNull();
 				expect(signedOrder).toBeDefined();
@@ -445,6 +457,7 @@ describe("createOrder", () => {
 					"0xf39Fd6e51aad88F6F4ce6aB8827279cffFb92266",
 					order,
 					{ tickSize: "0.1", negRisk: true },
+					2,
 				);
 
 				expect(signedOrder.salt).not.toBe("");
@@ -477,6 +490,7 @@ describe("createOrder", () => {
 					"0xf39Fd6e51aad88F6F4ce6aB8827279cffFb92266",
 					order,
 					{ tickSize: "0.01", negRisk: true },
+					2,
 				);
 
 				expect(signedOrder.salt).not.toBe("");
@@ -509,6 +523,7 @@ describe("createOrder", () => {
 					"0xf39Fd6e51aad88F6F4ce6aB8827279cffFb92266",
 					order,
 					{ tickSize: "0.001", negRisk: true },
+					2,
 				);
 
 				expect(signedOrder.salt).not.toBe("");
@@ -541,6 +556,7 @@ describe("createOrder", () => {
 					"0xf39Fd6e51aad88F6F4ce6aB8827279cffFb92266",
 					order,
 					{ tickSize: "0.0001", negRisk: true },
+					2,
 				);
 
 				expect(signedOrder.salt).not.toBe("");

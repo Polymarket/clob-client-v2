@@ -46,6 +46,7 @@ describe("buildOrder", () => {
 				contractConfig.exchange,
 				chainId,
 				orderData,
+				2,
 			);
 			expect(signedOrder).not.toBeNull();
 			expect(signedOrder).toBeDefined();
@@ -88,6 +89,7 @@ describe("buildOrder", () => {
 				contractConfig.exchange,
 				chainId,
 				orderData,
+				2,
 			);
 			expect(signedOrder).not.toBeNull();
 			expect(signedOrder).toBeDefined();
@@ -130,6 +132,7 @@ describe("buildOrder", () => {
 				contractConfig.exchange,
 				chainId,
 				orderData,
+				2,
 			);
 			expect(signedOrder).not.toBeNull();
 			expect(signedOrder).toBeDefined();
@@ -172,6 +175,7 @@ describe("buildOrder", () => {
 				contractConfig.exchange,
 				chainId,
 				orderData,
+				2,
 			);
 			expect(signedOrder).not.toBeNull();
 			expect(signedOrder).toBeDefined();
@@ -214,6 +218,7 @@ describe("buildOrder", () => {
 				contractConfig.exchange,
 				chainId,
 				orderData,
+				2,
 			);
 			expect(signedOrder).not.toBeNull();
 			expect(signedOrder).toBeDefined();
@@ -257,6 +262,7 @@ describe("buildOrder", () => {
 				contractConfig.exchange,
 				chainId,
 				orderData,
+				2,
 			);
 			expect(signedOrder).not.toBeNull();
 			expect(signedOrder).toBeDefined();
@@ -298,6 +304,7 @@ describe("buildOrder", () => {
 				contractConfig.exchange,
 				chainId,
 				orderData,
+				2,
 			);
 			expect(signedOrder).not.toBeNull();
 			expect(signedOrder).toBeDefined();
@@ -339,6 +346,7 @@ describe("buildOrder", () => {
 				contractConfig.exchange,
 				chainId,
 				orderData,
+				2,
 			);
 			expect(signedOrder).not.toBeNull();
 			expect(signedOrder).toBeDefined();
@@ -380,6 +388,7 @@ describe("buildOrder", () => {
 				contractConfig.exchange,
 				chainId,
 				orderData,
+				2,
 			);
 			expect(signedOrder).not.toBeNull();
 			expect(signedOrder).toBeDefined();
