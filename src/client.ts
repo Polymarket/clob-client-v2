@@ -216,6 +216,8 @@ export class ClobClient {
 	public async getVersion(): Promise<number> {
 		// TODO: not implemented on the API yet
 		// const response = await this.get(`${this.host}/version`);
+		// TODO: if the client sends a V1 order and the API has transitioned, the client should be made aware
+		// and update its version
 		// return response.version;
 		// default to v2
 		return 2;
