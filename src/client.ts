@@ -72,8 +72,8 @@ import {
 	post,
 	type RequestOptions,
 } from "./http-helpers";
-import { calculateBuyMarketPrice, calculateSellMarketPrice } from "./order-builder/helpers";
 import { OrderBuilder } from "./order-builder";
+import { calculateBuyMarketPrice, calculateSellMarketPrice } from "./order-builder/helpers";
 import type { SignatureTypeV2 } from "./order-utils/model/signatureTypeV2";
 import type {
 	ApiKeyCreds,
@@ -126,6 +126,7 @@ import type {
 	UserRewardsEarning,
 } from "./types";
 import { OrderType, Side } from "./types";
+import { isV2Order, type SignedOrder } from "./types/unifiedOrder";
 import {
 	generateOrderBookSummaryHash,
 	isTickSizeSmaller,
@@ -133,7 +134,6 @@ import {
 	orderToJsonV2,
 	priceValid,
 } from "./utilities";
-import { SignedOrder, isV1Order, isV2Order } from "./types/unifiedOrder";
 
 export class ClobClient {
 	readonly host: string;
@@ -735,7 +735,10 @@ export class ClobClient {
 		const { tokenID } = userOrder;
 
 		// const tickSize = await this._resolveTickSize(tokenID, options?.tickSize);
-		const tickSize = options?.tickSize!;
+		if (!options?.tickSize) {
+			throw new Error("tickSize is required in options");
+		}
+		const tickSize = options.tickSize;
 
 		if (!priceValid(userOrder.price, tickSize)) {
 			throw new Error(
@@ -748,10 +751,14 @@ export class ClobClient {
 		const negRisk = options?.negRisk ?? (await this.getNegRisk(tokenID));
 		const version = await this.resolveVersion();
 
-		return this.orderBuilder.buildOrder(userOrder, {
-			tickSize,
-			negRisk,
-		}, version);
+		return this.orderBuilder.buildOrder(
+			userOrder,
+			{
+				tickSize,
+				negRisk,
+			},
+			version,
+		);
 	}
 
 	public async createMarketOrder(
@@ -784,10 +791,14 @@ export class ClobClient {
 		const negRisk = options?.negRisk ?? (await this.getNegRisk(tokenID));
 		const version = await this.resolveVersion();
 
-		return this.orderBuilder.buildMarketOrder(userMarketOrder, {
-			tickSize,
-			negRisk,
-		}, version);
+		return this.orderBuilder.buildMarketOrder(
+			userMarketOrder,
+			{
+				tickSize,
+				negRisk,
+			},
+			version,
+		);
 	}
 
 	public async createAndPostOrder<T extends OrderType.GTC | OrderType.GTD = OrderType.GTC>(
@@ -888,7 +899,10 @@ export class ClobClient {
 		});
 	}
 
-	public async postOrders(args: (PostOrdersV2Args | PostOrdersV1Args)[], deferExec = false): Promise<any> {
+	public async postOrders(
+		args: (PostOrdersV2Args | PostOrdersV1Args)[],
+		deferExec = false,
+	): Promise<any> {
 		this.canL2Auth();
 		const endpoint = POST_ORDERS;
 		const ordersPayload: (NewOrderV2<any> | NewOrderV1<any>)[] = [];

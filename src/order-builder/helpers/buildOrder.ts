@@ -1,7 +1,14 @@
 import type { JsonRpcSigner } from "@ethersproject/providers";
 import type { Wallet } from "@ethersproject/wallet";
 
-import { ExchangeOrderBuilderV1, ExchangeOrderBuilderV2, OrderDataV1, SignedOrderV1, type OrderDataV2, type SignedOrderV2 } from "../../order-utils";
+import {
+	ExchangeOrderBuilderV1,
+	ExchangeOrderBuilderV2,
+	type OrderDataV1,
+	type OrderDataV2,
+	type SignedOrderV1,
+	type SignedOrderV2,
+} from "../../order-utils";
 
 /**
  * Generate and sign a order

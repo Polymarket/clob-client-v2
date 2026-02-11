@@ -19,7 +19,7 @@ export interface NewOrderV1<T extends OrderType> {
 		readonly expiration: string;
 		readonly nonce: string;
 		readonly feeRateBps: string;
-		readonly side: Side; // string
+		readonly side: string;
 		readonly signatureType: SignatureTypeV1;
 		readonly signature: string;
 	};

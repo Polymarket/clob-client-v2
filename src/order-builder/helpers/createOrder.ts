@@ -31,10 +31,20 @@ export const createOrder = async (
 		userOrder,
 		ROUNDING_CONFIG[options.tickSize],
 	);
-
-	const exchangeContract = options.negRisk
-		? contractConfig.negRiskExchangeV2
-		: contractConfig.exchangeV2;
-
+	let exchangeContract: string;
+	switch (version) {
+		case 1:
+			exchangeContract = options.negRisk
+				? contractConfig.negRiskExchange
+				: contractConfig.exchange;
+			break;
+		case 2:
+			exchangeContract = options.negRisk
+				? contractConfig.negRiskExchangeV2
+				: contractConfig.exchangeV2;
+			break;
+		default:
+			throw new Error(`unsupported order version ${version}`);
+	}
 	return buildOrder(eoaSigner, exchangeContract, chainId, orderData, version);
 };

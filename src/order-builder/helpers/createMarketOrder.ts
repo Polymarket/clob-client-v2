@@ -16,7 +16,7 @@ export const createMarketOrder = async (
 	userMarketOrder: UserMarketOrderV2,
 	options: CreateOrderOptions,
 	version: number,
-): Promise< SignedOrderV1 | SignedOrderV2> => {
+): Promise<SignedOrderV1 | SignedOrderV2> => {
 	const eoaSignerAddress = await eoaSigner.getAddress();
 
 	// If funder address is not given, use the signer address
