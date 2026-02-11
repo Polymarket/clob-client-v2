@@ -1,12 +1,19 @@
 import type { JsonRpcSigner } from "@ethersproject/providers";
 import type { Wallet } from "@ethersproject/wallet";
 
-import { SignatureTypeV2, type SignedOrderV2 } from "../order-utils";
-import type { Chain, CreateOrderOptions, UserMarketOrderV2, UserOrderV2 } from "../types";
+import { SignatureTypeV2, type SignedOrderV1, type SignedOrderV2 } from "../order-utils";
+import type {
+	Chain,
+	CreateOrderOptions,
+	UserMarketOrderV1,
+	UserMarketOrderV2,
+	UserOrderV1,
+	UserOrderV2,
+} from "../types";
 
 import { createMarketOrder, createOrder } from "./helpers";
 
-export class OrderBuilderV2 {
+export class OrderBuilder {
 	readonly signer: Wallet | JsonRpcSigner;
 
 	readonly chainId: Chain;
@@ -46,9 +53,10 @@ export class OrderBuilderV2 {
 	 * Generate and sign a order
 	 */
 	public async buildOrder(
-		userOrder: UserOrderV2,
+		userOrder: UserOrderV1 | UserOrderV2,
 		options: CreateOrderOptions,
-	): Promise<SignedOrderV2> {
+		version: number,
+	): Promise<SignedOrderV1 | SignedOrderV2> {
 		const signer = await this.resolveSigner();
 		return createOrder(
 			signer,
@@ -57,6 +65,7 @@ export class OrderBuilderV2 {
 			this.funderAddress,
 			userOrder,
 			options,
+			version,
 		);
 	}
 
@@ -64,9 +73,10 @@ export class OrderBuilderV2 {
 	 * Generate and sign a market order
 	 */
 	public async buildMarketOrder(
-		userMarketOrder: UserMarketOrderV2,
+		userMarketOrder: UserMarketOrderV1 | UserMarketOrderV2,
 		options: CreateOrderOptions,
-	): Promise<SignedOrderV2> {
+		version: number,
+	): Promise<SignedOrderV1 | SignedOrderV2> {
 		const signer = await this.resolveSigner();
 		return createMarketOrder(
 			signer,
@@ -75,6 +85,7 @@ export class OrderBuilderV2 {
 			this.funderAddress,
 			userMarketOrder,
 			options,
+			version,
 		);
 	}
 

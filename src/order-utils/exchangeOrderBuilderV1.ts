@@ -12,6 +12,8 @@ import type { OrderDataV1, OrderV1, SignedOrderV1 } from "./model/orderDataV1.js
 import { SignatureTypeV1 } from "./model/signatureTypeV1.js";
 import { generateOrderSalt } from "./utils";
 
+const ZERO_ADDRESS = "0x0000000000000000000000000000000000000000";
+
 export class ExchangeOrderBuilderV1 {
 	constructor(
 		private readonly contractAddress: string,
@@ -29,7 +31,6 @@ export class ExchangeOrderBuilderV1 {
 		const order = await this.buildOrder(orderData);
 		const orderTypedData = this.buildOrderTypedData(order);
 		const orderSignature = await this.buildOrderSignature(orderTypedData);
-
 		return {
 			...order,
 			signature: orderSignature,
@@ -72,17 +73,38 @@ export class ExchangeOrderBuilderV1 {
 			signatureType = SignatureTypeV1.EOA;
 		}
 
+		let takerAddress: string;
+		if (typeof taker !== "undefined" && taker) {
+			takerAddress = taker;
+		} else {
+			takerAddress = ZERO_ADDRESS;
+		}
+
+		let feeRateBpsResolved: string;
+		if (typeof feeRateBps !== "undefined" && feeRateBps) {
+			feeRateBpsResolved = feeRateBps.toString();
+		} else {
+			feeRateBpsResolved = "0";
+		}
+
+		let nonceResolved: string;
+		if (typeof nonce !== "undefined" && nonce) {
+			nonceResolved = nonce.toString();
+		} else {
+			nonceResolved = "0";
+		}
+
 		return {
 			salt: this.generateSalt(),
 			maker,
 			signer,
-			taker,
+			taker: takerAddress,
 			tokenId,
 			makerAmount,
 			takerAmount,
 			expiration,
-			nonce,
-			feeRateBps,
+			nonce: nonceResolved,
+			feeRateBps: feeRateBpsResolved,
 			side,
 			signatureType,
 		};
