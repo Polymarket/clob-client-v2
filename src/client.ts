@@ -1,7 +1,7 @@
 import type { JsonRpcSigner } from "@ethersproject/providers";
 import type { Wallet } from "@ethersproject/wallet";
 import type { BuilderConfig, BuilderHeaderPayload } from "./builder-signing";
-import { END_CURSOR, INITIAL_CURSOR } from "./constants";
+import { END_CURSOR, INITIAL_CURSOR, ORDER_VERSION_MISMATCH_ERROR } from "./constants";
 import {
 	ARE_ORDERS_SCORING,
 	CANCEL_ALL,
@@ -60,7 +60,6 @@ import {
 	BUILDER_AUTH_NOT_AVAILABLE,
 	L1_AUTH_UNAVAILABLE_ERROR,
 	L2_AUTH_NOT_AVAILABLE,
-	ORDER_VERSION_MISMATCH,
 } from "./errors";
 import { createL1Headers, createL2Headers, injectBuilderHeaders } from "./headers";
 import {
@@ -827,7 +826,7 @@ export class ClobClient {
 
 		await this._retryOnVersionUpdate(async () => {
 			const order = await this.createMarketOrder(userMarketOrder, options);
-			await this.postOrder(
+			postOrderMarketResponse = await this.postOrder(
 				order,
 				orderType,
 				deferExec
@@ -891,7 +890,7 @@ export class ClobClient {
 			body: JSON.stringify(orderPayload),
 		};
 
-		const headers = await createL2Headers(
+		let headers = await createL2Headers(
 			this.signer as Wallet | JsonRpcSigner,
 			this.creds as ApiKeyCreds,
 			l2HeaderArgs,
@@ -902,10 +901,7 @@ export class ClobClient {
 		if (this.canBuilderAuth()) {
 			const builderHeaders = await this._generateBuilderHeaders(headers, l2HeaderArgs);
 			if (builderHeaders !== undefined) {
-				return this.post(`${this.host}${endpoint}`, {
-					headers: builderHeaders,
-					data: orderPayload,
-				});
+				headers = builderHeaders
 			}
 		}
 
@@ -941,7 +937,7 @@ export class ClobClient {
 			body: JSON.stringify(ordersPayload),
 		};
 
-		const headers = await createL2Headers(
+		let headers = await createL2Headers(
 			this.signer as Wallet | JsonRpcSigner,
 			this.creds as ApiKeyCreds,
 			l2HeaderArgs,
@@ -952,10 +948,7 @@ export class ClobClient {
 		if (this.canBuilderAuth()) {
 			const builderHeaders = await this._generateBuilderHeaders(headers, l2HeaderArgs);
 			if (builderHeaders !== undefined) {
-				return this.post(`${this.host}${endpoint}`, {
-					headers: builderHeaders,
-					data: ordersPayload,
-				});
+				headers = builderHeaders
 			}
 		}
 
@@ -1426,18 +1419,18 @@ export class ClobClient {
 	}
 
 	private async _retryOnVersionUpdate(retryFunc: () => Promise<unknown>) {
-		const version = this.resolveVersion()
+		const version = await this.resolveVersion()
 
 		for (let attempt = 0; attempt < 2; attempt++) {
 			await retryFunc();
 
 			// no need to retry if version is unchanged
-			if(version == this.resolveVersion()) break
+			if(version == await this.resolveVersion()) break
 		}
 	}
 
 	private _isOrderVersionMismatch(resp: ClobErrorResponseBody) {
-    	return String(resp?.error ?? "").includes(ORDER_VERSION_MISMATCH);
+    	return String(resp?.error ?? "").includes(ORDER_VERSION_MISMATCH_ERROR);
 	}
 
 	// http methods
