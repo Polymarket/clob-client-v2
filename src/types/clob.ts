@@ -403,3 +403,7 @@ export interface BuilderTrade {
 	createdAt: string | null;
 	updatedAt: string | null;
 }
+
+export type ClobErrorResponseBody = {
+  error: string;
+};

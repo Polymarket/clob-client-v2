@@ -60,6 +60,7 @@ import {
 	BUILDER_AUTH_NOT_AVAILABLE,
 	L1_AUTH_UNAVAILABLE_ERROR,
 	L2_AUTH_NOT_AVAILABLE,
+	ORDER_VERSION_MISMATCH,
 } from "./errors";
 import { createL1Headers, createL2Headers, injectBuilderHeaders } from "./headers";
 import {
@@ -87,6 +88,7 @@ import type {
 	BuilderApiKeyResponse,
 	BuilderTrade,
 	Chain,
+	ClobErrorResponseBody,
 	CreateOrderOptions,
 	DropNotificationParams,
 	FeeRates,
@@ -134,6 +136,7 @@ import {
 	orderToJsonV2,
 	priceValid,
 } from "./utilities";
+import { AxiosResponse } from "axios";
 
 export class ClobClient {
 	readonly host: string;
@@ -160,7 +163,7 @@ export class ClobClient {
 
 	readonly builderConfig?: BuilderConfig;
 
-	readonly version?: number;
+	private version?: number;
 
 	private cachedVersion?: number;
 
@@ -809,8 +812,16 @@ export class ClobClient {
 		orderType: T = OrderType.GTC as T,
 		deferExec = false,
 	): Promise<any> {
-		const order = await this.createOrder(userOrder, options);
-		return this.postOrder(order, orderType, deferExec);
+		let postOrderResponse
+
+		await this._refreshVersionAndRetry(async()=>{
+			const order = await this.createOrder(userOrder, options);
+      		postOrderResponse = await this.postOrder(order, orderType, deferExec);
+
+			return this._isOrderVersionMismatch(postOrderResponse)
+		})
+
+		return postOrderResponse
 	}
 
 	public async createAndPostMarketOrder<T extends OrderType.FOK | OrderType.FAK = OrderType.FOK>(
@@ -819,8 +830,16 @@ export class ClobClient {
 		orderType: T = OrderType.FOK as T,
 		deferExec = false,
 	): Promise<any> {
-		const order = await this.createMarketOrder(userMarketOrder, options);
-		return this.postOrder(order, orderType, deferExec);
+		let postOrderMarketResponse
+
+		await this._refreshVersionAndRetry(async()=>{
+			const order = await this.createMarketOrder(userMarketOrder, options);
+      		postOrderMarketResponse =  await this.postOrder(order, orderType, deferExec);
+
+			return this._isOrderVersionMismatch(postOrderMarketResponse)
+		})
+		
+		return postOrderMarketResponse
 	}
 
 	public async getOpenOrders(
@@ -1339,20 +1358,26 @@ export class ClobClient {
 		return tickSize;
 	}
 
-	private async resolveVersion(): Promise<number> {
+	private async resolveVersion(forceUpdate: boolean = false): Promise<number> {
 		// Use user-provided version override if given
-		if (this.version !== undefined) {
+		if (!forceUpdate && this.version !== undefined) {
 			return this.version;
 		}
 
 		// Use cached version if given
-		if (this.cachedVersion !== undefined) {
+		if (!forceUpdate && this.cachedVersion !== undefined) {
 			return this.cachedVersion;
 		}
 
 		// Query API and cache the result
 		const apiVersion = await this.getVersion();
 		this.cachedVersion = apiVersion;
+
+		// if force update, update user-provider version override as well
+		if (forceUpdate) {
+			this.version = apiVersion
+		}
+
 		return apiVersion;
 	}
 
@@ -1395,6 +1420,20 @@ export class ClobClient {
 		body?: string,
 	): Promise<BuilderHeaderPayload | undefined> {
 		return (this.builderConfig as BuilderConfig).generateBuilderHeaders(method, path, body);
+	}
+
+	private async _refreshVersionAndRetry(retryFunc: () => Promise<boolean>) {
+		for (let attempt = 0; attempt < 2; attempt++) {
+			const shouldRetry = await retryFunc();
+
+			if (!shouldRetry) return
+			await this.resolveVersion(true);
+		}
+	}
+
+	private async _isOrderVersionMismatch(resp: AxiosResponse<ClobErrorResponseBody>) {
+		const msg = String(resp?.data?.error ?? "");
+    	return resp?.status === 400 && msg.includes(ORDER_VERSION_MISMATCH);
 	}
 
 	// http methods
