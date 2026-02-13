@@ -136,7 +136,6 @@ import {
 	orderToJsonV2,
 	priceValid,
 } from "./utilities";
-import { AxiosResponse } from "axios";
 
 export class ClobClient {
 	readonly host: string;
@@ -810,12 +809,10 @@ export class ClobClient {
 	): Promise<any> {
 		let postOrderResponse
 
-		await this._refreshVersionAndRetry(async()=>{
+		await this._retryOnVersionUpdate(async () => {
 			const order = await this.createOrder(userOrder, options);
-      		postOrderResponse = await this.postOrder(order, orderType, deferExec);
-
-			return this._isOrderVersionMismatch(postOrderResponse)
-		})
+			postOrderResponse = await this.postOrder(order, orderType, deferExec);
+		});
 
 		return postOrderResponse
 	}
@@ -828,12 +825,14 @@ export class ClobClient {
 	): Promise<any> {
 		let postOrderMarketResponse
 
-		await this._refreshVersionAndRetry(async()=>{
+		await this._retryOnVersionUpdate(async () => {
 			const order = await this.createMarketOrder(userMarketOrder, options);
-      		postOrderMarketResponse =  await this.postOrder(order, orderType, deferExec);
-
-			return this._isOrderVersionMismatch(postOrderMarketResponse)
-		})
+			await this.postOrder(
+				order,
+				orderType,
+				deferExec
+			);
+		});
 		
 		return postOrderMarketResponse
 	}
@@ -910,10 +909,14 @@ export class ClobClient {
 			}
 		}
 
-		return this.post(`${this.host}${endpoint}`, {
+		const res = await this.post(`${this.host}${endpoint}`, {
 			headers,
 			data: orderPayload,
 		});
+
+		if(this._isOrderVersionMismatch(res)) await this.resolveVersion(true)
+
+		return res
 	}
 
 	public async postOrders(
@@ -956,10 +959,14 @@ export class ClobClient {
 			}
 		}
 
-		return this.post(`${this.host}${endpoint}`, {
+		const res = await this.post(`${this.host}${endpoint}`, {
 			headers,
 			data: ordersPayload,
 		});
+
+		if (this._isOrderVersionMismatch(res)) await this.resolveVersion(true);
+
+		return res
 	}
 
 	public async cancelOrder(payload: OrderPayload): Promise<any> {
@@ -1418,16 +1425,18 @@ export class ClobClient {
 		return (this.builderConfig as BuilderConfig).generateBuilderHeaders(method, path, body);
 	}
 
-	private async _refreshVersionAndRetry(retryFunc: () => Promise<boolean>) {
-		for (let attempt = 0; attempt < 2; attempt++) {
-			const shouldRetry = await retryFunc();
+	private async _retryOnVersionUpdate(retryFunc: () => Promise<unknown>) {
+		const version = this.resolveVersion()
 
-			if (!shouldRetry) return
-			await this.resolveVersion(true);
+		for (let attempt = 0; attempt < 2; attempt++) {
+			await retryFunc();
+
+			// no need to retry if version is unchanged
+			if(version == this.resolveVersion()) break
 		}
 	}
 
-	private async _isOrderVersionMismatch(resp: ClobErrorResponseBody) {
+	private _isOrderVersionMismatch(resp: ClobErrorResponseBody) {
     	return String(resp?.error ?? "").includes(ORDER_VERSION_MISMATCH);
 	}
 
