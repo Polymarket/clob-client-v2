@@ -161,8 +161,6 @@ export class ClobClient {
 
 	readonly builderConfig?: BuilderConfig;
 
-	private version?: number;
-
 	private cachedVersion?: number;
 
 	// eslint-disable-next-line max-params
@@ -177,7 +175,6 @@ export class ClobClient {
 		useServerTime?: boolean,
 		builderConfig?: BuilderConfig,
 		getSigner?: () => Promise<Wallet | JsonRpcSigner> | (Wallet | JsonRpcSigner),
-		version?: number,
 	) {
 		this.host = host.endsWith("/") ? host.slice(0, -1) : host;
 		this.chainId = chainId;
@@ -202,10 +199,6 @@ export class ClobClient {
 		this.useServerTime = useServerTime;
 		if (builderConfig !== undefined) {
 			this.builderConfig = builderConfig;
-		}
-
-		if (version !== undefined) {
-			this.version = version;
 		}
 	}
 
@@ -1351,11 +1344,6 @@ export class ClobClient {
 	}
 
 	private async resolveVersion(forceUpdate: boolean = false): Promise<number> {
-		// Use user-provided version override if given
-		if (!forceUpdate && this.version !== undefined) {
-			return this.version;
-		}
-
 		// Use cached version if given
 		if (!forceUpdate && this.cachedVersion !== undefined) {
 			return this.cachedVersion;
@@ -1364,11 +1352,6 @@ export class ClobClient {
 		// Query API and cache the result
 		const apiVersion = await this.getVersion();
 		this.cachedVersion = apiVersion;
-
-		// if force update, update user-provider version override as well
-		if (forceUpdate) {
-			this.version = apiVersion;
-		}
 
 		return apiVersion;
 	}
