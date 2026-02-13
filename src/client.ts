@@ -806,14 +806,14 @@ export class ClobClient {
 		orderType: T = OrderType.GTC as T,
 		deferExec = false,
 	): Promise<any> {
-		let postOrderResponse
+		let postOrderResponse: any;
 
 		await this._retryOnVersionUpdate(async () => {
 			const order = await this.createOrder(userOrder, options);
 			postOrderResponse = await this.postOrder(order, orderType, deferExec);
 		});
 
-		return postOrderResponse
+		return postOrderResponse;
 	}
 
 	public async createAndPostMarketOrder<T extends OrderType.FOK | OrderType.FAK = OrderType.FOK>(
@@ -822,18 +822,14 @@ export class ClobClient {
 		orderType: T = OrderType.FOK as T,
 		deferExec = false,
 	): Promise<any> {
-		let postOrderMarketResponse
+		let postOrderMarketResponse: any;
 
 		await this._retryOnVersionUpdate(async () => {
 			const order = await this.createMarketOrder(userMarketOrder, options);
-			postOrderMarketResponse = await this.postOrder(
-				order,
-				orderType,
-				deferExec
-			);
+			postOrderMarketResponse = await this.postOrder(order, orderType, deferExec);
 		});
-		
-		return postOrderMarketResponse
+
+		return postOrderMarketResponse;
 	}
 
 	public async getOpenOrders(
@@ -901,7 +897,7 @@ export class ClobClient {
 		if (this.canBuilderAuth()) {
 			const builderHeaders = await this._generateBuilderHeaders(headers, l2HeaderArgs);
 			if (builderHeaders !== undefined) {
-				headers = builderHeaders
+				headers = builderHeaders;
 			}
 		}
 
@@ -910,9 +906,9 @@ export class ClobClient {
 			data: orderPayload,
 		});
 
-		if(this._isOrderVersionMismatch(res)) await this.resolveVersion(true)
+		if (this._isOrderVersionMismatch(res)) await this.resolveVersion(true);
 
-		return res
+		return res;
 	}
 
 	public async postOrders(
@@ -948,7 +944,7 @@ export class ClobClient {
 		if (this.canBuilderAuth()) {
 			const builderHeaders = await this._generateBuilderHeaders(headers, l2HeaderArgs);
 			if (builderHeaders !== undefined) {
-				headers = builderHeaders
+				headers = builderHeaders;
 			}
 		}
 
@@ -959,7 +955,7 @@ export class ClobClient {
 
 		if (this._isOrderVersionMismatch(res)) await this.resolveVersion(true);
 
-		return res
+		return res;
 	}
 
 	public async cancelOrder(payload: OrderPayload): Promise<any> {
@@ -1371,7 +1367,7 @@ export class ClobClient {
 
 		// if force update, update user-provider version override as well
 		if (forceUpdate) {
-			this.version = apiVersion
+			this.version = apiVersion;
 		}
 
 		return apiVersion;
@@ -1419,18 +1415,18 @@ export class ClobClient {
 	}
 
 	private async _retryOnVersionUpdate(retryFunc: () => Promise<unknown>) {
-		const version = await this.resolveVersion()
+		const version = await this.resolveVersion();
 
 		for (let attempt = 0; attempt < 2; attempt++) {
 			await retryFunc();
 
 			// no need to retry if version is unchanged
-			if(version == await this.resolveVersion()) break
+			if (version === (await this.resolveVersion())) break;
 		}
 	}
 
 	private _isOrderVersionMismatch(resp: ClobErrorResponseBody) {
-    	return String(resp?.error ?? "").includes(ORDER_VERSION_MISMATCH_ERROR);
+		return String(resp?.error ?? "").includes(ORDER_VERSION_MISMATCH_ERROR);
 	}
 
 	// http methods

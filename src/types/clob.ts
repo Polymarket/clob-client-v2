@@ -405,5 +405,5 @@ export interface BuilderTrade {
 }
 
 export type ClobErrorResponseBody = {
-  error: string;
+	error: string;
 };
