@@ -31,9 +31,23 @@ export const createMarketOrder = async (
 		ROUNDING_CONFIG[options.tickSize],
 	);
 
-	const exchangeContract = options.negRisk
-		? contractConfig.negRiskExchangeV2
-		: contractConfig.exchangeV2;
+	let exchangeContract: string;
+	switch (version) {
+		case 1:
+			exchangeContract = options.negRisk
+				? contractConfig.negRiskExchange
+				: contractConfig.exchange;
+			// Add taker field for V1 orders (V1 requires it, V2 does not)
+			(orderData as any).taker = "0x0000000000000000000000000000000000000000";
+			break;
+		case 2:
+			exchangeContract = options.negRisk
+				? contractConfig.negRiskExchangeV2
+				: contractConfig.exchangeV2;
+			break;
+		default:
+			throw new Error(`unsupported order version ${version}`);
+	}
 
 	return buildOrder(eoaSigner, exchangeContract, chainId, orderData, version);
 };

@@ -37,6 +37,8 @@ export const createOrder = async (
 			exchangeContract = options.negRisk
 				? contractConfig.negRiskExchange
 				: contractConfig.exchange;
+			// Add taker field for V1 orders (V1 requires it, V2 does not)
+			(orderData as any).taker = "0x0000000000000000000000000000000000000000";
 			break;
 		case 2:
 			exchangeContract = options.negRisk
