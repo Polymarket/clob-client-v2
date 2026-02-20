@@ -8,6 +8,7 @@ import type { Chain, CreateOrderOptions, UserOrderV2 } from "../../types";
 import { buildOrder } from "./buildOrder";
 import { buildOrderCreationArgs } from "./buildOrderCreationArgs";
 import { ROUNDING_CONFIG } from "./roundingConfig";
+import { zeroAddress } from "viem";
 
 export const createOrder = async (
 	eoaSigner: Wallet | JsonRpcSigner,
@@ -38,7 +39,7 @@ export const createOrder = async (
 				? contractConfig.negRiskExchange
 				: contractConfig.exchange;
 			// Add taker field for V1 orders (V1 requires it, V2 does not)
-			(orderData as any).taker = "0x0000000000000000000000000000000000000000";
+			(orderData as any).taker = zeroAddress;
 			break;
 		case 2:
 			exchangeContract = options.negRisk
