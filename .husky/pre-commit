@@ -1,0 +1,1 @@
+pnpm biome check --write ./src ./tests

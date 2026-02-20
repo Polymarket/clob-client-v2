@@ -42,7 +42,8 @@
 		"build": "make build",
 		"lint": "make lint",
 		"deploy": "pnpm build && npm publish",
-		"test": "make test"
+		"test": "make test",
+		"prepare": "husky"
 	},
 	"dependencies": {
 		"@ethersproject/providers": "^5.7.2",
@@ -59,6 +60,7 @@
 		"@types/node": "^18.19.130",
 		"@types/ws": "^8.18.1",
 		"dotenv": "^16.6.1",
+		"husky": "^9.1.7",
 		"jsdom": "^20.0.3",
 		"typescript": "^5.9.3",
 		"vitest": "^4.0.15",
