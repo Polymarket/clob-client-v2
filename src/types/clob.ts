@@ -259,6 +259,36 @@ export interface FeeRates {
 	[tokenId: string]: number;
 }
 
+export interface FeeExponents {
+	[tokenId: string]: number;
+}
+
+export interface BuilderFeeRates {
+	[tokenId: string]: { maker: number; taker: number };
+}
+
+export type TokenConditionMap = Record<string, string>;
+
+export interface FeeDetails {
+	r: number; // fee rate
+	e: number; // fee exponent
+	to: boolean; // taker only
+}
+
+export interface ClobToken {
+	t: string; // token ID
+	o: string; // outcome
+}
+
+export interface MarketDetails {
+	t: [ClobToken | null, ClobToken | null]; // YES and NO tokens
+	mts: string; // min tick size
+	nr: boolean; // neg risk
+	fd?: FeeDetails; // platform fee details
+	mbf?: number; // builder maker fee rate
+	tbf?: number; // builder taker fee rate
+}
+
 export interface PaginationPayload {
 	readonly limit: number;
 	readonly count: number;

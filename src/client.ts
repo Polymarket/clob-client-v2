@@ -85,15 +85,18 @@ import type {
 	BookParams,
 	BuilderApiKey,
 	BuilderApiKeyResponse,
+	BuilderFeeRates,
 	BuilderTrade,
 	Chain,
 	ClobErrorResponseBody,
 	CreateOrderOptions,
 	DropNotificationParams,
+	FeeExponents,
 	FeeRates,
 	L2HeaderArgs,
 	L2PolyHeader,
 	L2WithBuilderHeader,
+	MarketDetails,
 	MarketPrice,
 	MarketReward,
 	MarketTradeEvent,
@@ -118,6 +121,7 @@ import type {
 	RewardsPercentages,
 	TickSize,
 	TickSizes,
+	TokenConditionMap,
 	TotalUserEarning,
 	Trade,
 	TradeParams,
@@ -154,6 +158,12 @@ export class ClobClient {
 	readonly negRisk: NegRisk;
 
 	readonly feeRates: FeeRates;
+
+	readonly feeExponents: FeeExponents;
+
+	readonly builderFeeRates: BuilderFeeRates;
+
+	private readonly tokenConditionMap: TokenConditionMap;
 
 	readonly geoBlockToken?: string;
 
@@ -195,6 +205,9 @@ export class ClobClient {
 		this.tickSizes = {};
 		this.negRisk = {};
 		this.feeRates = {};
+		this.feeExponents = {};
+		this.builderFeeRates = {};
+		this.tokenConditionMap = {};
 		this.geoBlockToken = geoBlockToken;
 		this.useServerTime = useServerTime;
 		if (builderConfig !== undefined) {
@@ -247,6 +260,33 @@ export class ClobClient {
 		return this.get(`${this.host}${GET_MARKET}${conditionID}`);
 	}
 
+	public async getMarketInfo(conditionID: string): Promise<MarketDetails> {
+		const result: MarketDetails = await this.get(`${this.host}${GET_MARKET}${conditionID}`);
+
+		for (const token of result.t) {
+			if (!token) continue;
+			const tokenId = token.t;
+
+			this.tokenConditionMap[tokenId] = conditionID;
+			this.tickSizes[tokenId] = result.mts as TickSize;
+			this.negRisk[tokenId] = result.nr;
+
+			if (result.fd) {
+				this.feeRates[tokenId] = result.fd.r;
+				this.feeExponents[tokenId] = result.fd.e;
+			}
+
+			if (result.mbf !== undefined || result.tbf !== undefined) {
+				this.builderFeeRates[tokenId] = {
+					maker: result.mbf ?? 0,
+					taker: result.tbf ?? 0,
+				};
+			}
+		}
+
+		return result;
+	}
+
 	public async getOrderBook(tokenID: string): Promise<OrderBookSummary> {
 		return this.get(`${this.host}${GET_ORDER_BOOK}`, {
 			params: { token_id: tokenID },
@@ -259,8 +299,14 @@ export class ClobClient {
 		});
 	}
 
+	/** @deprecated use getMarketInfo() to prime the cache */
 	public async getTickSize(tokenID: string): Promise<TickSize> {
 		if (tokenID in this.tickSizes) {
+			return this.tickSizes[tokenID];
+		}
+
+		if (tokenID in this.tokenConditionMap) {
+			await this.getMarketInfo(this.tokenConditionMap[tokenID]);
 			return this.tickSizes[tokenID];
 		}
 
@@ -272,8 +318,14 @@ export class ClobClient {
 		return this.tickSizes[tokenID];
 	}
 
+	/** @deprecated use getMarketInfo() to prime the cache */
 	public async getNegRisk(tokenID: string): Promise<boolean> {
 		if (tokenID in this.negRisk) {
+			return this.negRisk[tokenID];
+		}
+
+		if (tokenID in this.tokenConditionMap) {
+			await this.getMarketInfo(this.tokenConditionMap[tokenID]);
 			return this.negRisk[tokenID];
 		}
 
@@ -285,8 +337,14 @@ export class ClobClient {
 		return this.negRisk[tokenID];
 	}
 
+	/** @deprecated use getMarketInfo() to prime the cache */
 	public async getFeeRateBps(tokenID: string): Promise<number> {
 		if (tokenID in this.feeRates) {
+			return this.feeRates[tokenID];
+		}
+
+		if (tokenID in this.tokenConditionMap) {
+			await this.getMarketInfo(this.tokenConditionMap[tokenID]);
 			return this.feeRates[tokenID];
 		}
 
@@ -298,11 +356,21 @@ export class ClobClient {
 		return this.feeRates[tokenID];
 	}
 
-	/**
-	 * Calculates the hash for the given orderbook
-	 * @param orderbook
-	 * @returns
-	 */
+	public async getFeeExponent(tokenID: string): Promise<number> {
+		if (tokenID in this.feeExponents) {
+			return this.feeExponents[tokenID];
+		}
+
+		if (tokenID in this.tokenConditionMap) {
+			await this.getMarketInfo(this.tokenConditionMap[tokenID]);
+			return this.feeExponents[tokenID];
+		}
+
+		throw new Error(
+			`fee exponent not cached for token ${tokenID}. Call getMarketInfo(conditionId) first.`,
+		);
+	}
+
 	public getOrderBookHash(orderbook: OrderBookSummary): string {
 		return generateOrderBookSummaryHash(orderbook);
 	}
