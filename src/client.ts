@@ -18,12 +18,12 @@ import {
 	GET_BALANCE_ALLOWANCE,
 	GET_BUILDER_API_KEYS,
 	GET_BUILDER_TRADES,
+	GET_CLOB_MARKET,
 	GET_EARNINGS_FOR_USER_FOR_DAY,
 	GET_FEE_RATE,
 	GET_LAST_TRADE_PRICE,
 	GET_LAST_TRADES_PRICES,
 	GET_LIQUIDITY_REWARD_PERCENTAGES,
-	GET_CLOB_MARKET,
 	GET_MARKET,
 	GET_MARKET_BY_TOKEN,
 	GET_MARKET_TRADES_EVENTS,
@@ -263,7 +263,9 @@ export class ClobClient {
 	}
 
 	public async getClobMarketInfo(conditionID: string): Promise<MarketDetails> {
-		const result: MarketDetails = await this.get(`${this.host}${GET_CLOB_MARKET}${conditionID}`);
+		const result: MarketDetails = await this.get(
+			`${this.host}${GET_CLOB_MARKET}${conditionID}`,
+		);
 
 		for (const token of result.t) {
 			if (!token) continue;
@@ -365,6 +367,11 @@ export class ClobClient {
 		return this.feeExponents[tokenID];
 	}
 
+	/**
+	 * Calculates the hash for the given orderbook
+	 * @param orderbook
+	 * @returns
+	 */
 	public getOrderBookHash(orderbook: OrderBookSummary): string {
 		return generateOrderBookSummaryHash(orderbook);
 	}
@@ -1449,7 +1456,7 @@ export class ClobClient {
 		feeExponent: number,
 		builderTakerFeeRate: number = 0,
 	): number {
-		const platformFeeRate = feeRate * Math.pow(price * (1 - price), feeExponent);
+		const platformFeeRate = feeRate * (price * (1 - price)) ** feeExponent;
 
 		// builder_fee is flat % on notional, no exponent
 		// combined: builder_fee+platform_fee
