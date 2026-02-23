@@ -225,7 +225,7 @@ export class ClobClient {
 	public async getVersion(): Promise<number> {
 		const response = await this.get(`${this.host}/version`);
 		// default to v2
-		return response?.version || 2;
+		return response?.version ?? 2;
 	}
 
 	public async getServerTime(): Promise<number> {
@@ -266,6 +266,10 @@ export class ClobClient {
 		const result: MarketDetails = await this.get(
 			`${this.host}${GET_CLOB_MARKET}${conditionID}`,
 		);
+
+		if (!result?.t) {
+			throw new Error(`failed to fetch market info for condition id ${conditionID}`);
+		}
 
 		for (const token of result.t) {
 			if (!token) continue;
@@ -1415,6 +1419,9 @@ export class ClobClient {
 
 		if (!(tokenID in this.tokenConditionMap)) {
 			const result = await this.get(`${this.host}${GET_MARKET_BY_TOKEN}${tokenID}`);
+			if (!result?.condition_id) {
+				throw new Error(`failed to resolve condition id for token ${tokenID}`);
+			}
 			this.tokenConditionMap[tokenID] = result.condition_id as string;
 		}
 
@@ -1520,7 +1527,10 @@ export class ClobClient {
 	}
 
 	private _isOrderVersionMismatch(resp: ClobErrorResponseBody) {
-		return String(resp?.error ?? "").includes(ORDER_VERSION_MISMATCH_ERROR);
+		const error = resp?.error;
+		if (!error) return false;
+		const message = typeof error === "string" ? error : JSON.stringify(error);
+		return message.includes(ORDER_VERSION_MISMATCH_ERROR);
 	}
 
 	// http methods

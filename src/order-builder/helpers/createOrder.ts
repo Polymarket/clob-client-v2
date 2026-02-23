@@ -2,7 +2,8 @@ import type { JsonRpcSigner } from "@ethersproject/providers";
 import type { Wallet } from "@ethersproject/wallet";
 import { zeroAddress } from "viem";
 import { getContractConfig } from "../../config";
-import type { OrderDataV1, SignatureTypeV2, SignedOrderV1, SignedOrderV2 } from "../../order-utils";
+import { SignatureTypeV2 } from "../../order-utils";
+import type { OrderDataV1, SignedOrderV1, SignedOrderV2 } from "../../order-utils";
 import type { Chain, CreateOrderOptions, UserOrderV2 } from "../../types";
 import { buildOrder } from "./buildOrder";
 import { buildOrderCreationArgs } from "./buildOrderCreationArgs";
@@ -33,6 +34,9 @@ export const createOrder = async (
 	let exchangeContract: string;
 	switch (version) {
 		case 1:
+			if (signatureType === SignatureTypeV2.POLY_1271) {
+				throw new Error(`signature type POLY_1271 is not supported for v1 orders`);
+			}
 			exchangeContract = options.negRisk
 				? contractConfig.negRiskExchange
 				: contractConfig.exchange;
