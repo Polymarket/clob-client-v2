@@ -270,8 +270,8 @@ export interface BuilderFeeRates {
 export type TokenConditionMap = Record<string, string>;
 
 export interface FeeDetails {
-	r: number; // fee rate
-	e: number; // fee exponent
+	r?: number; // fee rate
+	e?: number; // fee exponent
 	to: boolean; // taker only
 }
 
@@ -281,8 +281,9 @@ export interface ClobToken {
 }
 
 export interface MarketDetails {
+	c: string; // condition ID
 	t: [ClobToken | null, ClobToken | null]; // YES and NO tokens
-	mts: string; // min tick size
+	mts: number; // min tick size
 	nr: boolean; // neg risk
 	fd?: FeeDetails; // platform fee details
 	mbf?: number; // builder maker fee rate

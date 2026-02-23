@@ -23,7 +23,9 @@ import {
 	GET_LAST_TRADE_PRICE,
 	GET_LAST_TRADES_PRICES,
 	GET_LIQUIDITY_REWARD_PERCENTAGES,
+	GET_CLOB_MARKET,
 	GET_MARKET,
+	GET_MARKET_BY_TOKEN,
 	GET_MARKET_TRADES_EVENTS,
 	GET_MARKETS,
 	GET_MIDPOINT,
@@ -260,21 +262,19 @@ export class ClobClient {
 		return this.get(`${this.host}${GET_MARKET}${conditionID}`);
 	}
 
-	public async getMarketInfo(conditionID: string): Promise<MarketDetails> {
-		const result: MarketDetails = await this.get(`${this.host}${GET_MARKET}${conditionID}`);
+	public async getClobMarketInfo(conditionID: string): Promise<MarketDetails> {
+		const result: MarketDetails = await this.get(`${this.host}${GET_CLOB_MARKET}${conditionID}`);
 
 		for (const token of result.t) {
 			if (!token) continue;
 			const tokenId = token.t;
 
 			this.tokenConditionMap[tokenId] = conditionID;
-			this.tickSizes[tokenId] = result.mts as TickSize;
+			this.tickSizes[tokenId] = result.mts.toString() as TickSize;
 			this.negRisk[tokenId] = result.nr;
 
-			if (result.fd) {
-				this.feeRates[tokenId] = result.fd.r;
-				this.feeExponents[tokenId] = result.fd.e;
-			}
+			this.feeRates[tokenId] = result.fd?.r ?? 0;
+			this.feeExponents[tokenId] = result.fd?.e ?? 0;
 
 			if (result.mbf !== undefined || result.tbf !== undefined) {
 				this.builderFeeRates[tokenId] = {
@@ -299,14 +299,14 @@ export class ClobClient {
 		});
 	}
 
-	/** @deprecated use getMarketInfo() to prime the cache */
+	/** @deprecated use getClobMarketInfo() to prime the cache */
 	public async getTickSize(tokenID: string): Promise<TickSize> {
 		if (tokenID in this.tickSizes) {
 			return this.tickSizes[tokenID];
 		}
 
 		if (tokenID in this.tokenConditionMap) {
-			await this.getMarketInfo(this.tokenConditionMap[tokenID]);
+			await this.getClobMarketInfo(this.tokenConditionMap[tokenID]);
 			return this.tickSizes[tokenID];
 		}
 
@@ -318,14 +318,14 @@ export class ClobClient {
 		return this.tickSizes[tokenID];
 	}
 
-	/** @deprecated use getMarketInfo() to prime the cache */
+	/** @deprecated use getClobMarketInfo() to prime the cache */
 	public async getNegRisk(tokenID: string): Promise<boolean> {
 		if (tokenID in this.negRisk) {
 			return this.negRisk[tokenID];
 		}
 
 		if (tokenID in this.tokenConditionMap) {
-			await this.getMarketInfo(this.tokenConditionMap[tokenID]);
+			await this.getClobMarketInfo(this.tokenConditionMap[tokenID]);
 			return this.negRisk[tokenID];
 		}
 
@@ -337,14 +337,14 @@ export class ClobClient {
 		return this.negRisk[tokenID];
 	}
 
-	/** @deprecated use getMarketInfo() to prime the cache */
+	/** @deprecated use getClobMarketInfo() to prime the cache */
 	public async getFeeRateBps(tokenID: string): Promise<number> {
 		if (tokenID in this.feeRates) {
 			return this.feeRates[tokenID];
 		}
 
 		if (tokenID in this.tokenConditionMap) {
-			await this.getMarketInfo(this.tokenConditionMap[tokenID]);
+			await this.getClobMarketInfo(this.tokenConditionMap[tokenID]);
 			return this.feeRates[tokenID];
 		}
 
@@ -361,14 +361,8 @@ export class ClobClient {
 			return this.feeExponents[tokenID];
 		}
 
-		if (tokenID in this.tokenConditionMap) {
-			await this.getMarketInfo(this.tokenConditionMap[tokenID]);
-			return this.feeExponents[tokenID];
-		}
-
-		throw new Error(
-			`fee exponent not cached for token ${tokenID}. Call getMarketInfo(conditionId) first.`,
-		);
+		await this._ensureMarketInfoCached(tokenID);
+		return this.feeExponents[tokenID];
 	}
 
 	public getOrderBookHash(orderbook: OrderBookSummary): string {
@@ -829,6 +823,8 @@ export class ClobClient {
 
 		const { tokenID } = userMarketOrder;
 
+		await this._ensureMarketInfoCached(tokenID);
+
 		const tickSize = await this._resolveTickSize(tokenID, options?.tickSize);
 
 		if (!userMarketOrder.price) {
@@ -845,6 +841,16 @@ export class ClobClient {
 				`invalid price (${userMarketOrder.price}), min: ${parseFloat(tickSize)} - max: ${
 					1 - parseFloat(tickSize)
 				}`,
+			);
+		}
+
+		if (userMarketOrder.side === Side.BUY) {
+			userMarketOrder.amount = this._calculateFeeAdjustedAmount(
+				userMarketOrder.amount,
+				userMarketOrder.price,
+				this.feeRates[tokenID],
+				this.feeExponents[tokenID],
+				this.builderFeeRates[tokenID]?.taker ?? 0,
 			);
 		}
 
@@ -1397,6 +1403,17 @@ export class ClobClient {
 		return this.builderConfig?.isValid() ?? false;
 	}
 
+	private async _ensureMarketInfoCached(tokenID: string): Promise<void> {
+		if (tokenID in this.feeRates && tokenID in this.feeExponents) return;
+
+		if (!(tokenID in this.tokenConditionMap)) {
+			const result = await this.get(`${this.host}${GET_MARKET_BY_TOKEN}${tokenID}`);
+			this.tokenConditionMap[tokenID] = result.condition_id as string;
+		}
+
+		await this.getClobMarketInfo(this.tokenConditionMap[tokenID]);
+	}
+
 	private async _resolveTickSize(tokenID: string, tickSize?: TickSize): Promise<TickSize> {
 		const minTickSize = await this.getTickSize(tokenID);
 		if (tickSize) {
@@ -1422,6 +1439,25 @@ export class ClobClient {
 		this.cachedVersion = apiVersion;
 
 		return apiVersion;
+	}
+
+	// platform_fee = C * rate * (p*(1-p))^exp
+	private _calculateFeeAdjustedAmount(
+		amount: number,
+		price: number,
+		feeRate: number,
+		feeExponent: number,
+		builderTakerFeeRate: number = 0,
+	): number {
+		const platformFeeRate = feeRate * Math.pow(price * (1 - price), feeExponent);
+
+		// builder_fee is flat % on notional, no exponent
+		// combined: builder_fee+platform_fee
+		const totalFeeRate = platformFeeRate + builderTakerFeeRate;
+
+		// effective_amount + (effective_amount * totalFeeRate) = amount
+		// effective_amount * (1 + totalFeeRate) = amount
+		return amount / (1 + totalFeeRate);
 	}
 
 	// private async _resolveFeeRateBps(tokenID: string, userFeeRateBps?: number): Promise<number> {
