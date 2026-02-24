@@ -860,7 +860,7 @@ export class ClobClient {
 				orderToSign.price!,
 				this.feeRates[tokenID],
 				this.feeExponents[tokenID],
-				this.builderFeeRates[tokenID]?.taker ?? 0,
+				this.canBuilderAuth() ? (this.builderFeeRates[tokenID]?.taker ?? 0) : 0,
 			);
 			const totalCost = orderToSign.amount * (1 + totalFeeRate);
 
