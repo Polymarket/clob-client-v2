@@ -852,10 +852,13 @@ export class ClobClient {
 			);
 		}
 
-		if (userMarketOrder.side === Side.BUY) {
-			userMarketOrder.amount = this._calculateFeeAdjustedAmount(
-				userMarketOrder.amount,
-				userMarketOrder.price,
+		const orderToSign = { ...userMarketOrder };
+
+		if (orderToSign.side === Side.BUY) {
+			orderToSign.amount = this._calculateFeeAdjustedAmount(
+				orderToSign.amount,
+				// biome-ignore lint/style/noNonNullAssertion: price is validated above
+				orderToSign.price!,
 				this.feeRates[tokenID],
 				this.feeExponents[tokenID],
 				this.builderFeeRates[tokenID]?.taker ?? 0,
@@ -866,7 +869,7 @@ export class ClobClient {
 		const version = await this.resolveVersion();
 
 		return this.orderBuilder.buildMarketOrder(
-			userMarketOrder,
+			orderToSign,
 			{
 				tickSize,
 				negRisk,
