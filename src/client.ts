@@ -305,7 +305,6 @@ export class ClobClient {
 		});
 	}
 
-	/** @deprecated use getClobMarketInfo() to prime the cache */
 	public async getTickSize(tokenID: string): Promise<TickSize> {
 		if (tokenID in this.tickSizes) {
 			return this.tickSizes[tokenID];
@@ -324,7 +323,6 @@ export class ClobClient {
 		return this.tickSizes[tokenID];
 	}
 
-	/** @deprecated use getClobMarketInfo() to prime the cache */
 	public async getNegRisk(tokenID: string): Promise<boolean> {
 		if (tokenID in this.negRisk) {
 			return this.negRisk[tokenID];
@@ -343,7 +341,6 @@ export class ClobClient {
 		return this.negRisk[tokenID];
 	}
 
-	/** @deprecated use getClobMarketInfo() to prime the cache */
 	public async getFeeRateBps(tokenID: string): Promise<number> {
 		if (tokenID in this.feeRates) {
 			return this.feeRates[tokenID];
