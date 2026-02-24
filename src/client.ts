@@ -854,15 +854,22 @@ export class ClobClient {
 
 		const orderToSign = { ...userMarketOrder };
 
-		if (orderToSign.side === Side.BUY) {
-			orderToSign.amount = this._calculateFeeAdjustedAmount(
-				orderToSign.amount,
+		if (orderToSign.side === Side.BUY && orderToSign.userUSDCBalance !== undefined) {
+			const totalFeeRate = this._calculateTotalFeeRate(
 				// biome-ignore lint/style/noNonNullAssertion: price is validated above
 				orderToSign.price!,
 				this.feeRates[tokenID],
 				this.feeExponents[tokenID],
 				this.builderFeeRates[tokenID]?.taker ?? 0,
 			);
+			const totalCost = orderToSign.amount * (1 + totalFeeRate);
+
+			if (orderToSign.userUSDCBalance <= totalCost) {
+				orderToSign.amount = this._calculateFeeAdjustedAmount(
+					orderToSign.amount,
+					totalFeeRate,
+				);
+			}
 		}
 
 		const negRisk = options?.negRisk ?? (await this.getNegRisk(tokenID));
@@ -1455,20 +1462,19 @@ export class ClobClient {
 		return apiVersion;
 	}
 
-	// platform_fee = C * rate * (p*(1-p))^exp
-	private _calculateFeeAdjustedAmount(
-		amount: number,
+	private _calculateTotalFeeRate(
 		price: number,
 		feeRate: number,
 		feeExponent: number,
 		builderTakerFeeRate: number = 0,
 	): number {
+		// platform_fee = C * rate * (p*(1-p))^exp
 		const platformFeeRate = feeRate * (price * (1 - price)) ** feeExponent;
-
 		// builder_fee is flat % on notional, no exponent
-		// combined: builder_fee+platform_fee
-		const totalFeeRate = platformFeeRate + builderTakerFeeRate;
+		return platformFeeRate + builderTakerFeeRate;
+	}
 
+	private _calculateFeeAdjustedAmount(amount: number, totalFeeRate: number): number {
 		// effective_amount + (effective_amount * totalFeeRate) = amount
 		// effective_amount * (1 + totalFeeRate) = amount
 		return amount / (1 + totalFeeRate);

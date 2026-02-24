@@ -87,4 +87,11 @@ export interface UserMarketOrderV2 {
 	 * - FAK (Fill and Kill): The order can be partially filled, and any unfilled portion is canceled.
 	 */
 	orderType?: OrderType.FOK | OrderType.FAK;
+
+	/**
+	 * User's USDC balance. If provided and sufficient to cover amount + fees, the order
+	 * amount is used as-is. Otherwise fees are deducted from the amount.
+	 * If this field is left empty, the default flow is to use the order amount as-is
+	 */
+	userUSDCBalance?: number;
 }
