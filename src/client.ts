@@ -860,19 +860,29 @@ export class ClobClient {
 		const orderToSign = { ...userMarketOrder };
 
 		if (orderToSign.side === Side.BUY && orderToSign.userUSDCBalance !== undefined) {
-			const totalFeeRate = this._calculateTotalFeeRate(
-				// biome-ignore lint/style/noNonNullAssertion: price is validated above
-				orderToSign.price!,
+			// biome-ignore lint/style/noNonNullAssertion: price is validated above
+			const price = orderToSign.price!;
+			const builderTakerFeeRate = this.canBuilderAuth()
+				? (this.builderFeeRates[tokenID]?.taker ?? 0)
+				: 0;
+
+			const platformFeeRate = this._calculatePlatformFeeRate(
+				price,
 				this.feeRates[tokenID],
 				this.feeExponents[tokenID],
-				this.canBuilderAuth() ? (this.builderFeeRates[tokenID]?.taker ?? 0) : 0,
 			);
-			const totalCost = orderToSign.amount * (1 + totalFeeRate);
+			// platform_fee = C * platform_fee_rate, C = amount / price
+			const platformFee = (orderToSign.amount / price) * platformFeeRate;
+			const totalCost =
+				orderToSign.amount + platformFee + orderToSign.amount * builderTakerFeeRate;
 
 			if (orderToSign.userUSDCBalance <= totalCost) {
 				orderToSign.amount = this._calculateFeeAdjustedAmount(
 					orderToSign.amount,
-					totalFeeRate,
+					price,
+					this.feeRates[tokenID],
+					this.feeExponents[tokenID],
+					builderTakerFeeRate,
 				);
 			}
 		}
@@ -1467,22 +1477,22 @@ export class ClobClient {
 		return apiVersion;
 	}
 
-	private _calculateTotalFeeRate(
+	private _calculatePlatformFeeRate(price: number, feeRate: number, feeExponent: number): number {
+		// platform_fee_rate = rate * (p*(1-p))^exp
+		return feeRate * (price * (1 - price)) ** feeExponent;
+	}
+
+	private _calculateFeeAdjustedAmount(
+		budget: number,
 		price: number,
 		feeRate: number,
 		feeExponent: number,
 		builderTakerFeeRate: number = 0,
 	): number {
-		// platform_fee = C * rate * (p*(1-p))^exp
-		const platformFeeRate = feeRate * (price * (1 - price)) ** feeExponent;
-		// builder_fee is flat % on notional, no exponent
-		return platformFeeRate + builderTakerFeeRate;
-	}
-
-	private _calculateFeeAdjustedAmount(amount: number, totalFeeRate: number): number {
-		// effective_amount + (effective_amount * totalFeeRate) = amount
-		// effective_amount * (1 + totalFeeRate) = amount
-		return amount / (1 + totalFeeRate);
+		// effective + (effective/price)*feeRate*(p*(1-p))^exp + effective*builderRate = budget
+		// effective * (1 + (feeRate*(p*(1-p))^exp)/price + builderRate) = budget
+		const platformFeeRate = this._calculatePlatformFeeRate(price, feeRate, feeExponent);
+		return budget / (1 + platformFeeRate / price + builderTakerFeeRate);
 	}
 
 	// private async _resolveFeeRateBps(tokenID: string, userFeeRateBps?: number): Promise<number> {
