@@ -1,7 +1,7 @@
 import type { JsonRpcSigner } from "@ethersproject/providers";
 import type { Wallet } from "@ethersproject/wallet";
 import type { BuilderConfig, BuilderHeaderPayload } from "./builder-signing";
-import { END_CURSOR, INITIAL_CURSOR, ORDER_VERSION_MISMATCH_ERROR } from "./constants";
+import { BUILDER_FEES_BPS, END_CURSOR, INITIAL_CURSOR, ORDER_VERSION_MISMATCH_ERROR } from "./constants";
 import {
 	ARE_ORDERS_SCORING,
 	CANCEL_ALL,
@@ -284,8 +284,8 @@ export class ClobClient {
 
 			if (result.mbf !== undefined || result.tbf !== undefined) {
 				this.builderFeeRates[tokenId] = {
-					maker: result.mbf ?? 0,
-					taker: result.tbf ?? 0,
+					maker: (result.mbf ?? 0) / BUILDER_FEES_BPS,
+					taker: (result.tbf ?? 0) / BUILDER_FEES_BPS,
 				};
 			}
 		}

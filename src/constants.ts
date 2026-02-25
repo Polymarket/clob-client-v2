@@ -9,3 +9,5 @@ export const END_CURSOR = "LTE=";
 export const bytes32Zero = "0x0000000000000000000000000000000000000000000000000000000000000000";
 
 export const ORDER_VERSION_MISMATCH_ERROR = "order_version_mismatch";
+
+export const BUILDER_FEES_BPS = 10000;
