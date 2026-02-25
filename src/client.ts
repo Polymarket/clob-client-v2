@@ -1,7 +1,12 @@
 import type { JsonRpcSigner } from "@ethersproject/providers";
 import type { Wallet } from "@ethersproject/wallet";
 import type { BuilderConfig, BuilderHeaderPayload } from "./builder-signing";
-import { BUILDER_FEES_BPS, END_CURSOR, INITIAL_CURSOR, ORDER_VERSION_MISMATCH_ERROR } from "./constants";
+import {
+	BUILDER_FEES_BPS,
+	END_CURSOR,
+	INITIAL_CURSOR,
+	ORDER_VERSION_MISMATCH_ERROR,
+} from "./constants";
 import {
 	ARE_ORDERS_SCORING,
 	CANCEL_ALL,
