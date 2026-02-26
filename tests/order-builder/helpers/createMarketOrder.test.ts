@@ -585,53 +585,103 @@ describe("createMarketOrder", () => {
 	});
 
 	describe("builderCode", () => {
-		const base: UserMarketOrderV2 = {
-			side: Side.BUY,
-			tokenID: "123",
-			price: 0.5,
-			amount: 100,
-		};
 		const maker = "0xf39Fd6e51aad88F6F4ce6aB8827279cffFb92266";
+		const builderCode = "0x1234567890abcdef1234567890abcdef1234567890abcdef1234567890abcdef";
 
-		it("no builderCode → builder = bytes32Zero", async () => {
-			const signedOrder = await createMarketOrder(
-				wallet,
-				Chain.AMOY,
-				SignatureTypeV2.EOA,
-				maker,
-				base,
-				{ tickSize: "0.1", negRisk: false },
-				2,
-			);
-			expect(signedOrder.builder).toBe(bytes32Zero);
+		describe("UserMarketOrderV2", () => {
+			const base: UserMarketOrderV2 = {
+				side: Side.BUY,
+				tokenID: "123",
+				price: 0.5,
+				amount: 100,
+			};
+
+			it("no builderCode → builder = bytes32Zero", async () => {
+				const signedOrder = await createMarketOrder(
+					wallet,
+					Chain.AMOY,
+					SignatureTypeV2.EOA,
+					maker,
+					base,
+					{ tickSize: "0.1", negRisk: false },
+					2,
+				);
+				expect(signedOrder.builder).toBe(bytes32Zero);
+			});
+
+			it("builderCode set → builder = builderCode", async () => {
+				const signedOrder = await createMarketOrder(
+					wallet,
+					Chain.AMOY,
+					SignatureTypeV2.EOA,
+					maker,
+					{ ...base, builderCode },
+					{ tickSize: "0.1", negRisk: false },
+					2,
+				);
+				expect(signedOrder.builder).toBe(builderCode);
+			});
+
+			it("builderCode = bytes32Zero → builder = bytes32Zero", async () => {
+				const signedOrder = await createMarketOrder(
+					wallet,
+					Chain.AMOY,
+					SignatureTypeV2.EOA,
+					maker,
+					{ ...base, builderCode: bytes32Zero },
+					{ tickSize: "0.1", negRisk: false },
+					2,
+				);
+				expect(signedOrder.builder).toBe(bytes32Zero);
+			});
 		});
 
-		it("builderCode set → builder = builderCode", async () => {
-			const builderCode =
-				"0x1234567890abcdef1234567890abcdef1234567890abcdef1234567890abcdef";
-			const signedOrder = await createMarketOrder(
-				wallet,
-				Chain.AMOY,
-				SignatureTypeV2.EOA,
-				maker,
-				{ ...base, builderCode },
-				{ tickSize: "0.1", negRisk: false },
-				2,
-			);
-			expect(signedOrder.builder).toBe(builderCode);
-		});
+		describe("UserMarketOrderV1", () => {
+			const base: UserMarketOrderV1 = {
+				side: Side.BUY,
+				tokenID: "123",
+				price: 0.5,
+				amount: 100,
+			};
 
-		it("builderCode = bytes32Zero → builder = bytes32Zero", async () => {
-			const signedOrder = await createMarketOrder(
-				wallet,
-				Chain.AMOY,
-				SignatureTypeV2.EOA,
-				maker,
-				{ ...base, builderCode: bytes32Zero },
-				{ tickSize: "0.1", negRisk: false },
-				2,
-			);
-			expect(signedOrder.builder).toBe(bytes32Zero);
+			it("no builderCode → builder = bytes32Zero", async () => {
+				const signedOrder = await createMarketOrder(
+					wallet,
+					Chain.AMOY,
+					SignatureTypeV2.EOA,
+					maker,
+					base,
+					{ tickSize: "0.1", negRisk: false },
+					2,
+				);
+				expect(signedOrder.builder).toBe(bytes32Zero);
+			});
+
+			it("builderCode set → builder = builderCode", async () => {
+				const signedOrder = await createMarketOrder(
+					wallet,
+					Chain.AMOY,
+					SignatureTypeV2.EOA,
+					maker,
+					{ ...base, builderCode },
+					{ tickSize: "0.1", negRisk: false },
+					2,
+				);
+				expect(signedOrder.builder).toBe(builderCode);
+			});
+
+			it("builderCode = bytes32Zero → builder = bytes32Zero", async () => {
+				const signedOrder = await createMarketOrder(
+					wallet,
+					Chain.AMOY,
+					SignatureTypeV2.EOA,
+					maker,
+					{ ...base, builderCode: bytes32Zero },
+					{ tickSize: "0.1", negRisk: false },
+					2,
+				);
+				expect(signedOrder.builder).toBe(bytes32Zero);
+			});
 		});
 	});
 });

@@ -3,7 +3,7 @@ import { beforeEach, describe, expect, it } from "vitest";
 import { bytes32Zero } from "../../../src/constants";
 import { createOrder } from "../../../src/order-builder/helpers";
 import { SignatureTypeV2 } from "../../../src/order-utils";
-import { Chain, Side, type UserOrderV2 } from "../../../src/types";
+import { Chain, Side, type UserOrderV1, type UserOrderV2 } from "../../../src/types";
 
 describe("createOrder", () => {
 	let wallet: Wallet;
@@ -577,53 +577,103 @@ describe("createOrder", () => {
 	});
 
 	describe("builderCode", () => {
-		const base: UserOrderV2 = {
-			tokenID: "123",
-			price: 0.5,
-			size: 21.04,
-			side: Side.BUY,
-		};
 		const maker = "0xf39Fd6e51aad88F6F4ce6aB8827279cffFb92266";
+		const builderCode = "0x1234567890abcdef1234567890abcdef1234567890abcdef1234567890abcdef";
 
-		it("no builderCode → builder = bytes32Zero", async () => {
-			const signedOrder = await createOrder(
-				wallet,
-				Chain.AMOY,
-				SignatureTypeV2.EOA,
-				maker,
-				base,
-				{ tickSize: "0.1", negRisk: false },
-				2,
-			);
-			expect(signedOrder.builder).toBe(bytes32Zero);
+		describe("UserOrderV2", () => {
+			const base: UserOrderV2 = {
+				tokenID: "123",
+				price: 0.5,
+				size: 21.04,
+				side: Side.BUY,
+			};
+
+			it("no builderCode → builder = bytes32Zero", async () => {
+				const signedOrder = await createOrder(
+					wallet,
+					Chain.AMOY,
+					SignatureTypeV2.EOA,
+					maker,
+					base,
+					{ tickSize: "0.1", negRisk: false },
+					2,
+				);
+				expect(signedOrder.builder).toBe(bytes32Zero);
+			});
+
+			it("builderCode set → builder = builderCode", async () => {
+				const signedOrder = await createOrder(
+					wallet,
+					Chain.AMOY,
+					SignatureTypeV2.EOA,
+					maker,
+					{ ...base, builderCode },
+					{ tickSize: "0.1", negRisk: false },
+					2,
+				);
+				expect(signedOrder.builder).toBe(builderCode);
+			});
+
+			it("builderCode = bytes32Zero → builder = bytes32Zero", async () => {
+				const signedOrder = await createOrder(
+					wallet,
+					Chain.AMOY,
+					SignatureTypeV2.EOA,
+					maker,
+					{ ...base, builderCode: bytes32Zero },
+					{ tickSize: "0.1", negRisk: false },
+					2,
+				);
+				expect(signedOrder.builder).toBe(bytes32Zero);
+			});
 		});
 
-		it("builderCode set → builder = builderCode", async () => {
-			const builderCode =
-				"0x1234567890abcdef1234567890abcdef1234567890abcdef1234567890abcdef";
-			const signedOrder = await createOrder(
-				wallet,
-				Chain.AMOY,
-				SignatureTypeV2.EOA,
-				maker,
-				{ ...base, builderCode },
-				{ tickSize: "0.1", negRisk: false },
-				2,
-			);
-			expect(signedOrder.builder).toBe(builderCode);
-		});
+		describe("UserOrderV1", () => {
+			const base: UserOrderV1 = {
+				tokenID: "123",
+				price: 0.5,
+				size: 21.04,
+				side: Side.BUY,
+			};
 
-		it("builderCode = bytes32Zero → builder = bytes32Zero", async () => {
-			const signedOrder = await createOrder(
-				wallet,
-				Chain.AMOY,
-				SignatureTypeV2.EOA,
-				maker,
-				{ ...base, builderCode: bytes32Zero },
-				{ tickSize: "0.1", negRisk: false },
-				2,
-			);
-			expect(signedOrder.builder).toBe(bytes32Zero);
+			it("no builderCode → builder = bytes32Zero", async () => {
+				const signedOrder = await createOrder(
+					wallet,
+					Chain.AMOY,
+					SignatureTypeV2.EOA,
+					maker,
+					base,
+					{ tickSize: "0.1", negRisk: false },
+					2,
+				);
+				expect(signedOrder.builder).toBe(bytes32Zero);
+			});
+
+			it("builderCode set → builder = builderCode", async () => {
+				const signedOrder = await createOrder(
+					wallet,
+					Chain.AMOY,
+					SignatureTypeV2.EOA,
+					maker,
+					{ ...base, builderCode },
+					{ tickSize: "0.1", negRisk: false },
+					2,
+				);
+				expect(signedOrder.builder).toBe(builderCode);
+			});
+
+			it("builderCode = bytes32Zero → builder = bytes32Zero", async () => {
+				const signedOrder = await createOrder(
+					wallet,
+					Chain.AMOY,
+					SignatureTypeV2.EOA,
+					maker,
+					{ ...base, builderCode: bytes32Zero },
+					{ tickSize: "0.1", negRisk: false },
+					2,
+				);
+				expect(signedOrder.builder).toBe(bytes32Zero);
+			});
 		});
 	});
 });
