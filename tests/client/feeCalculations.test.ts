@@ -1,60 +1,108 @@
 import { describe, expect, it } from "vitest";
 
-// Formula from ClobClient._calculateTotalFeeRate
-const calculateTotalFeeRate = (
+// platform_fee = C * rate * (p*(1-p))^exp, where C = amountUSD / price (already in USD)
+const calculatePlatformFee = (
+	amountUSD: number,
 	price: number,
 	feeRate: number,
 	feeExponent: number,
-	builderTakerFeeRate = 0,
 ): number => {
-	// platform_fee = C * rate * (p*(1-p))^exp
 	const platformFeeRate = feeRate * (price * (1 - price)) ** feeExponent;
-	// builder_fee is flat % on notional, no exponent
-	return platformFeeRate + builderTakerFeeRate;
+	return (amountUSD / price) * platformFeeRate;
+};
+
+// builder_fee = amountUSD * builderTakerFeeRate (flat % on notional)
+const calculateBuilderFee = (amountUSD: number, builderTakerFeeRate: number): number => {
+	return amountUSD * builderTakerFeeRate;
 };
 
 describe("fee calculations", () => {
-	// Matches https://github.com/Polymarket/clob-v2/blob/74851ea2dd5592cc7efb97deab0c6c19682200a4/packages/fees/pkg/app/platform_fee_test.go#L11
+	// Matches https://github.com/Polymarket/clob-v2/blob/74851ea2dd5592cc7efb97deab0c6c19682200a4/packages/fees/pkg/app/platform_fee_test.go
 	// rate=0.25, exp=2, C=100 contracts
-	// expected = Go rawFee * price (cash fee in collateral)
 	describe("platform fee (builder fee = 0)", () => {
 		const feeRate = 0.25;
 		const feeExponent = 2;
 		const contracts = 100;
 
-		it("price=0.5 → cash fee = 0.78125", () => {
+		it("price=0.5 → fee = 1.5625", () => {
 			const price = 0.5;
-			const amountUSD = contracts * price;
-			const fee = amountUSD * calculateTotalFeeRate(price, feeRate, feeExponent);
-			expect(fee).toBeCloseTo(0.78125, 6);
+			expect(calculatePlatformFee(contracts * price, price, feeRate, feeExponent)).toBeCloseTo(
+				1.5625,
+				6,
+			);
 		});
 
-		it("price=0.3 → cash fee = 0.33075", () => {
+		it("price=0.3 → fee = 1.1025", () => {
 			const price = 0.3;
-			const amountUSD = contracts * price;
-			const fee = amountUSD * calculateTotalFeeRate(price, feeRate, feeExponent);
-			expect(fee).toBeCloseTo(0.33075, 6);
+			expect(calculatePlatformFee(contracts * price, price, feeRate, feeExponent)).toBeCloseTo(
+				1.1025,
+				6,
+			);
 		});
 
-		it("price=0.1 → cash fee = 0.02025", () => {
+		it("price=0.1 → fee = 0.2025", () => {
 			const price = 0.1;
-			const amountUSD = contracts * price;
-			const fee = amountUSD * calculateTotalFeeRate(price, feeRate, feeExponent);
-			expect(fee).toBeCloseTo(0.02025, 6);
+			expect(calculatePlatformFee(contracts * price, price, feeRate, feeExponent)).toBeCloseTo(
+				0.2025,
+				6,
+			);
 		});
 
-		it("price=0.7 → cash fee = 0.77175 (symmetric with 0.3)", () => {
+		it("price=0.05 → fee = 0.05640625", () => {
+			const price = 0.05;
+			expect(calculatePlatformFee(contracts * price, price, feeRate, feeExponent)).toBeCloseTo(
+				0.05640625,
+				6,
+			);
+		});
+
+		it("price=0.01 → fee = 0.00245025", () => {
+			const price = 0.01;
+			expect(calculatePlatformFee(contracts * price, price, feeRate, feeExponent)).toBeCloseTo(
+				0.00245025,
+				6,
+			);
+		});
+
+		it("price=0.7 → fee = 1.1025 (symmetric with 0.3)", () => {
 			const price = 0.7;
-			const amountUSD = contracts * price;
-			const fee = amountUSD * calculateTotalFeeRate(price, feeRate, feeExponent);
-			expect(fee).toBeCloseTo(0.77175, 6);
+			expect(calculatePlatformFee(contracts * price, price, feeRate, feeExponent)).toBeCloseTo(
+				1.1025,
+				6,
+			);
 		});
 
-		it("price=0.9 → cash fee = 0.18225 (symmetric with 0.1)", () => {
+		it("price=0.9 → fee = 0.2025 (symmetric with 0.1)", () => {
 			const price = 0.9;
-			const amountUSD = contracts * price;
-			const fee = amountUSD * calculateTotalFeeRate(price, feeRate, feeExponent);
-			expect(fee).toBeCloseTo(0.18225, 6);
+			expect(calculatePlatformFee(contracts * price, price, feeRate, feeExponent)).toBeCloseTo(
+				0.2025,
+				6,
+			);
+		});
+
+		it("price=0.95 → fee = 0.05640625 (symmetric with 0.05)", () => {
+			const price = 0.95;
+			expect(calculatePlatformFee(contracts * price, price, feeRate, feeExponent)).toBeCloseTo(
+				0.05640625,
+				6,
+			);
+		});
+
+		it("price=0.99 → fee = 0.00245025 (symmetric with 0.01)", () => {
+			const price = 0.99;
+			expect(calculatePlatformFee(contracts * price, price, feeRate, feeExponent)).toBeCloseTo(
+				0.00245025,
+				6,
+			);
+		});
+
+		it("price=0.5, C=125.5 → fee = 1.9609375", () => {
+			const price = 0.5;
+			const c = 125.5;
+			expect(calculatePlatformFee(c * price, price, feeRate, feeExponent)).toBeCloseTo(
+				1.9609375,
+				6,
+			);
 		});
 	});
 
@@ -65,25 +113,73 @@ describe("fee calculations", () => {
 			const price = 0.5;
 			const contracts = 100;
 			const builderTakerFeeRate = 0.01; // 100 bps
-			const amountUSD = contracts * price;
-			const fee = amountUSD * calculateTotalFeeRate(price, 0, 0, builderTakerFeeRate);
-			expect(fee).toBeCloseTo(0.5, 6);
+			expect(calculateBuilderFee(contracts * price, builderTakerFeeRate)).toBeCloseTo(0.5, 6);
 		});
 
 		it("5% on 200 tokens at 75c → fee = 7.5", () => {
 			const price = 0.75;
 			const contracts = 200;
 			const builderTakerFeeRate = 0.05; // 500 bps
-			const amountUSD = contracts * price;
-			const fee = amountUSD * calculateTotalFeeRate(price, 0, 0, builderTakerFeeRate);
-			expect(fee).toBeCloseTo(7.5, 6);
+			expect(calculateBuilderFee(contracts * price, builderTakerFeeRate)).toBeCloseTo(7.5, 6);
 		});
 	});
 
-	// Combined: total fee = platform fee + builder fee
+	// fee-adjusted amount: effective + fees = budget
+	// effective = budget / (1 + platformFeeRate/price + builderTakerFeeRate)
+	describe("fee-adjusted effective amount", () => {
+		const calculateEffective = (
+			budget: number,
+			price: number,
+			feeRate: number,
+			feeExponent: number,
+			builderTakerFeeRate = 0,
+		): number => {
+			const platformFeeRate = feeRate * (price * (1 - price)) ** feeExponent;
+			return budget / (1 + platformFeeRate / price + builderTakerFeeRate);
+		};
+
+		it("platform fee only: effective + platformFee = budget", () => {
+			const budget = 50;
+			const price = 0.5;
+			const feeRate = 0.25;
+			const feeExponent = 2;
+
+			const effective = calculateEffective(budget, price, feeRate, feeExponent);
+			const platformFee = calculatePlatformFee(effective, price, feeRate, feeExponent);
+
+			expect(effective + platformFee).toBeCloseTo(budget, 10);
+		});
+
+		it("builder fee only: effective + builderFee = budget", () => {
+			const budget = 50;
+			const price = 0.5;
+			const builderTakerFeeRate = 0.01;
+
+			const effective = calculateEffective(budget, price, 0, 0, builderTakerFeeRate);
+			const builderFee = calculateBuilderFee(effective, builderTakerFeeRate);
+
+			expect(effective + builderFee).toBeCloseTo(budget, 10);
+		});
+
+		it("combined: effective + platformFee + builderFee = budget", () => {
+			const budget = 50;
+			const price = 0.5;
+			const feeRate = 0.25;
+			const feeExponent = 2;
+			const builderTakerFeeRate = 0.01;
+
+			const effective = calculateEffective(budget, price, feeRate, feeExponent, builderTakerFeeRate);
+			const platformFee = calculatePlatformFee(effective, price, feeRate, feeExponent);
+			const builderFee = calculateBuilderFee(effective, builderTakerFeeRate);
+
+			expect(effective + platformFee + builderFee).toBeCloseTo(budget, 10);
+		});
+	});
+
+	// Combined: total fee = platform fee + builder fee (different bases)
 	describe("combined platform + builder fee", () => {
 		it("matches sum of separate fees", () => {
-			// platform: rate=0.25, exp=2, price=0.5, C=100 → platform fee = 0.78125
+			// platform: rate=0.25, exp=2, price=0.5, C=100 → platform fee = 1.5625
 			// builder: 1% (100 bps), price=0.5, C=100 → builder fee = 0.5
 			const price = 0.5;
 			const contracts = 100;
@@ -92,14 +188,12 @@ describe("fee calculations", () => {
 			const builderTakerFeeRate = 0.01;
 			const amountUSD = contracts * price;
 
-			const platformFee = amountUSD * calculateTotalFeeRate(price, feeRate, feeExponent, 0);
-			const builderFee = amountUSD * calculateTotalFeeRate(price, 0, 0, builderTakerFeeRate);
-			const combinedFee =
-				amountUSD * calculateTotalFeeRate(price, feeRate, feeExponent, builderTakerFeeRate);
+			const platformFee = calculatePlatformFee(amountUSD, price, feeRate, feeExponent);
+			const builderFee = calculateBuilderFee(amountUSD, builderTakerFeeRate);
 
-			expect(platformFee).toBeCloseTo(0.78125, 6);
+			expect(platformFee).toBeCloseTo(1.5625, 6);
 			expect(builderFee).toBeCloseTo(0.5, 6);
-			expect(combinedFee).toBeCloseTo(platformFee + builderFee, 10);
+			expect(platformFee + builderFee).toBeCloseTo(2.0625, 6);
 		});
 	});
 });
