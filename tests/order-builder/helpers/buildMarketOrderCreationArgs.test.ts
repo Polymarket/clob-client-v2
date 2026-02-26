@@ -2,13 +2,13 @@ import { describe, expect, it } from "vitest";
 import { bytes32Zero } from "../../../src/constants";
 import { buildMarketOrderCreationArgs, ROUNDING_CONFIG } from "../../../src/order-builder/helpers";
 import { type OrderDataV2, SignatureTypeV2 } from "../../../src/order-utils";
-import { Side, type UserMarketOrder } from "../../../src/types";
+import { Side, type UserMarketOrderV1, type UserMarketOrderV2 } from "../../../src/types";
 import { roundDown } from "../../../src/utilities";
 
 describe("buildMarketOrderCreationArgs", () => {
 	describe("market buy order", () => {
 		it("0.1", async () => {
-			const order: UserMarketOrder = {
+			const order: UserMarketOrderV1 = {
 				side: Side.BUY,
 				tokenID: "123",
 				price: 0.5,
@@ -35,7 +35,7 @@ describe("buildMarketOrderCreationArgs", () => {
 		});
 
 		it("0.01", async () => {
-			const order: UserMarketOrder = {
+			const order: UserMarketOrderV1 = {
 				side: Side.BUY,
 				tokenID: "123",
 				price: 0.56,
@@ -62,7 +62,7 @@ describe("buildMarketOrderCreationArgs", () => {
 		});
 
 		it("0.001", async () => {
-			const order: UserMarketOrder = {
+			const order: UserMarketOrderV1 = {
 				side: Side.BUY,
 				tokenID: "123",
 				price: 0.056,
@@ -89,7 +89,7 @@ describe("buildMarketOrderCreationArgs", () => {
 		});
 
 		it("0.0001", async () => {
-			const order: UserMarketOrder = {
+			const order: UserMarketOrderV1 = {
 				side: Side.BUY,
 				tokenID: "123",
 				price: 0.0056,
@@ -118,7 +118,7 @@ describe("buildMarketOrderCreationArgs", () => {
 
 	describe("market sell order", () => {
 		it("0.1", async () => {
-			const order: UserMarketOrder = {
+			const order: UserMarketOrderV1 = {
 				side: Side.SELL,
 				tokenID: "123",
 				price: 0.5,
@@ -145,7 +145,7 @@ describe("buildMarketOrderCreationArgs", () => {
 		});
 
 		it("0.01", async () => {
-			const order: UserMarketOrder = {
+			const order: UserMarketOrderV1 = {
 				side: Side.SELL,
 				tokenID: "123",
 				price: 0.56,
@@ -172,7 +172,7 @@ describe("buildMarketOrderCreationArgs", () => {
 		});
 
 		it("0.001", async () => {
-			const order: UserMarketOrder = {
+			const order: UserMarketOrderV1 = {
 				side: Side.SELL,
 				tokenID: "123",
 				price: 0.056,
@@ -199,7 +199,7 @@ describe("buildMarketOrderCreationArgs", () => {
 		});
 
 		it("0.0001", async () => {
-			const order: UserMarketOrder = {
+			const order: UserMarketOrderV1 = {
 				side: Side.SELL,
 				tokenID: "123",
 				price: 0.0056,
@@ -229,7 +229,7 @@ describe("buildMarketOrderCreationArgs", () => {
 	describe("real cases", () => {
 		describe("0.1", () => {
 			it("market buy order with a different price", async () => {
-				const order: UserMarketOrder = {
+				const order: UserMarketOrderV1 = {
 					side: Side.BUY,
 					tokenID: "123",
 					price: 0.5,
@@ -255,7 +255,7 @@ describe("buildMarketOrderCreationArgs", () => {
 			});
 
 			it("correctly rounds price amounts for validity buy", async () => {
-				const order: UserMarketOrder = {
+				const order: UserMarketOrderV1 = {
 					side: Side.BUY,
 					tokenID: "123",
 					price: 0.5,
@@ -280,7 +280,7 @@ describe("buildMarketOrderCreationArgs", () => {
 			});
 
 			it("correctly rounds price amounts for validity buy - 2", async () => {
-				const order: UserMarketOrder = {
+				const order: UserMarketOrderV1 = {
 					side: Side.BUY,
 					tokenID: "123",
 					price: 0.7,
@@ -308,7 +308,7 @@ describe("buildMarketOrderCreationArgs", () => {
 			});
 
 			it("correctly rounds price amounts for validity buy - 3", async () => {
-				const order: UserMarketOrder = {
+				const order: UserMarketOrderV1 = {
 					side: Side.BUY,
 					tokenID: "123",
 					price: 0.8,
@@ -329,7 +329,7 @@ describe("buildMarketOrderCreationArgs", () => {
 			});
 
 			it("correctly rounds price amounts for validity buy - 4", async () => {
-				const order: UserMarketOrder = {
+				const order: UserMarketOrderV1 = {
 					side: Side.BUY,
 					tokenID: "123",
 					price: 0.7,
@@ -350,7 +350,7 @@ describe("buildMarketOrderCreationArgs", () => {
 			});
 
 			it("correctly rounds price amounts for validity buy - 5", async () => {
-				const order: UserMarketOrder = {
+				const order: UserMarketOrderV1 = {
 					side: Side.BUY,
 					tokenID: "123",
 					price: 0.3,
@@ -371,7 +371,7 @@ describe("buildMarketOrderCreationArgs", () => {
 			});
 
 			it("correctly rounds price amounts for validity buy - 6", async () => {
-				const order: UserMarketOrder = {
+				const order: UserMarketOrderV1 = {
 					side: Side.BUY,
 					tokenID: "123",
 					price: 0.5,
@@ -392,7 +392,7 @@ describe("buildMarketOrderCreationArgs", () => {
 			});
 
 			it("correctly rounds price amounts for validity buy - 7", async () => {
-				const order: UserMarketOrder = {
+				const order: UserMarketOrderV1 = {
 					side: Side.BUY,
 					tokenID: "123",
 					price: 0.5,
@@ -415,7 +415,7 @@ describe("buildMarketOrderCreationArgs", () => {
 
 		describe("0.01", () => {
 			it("market buy order with a different price", async () => {
-				const order: UserMarketOrder = {
+				const order: UserMarketOrderV1 = {
 					side: Side.BUY,
 					tokenID: "123",
 					price: 0.05,
@@ -441,7 +441,7 @@ describe("buildMarketOrderCreationArgs", () => {
 			});
 
 			it("correctly rounds price amounts for validity buy", async () => {
-				const order: UserMarketOrder = {
+				const order: UserMarketOrderV1 = {
 					side: Side.BUY,
 					tokenID: "123",
 					price: 0.56,
@@ -466,7 +466,7 @@ describe("buildMarketOrderCreationArgs", () => {
 			});
 
 			it("correctly rounds price amounts for validity buy - 2", async () => {
-				const order: UserMarketOrder = {
+				const order: UserMarketOrderV1 = {
 					side: Side.BUY,
 					tokenID: "123",
 					price: 0.07,
@@ -494,7 +494,7 @@ describe("buildMarketOrderCreationArgs", () => {
 			});
 
 			it("correctly rounds price amounts for validity buy - 3", async () => {
-				const order: UserMarketOrder = {
+				const order: UserMarketOrderV1 = {
 					side: Side.BUY,
 					tokenID: "123",
 					price: 0.82,
@@ -515,7 +515,7 @@ describe("buildMarketOrderCreationArgs", () => {
 			});
 
 			it("correctly rounds price amounts for validity buy - 4", async () => {
-				const order: UserMarketOrder = {
+				const order: UserMarketOrderV1 = {
 					side: Side.BUY,
 					tokenID: "123",
 					price: 0.78,
@@ -536,7 +536,7 @@ describe("buildMarketOrderCreationArgs", () => {
 			});
 
 			it("correctly rounds price amounts for validity buy - 5", async () => {
-				const order: UserMarketOrder = {
+				const order: UserMarketOrderV1 = {
 					side: Side.BUY,
 					tokenID: "123",
 					price: 0.39,
@@ -557,7 +557,7 @@ describe("buildMarketOrderCreationArgs", () => {
 			});
 
 			it("correctly rounds price amounts for validity buy - 6", async () => {
-				const order: UserMarketOrder = {
+				const order: UserMarketOrderV1 = {
 					side: Side.BUY,
 					tokenID: "123",
 					price: 0.56,
@@ -578,7 +578,7 @@ describe("buildMarketOrderCreationArgs", () => {
 			});
 
 			it("correctly rounds price amounts for validity buy - 7", async () => {
-				const order: UserMarketOrder = {
+				const order: UserMarketOrderV1 = {
 					side: Side.BUY,
 					tokenID: "123",
 					price: 0.57,
@@ -601,7 +601,7 @@ describe("buildMarketOrderCreationArgs", () => {
 
 		describe("0.001", () => {
 			it("market buy order with a different price", async () => {
-				const order: UserMarketOrder = {
+				const order: UserMarketOrderV1 = {
 					side: Side.BUY,
 					tokenID: "123",
 					price: 0.005,
@@ -627,7 +627,7 @@ describe("buildMarketOrderCreationArgs", () => {
 			});
 
 			it("correctly rounds price amounts for validity buy", async () => {
-				const order: UserMarketOrder = {
+				const order: UserMarketOrderV1 = {
 					side: Side.BUY,
 					tokenID: "123",
 					price: 0.056,
@@ -652,7 +652,7 @@ describe("buildMarketOrderCreationArgs", () => {
 			});
 
 			it("correctly rounds price amounts for validity buy - 2", async () => {
-				const order: UserMarketOrder = {
+				const order: UserMarketOrderV1 = {
 					side: Side.BUY,
 					tokenID: "123",
 					price: 0.007,
@@ -680,7 +680,7 @@ describe("buildMarketOrderCreationArgs", () => {
 			});
 
 			it("correctly rounds price amounts for validity buy - 3", async () => {
-				const order: UserMarketOrder = {
+				const order: UserMarketOrderV1 = {
 					side: Side.BUY,
 					tokenID: "123",
 					price: 0.082,
@@ -701,7 +701,7 @@ describe("buildMarketOrderCreationArgs", () => {
 			});
 
 			it("correctly rounds price amounts for validity buy - 4", async () => {
-				const order: UserMarketOrder = {
+				const order: UserMarketOrderV1 = {
 					side: Side.BUY,
 					tokenID: "123",
 					price: 0.078,
@@ -722,7 +722,7 @@ describe("buildMarketOrderCreationArgs", () => {
 			});
 
 			it("correctly rounds price amounts for validity buy - 5", async () => {
-				const order: UserMarketOrder = {
+				const order: UserMarketOrderV1 = {
 					side: Side.BUY,
 					tokenID: "123",
 					price: 0.039,
@@ -743,7 +743,7 @@ describe("buildMarketOrderCreationArgs", () => {
 			});
 
 			it("correctly rounds price amounts for validity buy - 6", async () => {
-				const order: UserMarketOrder = {
+				const order: UserMarketOrderV1 = {
 					side: Side.BUY,
 					tokenID: "123",
 					price: 0.056,
@@ -764,7 +764,7 @@ describe("buildMarketOrderCreationArgs", () => {
 			});
 
 			it("correctly rounds price amounts for validity buy - 7", async () => {
-				const order: UserMarketOrder = {
+				const order: UserMarketOrderV1 = {
 					side: Side.BUY,
 					tokenID: "123",
 					price: 0.057,
@@ -787,7 +787,7 @@ describe("buildMarketOrderCreationArgs", () => {
 
 		describe("0.0001", () => {
 			it("market buy order with a different price", async () => {
-				const order: UserMarketOrder = {
+				const order: UserMarketOrderV1 = {
 					side: Side.BUY,
 					tokenID: "123",
 					price: 0.0005,
@@ -813,7 +813,7 @@ describe("buildMarketOrderCreationArgs", () => {
 			});
 
 			it("correctly rounds price amounts for validity buy", async () => {
-				const order: UserMarketOrder = {
+				const order: UserMarketOrderV1 = {
 					side: Side.BUY,
 					tokenID: "123",
 					price: 0.0056,
@@ -838,7 +838,7 @@ describe("buildMarketOrderCreationArgs", () => {
 			});
 
 			it("correctly rounds price amounts for validity buy - 2", async () => {
-				const order: UserMarketOrder = {
+				const order: UserMarketOrderV1 = {
 					side: Side.BUY,
 					tokenID: "123",
 					price: 0.0007,
@@ -866,7 +866,7 @@ describe("buildMarketOrderCreationArgs", () => {
 			});
 
 			it("correctly rounds price amounts for validity buy - 3", async () => {
-				const order: UserMarketOrder = {
+				const order: UserMarketOrderV1 = {
 					side: Side.BUY,
 					tokenID: "123",
 					price: 0.0082,
@@ -887,7 +887,7 @@ describe("buildMarketOrderCreationArgs", () => {
 			});
 
 			it("correctly rounds price amounts for validity buy - 4", async () => {
-				const order: UserMarketOrder = {
+				const order: UserMarketOrderV1 = {
 					side: Side.BUY,
 					tokenID: "123",
 					price: 0.0078,
@@ -908,7 +908,7 @@ describe("buildMarketOrderCreationArgs", () => {
 			});
 
 			it("correctly rounds price amounts for validity buy - 5", async () => {
-				const order: UserMarketOrder = {
+				const order: UserMarketOrderV1 = {
 					side: Side.BUY,
 					tokenID: "123",
 					price: 0.0039,
@@ -929,7 +929,7 @@ describe("buildMarketOrderCreationArgs", () => {
 			});
 
 			it("correctly rounds price amounts for validity buy - 6", async () => {
-				const order: UserMarketOrder = {
+				const order: UserMarketOrderV1 = {
 					side: Side.BUY,
 					tokenID: "123",
 					price: 0.0056,
@@ -950,7 +950,7 @@ describe("buildMarketOrderCreationArgs", () => {
 			});
 
 			it("correctly rounds price amounts for validity buy - 7", async () => {
-				const order: UserMarketOrder = {
+				const order: UserMarketOrderV1 = {
 					side: Side.BUY,
 					tokenID: "123",
 					price: 0.0057,
@@ -969,6 +969,50 @@ describe("buildMarketOrderCreationArgs", () => {
 					Number(orderData.makerAmount) / Number(orderData.takerAmount),
 				).toBeGreaterThanOrEqual(0.0057);
 			});
+		});
+	});
+
+	describe("builderCode", () => {
+		const base: UserMarketOrderV2 = {
+			tokenID: "123",
+			price: 0.5,
+			amount: 100,
+			side: Side.BUY,
+		};
+
+		it("no builderCode → builder = bytes32Zero", async () => {
+			const orderData = await buildMarketOrderCreationArgs(
+				"",
+				"",
+				SignatureTypeV2.EOA,
+				base,
+				ROUNDING_CONFIG["0.1"],
+			);
+			expect(orderData.builder).toBe(bytes32Zero);
+		});
+
+		it("builderCode set → builder = builderCode", async () => {
+			const builderCode =
+				"0x1234567890abcdef1234567890abcdef1234567890abcdef1234567890abcdef";
+			const orderData = await buildMarketOrderCreationArgs(
+				"",
+				"",
+				SignatureTypeV2.EOA,
+				{ ...base, builderCode },
+				ROUNDING_CONFIG["0.1"],
+			);
+			expect(orderData.builder).toBe(builderCode);
+		});
+
+		it("builderCode = bytes32Zero → builder = bytes32Zero", async () => {
+			const orderData = await buildMarketOrderCreationArgs(
+				"",
+				"",
+				SignatureTypeV2.EOA,
+				{ ...base, builderCode: bytes32Zero },
+				ROUNDING_CONFIG["0.1"],
+			);
+			expect(orderData.builder).toBe(bytes32Zero);
 		});
 	});
 });

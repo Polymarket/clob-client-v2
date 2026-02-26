@@ -3,7 +3,7 @@ import { beforeEach, describe, expect, it } from "vitest";
 import { bytes32Zero } from "../../../src/constants";
 import { createMarketOrder } from "../../../src/order-builder/helpers";
 import { SignatureTypeV2 } from "../../../src/order-utils";
-import { Chain, Side, type UserMarketOrder } from "../../../src/types";
+import { Chain, Side, type UserMarketOrderV1, type UserMarketOrderV2 } from "../../../src/types";
 
 describe("createMarketOrder", () => {
 	let wallet: Wallet;
@@ -15,7 +15,7 @@ describe("createMarketOrder", () => {
 	describe("CTF Exchange", () => {
 		describe("buy order", () => {
 			it("0.1", async () => {
-				const order: UserMarketOrder = {
+				const order: UserMarketOrderV1 = {
 					side: Side.BUY,
 					tokenID: "123",
 					price: 0.5,
@@ -50,7 +50,7 @@ describe("createMarketOrder", () => {
 			});
 
 			it("0.01", async () => {
-				const order: UserMarketOrder = {
+				const order: UserMarketOrderV1 = {
 					side: Side.BUY,
 					tokenID: "123",
 					price: 0.56,
@@ -85,7 +85,7 @@ describe("createMarketOrder", () => {
 			});
 
 			it("0.001", async () => {
-				const order: UserMarketOrder = {
+				const order: UserMarketOrderV1 = {
 					side: Side.BUY,
 					tokenID: "123",
 					price: 0.056,
@@ -120,7 +120,7 @@ describe("createMarketOrder", () => {
 			});
 
 			it("0.0001", async () => {
-				const order: UserMarketOrder = {
+				const order: UserMarketOrderV1 = {
 					side: Side.BUY,
 					tokenID: "123",
 					price: 0.0056,
@@ -157,7 +157,7 @@ describe("createMarketOrder", () => {
 
 		describe("sell order", () => {
 			it("0.1", async () => {
-				const order: UserMarketOrder = {
+				const order: UserMarketOrderV1 = {
 					side: Side.SELL,
 					tokenID: "123",
 					price: 0.5,
@@ -192,7 +192,7 @@ describe("createMarketOrder", () => {
 			});
 
 			it("0.01", async () => {
-				const order: UserMarketOrder = {
+				const order: UserMarketOrderV1 = {
 					side: Side.SELL,
 					tokenID: "123",
 					price: 0.56,
@@ -227,7 +227,7 @@ describe("createMarketOrder", () => {
 			});
 
 			it("0.001", async () => {
-				const order: UserMarketOrder = {
+				const order: UserMarketOrderV1 = {
 					side: Side.SELL,
 					tokenID: "123",
 					price: 0.056,
@@ -262,7 +262,7 @@ describe("createMarketOrder", () => {
 			});
 
 			it("0.0001", async () => {
-				const order: UserMarketOrder = {
+				const order: UserMarketOrderV1 = {
 					side: Side.SELL,
 					tokenID: "123",
 					price: 0.0056,
@@ -301,7 +301,7 @@ describe("createMarketOrder", () => {
 	describe("Neg Risk CTF Exchange", () => {
 		describe("buy order", () => {
 			it("0.1", async () => {
-				const order: UserMarketOrder = {
+				const order: UserMarketOrderV1 = {
 					side: Side.BUY,
 					tokenID: "123",
 					price: 0.5,
@@ -336,7 +336,7 @@ describe("createMarketOrder", () => {
 			});
 
 			it("0.01", async () => {
-				const order: UserMarketOrder = {
+				const order: UserMarketOrderV1 = {
 					side: Side.BUY,
 					tokenID: "123",
 					price: 0.56,
@@ -371,7 +371,7 @@ describe("createMarketOrder", () => {
 			});
 
 			it("0.001", async () => {
-				const order: UserMarketOrder = {
+				const order: UserMarketOrderV1 = {
 					side: Side.BUY,
 					tokenID: "123",
 					price: 0.056,
@@ -406,7 +406,7 @@ describe("createMarketOrder", () => {
 			});
 
 			it("0.0001", async () => {
-				const order: UserMarketOrder = {
+				const order: UserMarketOrderV1 = {
 					side: Side.BUY,
 					tokenID: "123",
 					price: 0.0056,
@@ -443,7 +443,7 @@ describe("createMarketOrder", () => {
 
 		describe("sell order", () => {
 			it("0.1", async () => {
-				const order: UserMarketOrder = {
+				const order: UserMarketOrderV1 = {
 					side: Side.SELL,
 					tokenID: "123",
 					price: 0.5,
@@ -478,7 +478,7 @@ describe("createMarketOrder", () => {
 			});
 
 			it("0.01", async () => {
-				const order: UserMarketOrder = {
+				const order: UserMarketOrderV1 = {
 					side: Side.SELL,
 					tokenID: "123",
 					price: 0.56,
@@ -513,7 +513,7 @@ describe("createMarketOrder", () => {
 			});
 
 			it("0.001", async () => {
-				const order: UserMarketOrder = {
+				const order: UserMarketOrderV1 = {
 					side: Side.SELL,
 					tokenID: "123",
 					price: 0.056,
@@ -548,7 +548,7 @@ describe("createMarketOrder", () => {
 			});
 
 			it("0.0001", async () => {
-				const order: UserMarketOrder = {
+				const order: UserMarketOrderV1 = {
 					side: Side.SELL,
 					tokenID: "123",
 					price: 0.0056,
@@ -581,6 +581,57 @@ describe("createMarketOrder", () => {
 				expect(signedOrder.signatureType).toBe(SignatureTypeV2.EOA);
 				expect(signedOrder.signature).not.toBe("");
 			});
+		});
+	});
+
+	describe("builderCode", () => {
+		const base: UserMarketOrderV2 = {
+			side: Side.BUY,
+			tokenID: "123",
+			price: 0.5,
+			amount: 100,
+		};
+		const maker = "0xf39Fd6e51aad88F6F4ce6aB8827279cffFb92266";
+
+		it("no builderCode → builder = bytes32Zero", async () => {
+			const signedOrder = await createMarketOrder(
+				wallet,
+				Chain.AMOY,
+				SignatureTypeV2.EOA,
+				maker,
+				base,
+				{ tickSize: "0.1", negRisk: false },
+				2,
+			);
+			expect(signedOrder.builder).toBe(bytes32Zero);
+		});
+
+		it("builderCode set → builder = builderCode", async () => {
+			const builderCode =
+				"0x1234567890abcdef1234567890abcdef1234567890abcdef1234567890abcdef";
+			const signedOrder = await createMarketOrder(
+				wallet,
+				Chain.AMOY,
+				SignatureTypeV2.EOA,
+				maker,
+				{ ...base, builderCode },
+				{ tickSize: "0.1", negRisk: false },
+				2,
+			);
+			expect(signedOrder.builder).toBe(builderCode);
+		});
+
+		it("builderCode = bytes32Zero → builder = bytes32Zero", async () => {
+			const signedOrder = await createMarketOrder(
+				wallet,
+				Chain.AMOY,
+				SignatureTypeV2.EOA,
+				maker,
+				{ ...base, builderCode: bytes32Zero },
+				{ tickSize: "0.1", negRisk: false },
+				2,
+			);
+			expect(signedOrder.builder).toBe(bytes32Zero);
 		});
 	});
 });

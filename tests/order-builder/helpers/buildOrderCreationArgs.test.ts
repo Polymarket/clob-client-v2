@@ -2,12 +2,12 @@ import { describe, expect, it } from "vitest";
 import { bytes32Zero } from "../../../src/constants";
 import { buildOrderCreationArgs, ROUNDING_CONFIG } from "../../../src/order-builder/helpers";
 import { type OrderDataV2, SignatureTypeV2 } from "../../../src/order-utils";
-import { Side, type UserOrder } from "../../../src/types";
+import { Side, type UserOrderV1, type UserOrderV2 } from "../../../src/types";
 
 describe("buildOrderCreationArgs", () => {
 	describe("buy order", () => {
 		it("0.1", async () => {
-			const order: UserOrder = {
+			const order: UserOrderV1 = {
 				tokenID: "123",
 				price: 0.5,
 				size: 21.04,
@@ -35,7 +35,7 @@ describe("buildOrderCreationArgs", () => {
 		});
 
 		it("0.01", async () => {
-			const order: UserOrder = {
+			const order: UserOrderV1 = {
 				tokenID: "123",
 				price: 0.56,
 				size: 21.04,
@@ -63,7 +63,7 @@ describe("buildOrderCreationArgs", () => {
 		});
 
 		it("0.001", async () => {
-			const order: UserOrder = {
+			const order: UserOrderV1 = {
 				tokenID: "123",
 				price: 0.056,
 				size: 21.04,
@@ -91,7 +91,7 @@ describe("buildOrderCreationArgs", () => {
 		});
 
 		it("0.0001", async () => {
-			const order: UserOrder = {
+			const order: UserOrderV1 = {
 				tokenID: "123",
 				price: 0.0056,
 				size: 21.04,
@@ -121,7 +121,7 @@ describe("buildOrderCreationArgs", () => {
 
 	describe("sell order", () => {
 		it("0.1", async () => {
-			const order: UserOrder = {
+			const order: UserOrderV1 = {
 				tokenID: "5",
 				price: 0.5,
 				size: 21.04,
@@ -148,7 +148,7 @@ describe("buildOrderCreationArgs", () => {
 		});
 
 		it("0.01", async () => {
-			const order: UserOrder = {
+			const order: UserOrderV1 = {
 				tokenID: "5",
 				price: 0.56,
 				size: 21.04,
@@ -175,7 +175,7 @@ describe("buildOrderCreationArgs", () => {
 		});
 
 		it("0.001", async () => {
-			const order: UserOrder = {
+			const order: UserOrderV1 = {
 				tokenID: "5",
 				price: 0.056,
 				size: 21.04,
@@ -202,7 +202,7 @@ describe("buildOrderCreationArgs", () => {
 		});
 
 		it("0.0001", async () => {
-			const order: UserOrder = {
+			const order: UserOrderV1 = {
 				tokenID: "5",
 				price: 0.0056,
 				size: 21.04,
@@ -232,7 +232,7 @@ describe("buildOrderCreationArgs", () => {
 	describe("real cases", () => {
 		describe("0.1", () => {
 			it("correctly rounds price amounts for validity buy", async () => {
-				const order: UserOrder = {
+				const order: UserOrderV1 = {
 					tokenID: "123",
 					price: 0.5,
 					size: 21.04,
@@ -253,7 +253,7 @@ describe("buildOrderCreationArgs", () => {
 			});
 
 			it("correctly rounds price amounts for validity buy - 2", async () => {
-				const order: UserOrder = {
+				const order: UserOrderV1 = {
 					tokenID: "123",
 					price: 0.7,
 					size: 170,
@@ -274,7 +274,7 @@ describe("buildOrderCreationArgs", () => {
 			});
 
 			it("correctly rounds price amounts for validity buy - 3", async () => {
-				const order: UserOrder = {
+				const order: UserOrderV1 = {
 					tokenID: "123",
 					price: 0.8,
 					size: 101,
@@ -295,7 +295,7 @@ describe("buildOrderCreationArgs", () => {
 			});
 
 			it("correctly rounds price amounts for validity buy - 4", async () => {
-				const order: UserOrder = {
+				const order: UserOrderV1 = {
 					tokenID: "123",
 					size: 12.8205,
 					price: 0.7,
@@ -316,7 +316,7 @@ describe("buildOrderCreationArgs", () => {
 			});
 
 			it("correctly rounds price amounts for validity buy - 5", async () => {
-				const order: UserOrder = {
+				const order: UserOrderV1 = {
 					tokenID: "123",
 					size: 2435.89,
 					price: 0.3,
@@ -337,7 +337,7 @@ describe("buildOrderCreationArgs", () => {
 			});
 
 			it("correctly rounds price amounts for validity sell", async () => {
-				const order: UserOrder = {
+				const order: UserOrderV1 = {
 					tokenID: "123",
 					price: 0.5,
 					size: 21.04,
@@ -357,7 +357,7 @@ describe("buildOrderCreationArgs", () => {
 			});
 
 			it("correctly rounds price amounts for validity sell - 2", async () => {
-				const order: UserOrder = {
+				const order: UserOrderV1 = {
 					tokenID: "123",
 					price: 0.7,
 					size: 170,
@@ -378,7 +378,7 @@ describe("buildOrderCreationArgs", () => {
 			});
 
 			it("correctly rounds price amounts for validity sell - 3", async () => {
-				const order: UserOrder = {
+				const order: UserOrderV1 = {
 					tokenID: "123",
 					price: 0.8,
 					size: 101,
@@ -399,7 +399,7 @@ describe("buildOrderCreationArgs", () => {
 			});
 
 			it("correctly rounds price amounts for validity sell - 4", async () => {
-				const order: UserOrder = {
+				const order: UserOrderV1 = {
 					tokenID: "123",
 					size: 12.8205,
 					price: 0.7,
@@ -420,7 +420,7 @@ describe("buildOrderCreationArgs", () => {
 			});
 
 			it("correctly rounds price amounts for validity sell - 5", async () => {
-				const order: UserOrder = {
+				const order: UserOrderV1 = {
 					tokenID: "123",
 					size: 2435.89,
 					price: 0.3,
@@ -443,7 +443,7 @@ describe("buildOrderCreationArgs", () => {
 
 		describe("0.01", () => {
 			it("correctly rounds price amounts for validity buy", async () => {
-				const order: UserOrder = {
+				const order: UserOrderV1 = {
 					tokenID: "123",
 					price: 0.56,
 					size: 21.04,
@@ -464,7 +464,7 @@ describe("buildOrderCreationArgs", () => {
 			});
 
 			it("correctly rounds price amounts for validity buy - 2", async () => {
-				const order: UserOrder = {
+				const order: UserOrderV1 = {
 					tokenID: "123",
 					price: 0.7,
 					size: 170,
@@ -485,7 +485,7 @@ describe("buildOrderCreationArgs", () => {
 			});
 
 			it("correctly rounds price amounts for validity buy - 3", async () => {
-				const order: UserOrder = {
+				const order: UserOrderV1 = {
 					tokenID: "123",
 					price: 0.82,
 					size: 101,
@@ -506,7 +506,7 @@ describe("buildOrderCreationArgs", () => {
 			});
 
 			it("correctly rounds price amounts for validity buy - 4", async () => {
-				const order: UserOrder = {
+				const order: UserOrderV1 = {
 					tokenID: "123",
 					size: 12.8205,
 					price: 0.78,
@@ -527,7 +527,7 @@ describe("buildOrderCreationArgs", () => {
 			});
 
 			it("correctly rounds price amounts for validity buy - 5", async () => {
-				const order: UserOrder = {
+				const order: UserOrderV1 = {
 					tokenID: "123",
 					size: 2435.89,
 					price: 0.39,
@@ -548,7 +548,7 @@ describe("buildOrderCreationArgs", () => {
 			});
 
 			it("correctly rounds price amounts for validity sell", async () => {
-				const order: UserOrder = {
+				const order: UserOrderV1 = {
 					tokenID: "123",
 					price: 0.56,
 					size: 21.04,
@@ -568,7 +568,7 @@ describe("buildOrderCreationArgs", () => {
 			});
 
 			it("correctly rounds price amounts for validity sell - 2", async () => {
-				const order: UserOrder = {
+				const order: UserOrderV1 = {
 					tokenID: "123",
 					price: 0.7,
 					size: 170,
@@ -589,7 +589,7 @@ describe("buildOrderCreationArgs", () => {
 			});
 
 			it("correctly rounds price amounts for validity sell - 3", async () => {
-				const order: UserOrder = {
+				const order: UserOrderV1 = {
 					tokenID: "123",
 					price: 0.82,
 					size: 101,
@@ -610,7 +610,7 @@ describe("buildOrderCreationArgs", () => {
 			});
 
 			it("correctly rounds price amounts for validity sell - 4", async () => {
-				const order: UserOrder = {
+				const order: UserOrderV1 = {
 					tokenID: "123",
 					size: 12.8205,
 					price: 0.78,
@@ -631,7 +631,7 @@ describe("buildOrderCreationArgs", () => {
 			});
 
 			it("correctly rounds price amounts for validity sell - 5", async () => {
-				const order: UserOrder = {
+				const order: UserOrderV1 = {
 					tokenID: "123",
 					size: 2435.89,
 					price: 0.39,
@@ -654,7 +654,7 @@ describe("buildOrderCreationArgs", () => {
 
 		describe("0.001", () => {
 			it("correctly rounds price amounts for validity buy", async () => {
-				const order: UserOrder = {
+				const order: UserOrderV1 = {
 					tokenID: "123",
 					price: 0.056,
 					size: 21.04,
@@ -675,7 +675,7 @@ describe("buildOrderCreationArgs", () => {
 			});
 
 			it("correctly rounds price amounts for validity buy - 2", async () => {
-				const order: UserOrder = {
+				const order: UserOrderV1 = {
 					tokenID: "123",
 					price: 0.007,
 					size: 170,
@@ -696,7 +696,7 @@ describe("buildOrderCreationArgs", () => {
 			});
 
 			it("correctly rounds price amounts for validity buy - 3", async () => {
-				const order: UserOrder = {
+				const order: UserOrderV1 = {
 					tokenID: "123",
 					price: 0.082,
 					size: 101,
@@ -717,7 +717,7 @@ describe("buildOrderCreationArgs", () => {
 			});
 
 			it("correctly rounds price amounts for validity buy - 4", async () => {
-				const order: UserOrder = {
+				const order: UserOrderV1 = {
 					tokenID: "123",
 					size: 12.8205,
 					price: 0.078,
@@ -738,7 +738,7 @@ describe("buildOrderCreationArgs", () => {
 			});
 
 			it("correctly rounds price amounts for validity buy - 5", async () => {
-				const order: UserOrder = {
+				const order: UserOrderV1 = {
 					tokenID: "123",
 					size: 2435.89,
 					price: 0.039,
@@ -759,7 +759,7 @@ describe("buildOrderCreationArgs", () => {
 			});
 
 			it("correctly rounds price amounts for validity sell", async () => {
-				const order: UserOrder = {
+				const order: UserOrderV1 = {
 					tokenID: "123",
 					price: 0.056,
 					size: 21.04,
@@ -779,7 +779,7 @@ describe("buildOrderCreationArgs", () => {
 			});
 
 			it("correctly rounds price amounts for validity sell - 2", async () => {
-				const order: UserOrder = {
+				const order: UserOrderV1 = {
 					tokenID: "123",
 					price: 0.007,
 					size: 170,
@@ -800,7 +800,7 @@ describe("buildOrderCreationArgs", () => {
 			});
 
 			it("correctly rounds price amounts for validity sell - 3", async () => {
-				const order: UserOrder = {
+				const order: UserOrderV1 = {
 					tokenID: "123",
 					price: 0.082,
 					size: 101,
@@ -821,7 +821,7 @@ describe("buildOrderCreationArgs", () => {
 			});
 
 			it("correctly rounds price amounts for validity sell - 4", async () => {
-				const order: UserOrder = {
+				const order: UserOrderV1 = {
 					tokenID: "123",
 					size: 12.8205,
 					price: 0.078,
@@ -842,7 +842,7 @@ describe("buildOrderCreationArgs", () => {
 			});
 
 			it("correctly rounds price amounts for validity sell - 5", async () => {
-				const order: UserOrder = {
+				const order: UserOrderV1 = {
 					tokenID: "123",
 					size: 2435.89,
 					price: 0.039,
@@ -865,7 +865,7 @@ describe("buildOrderCreationArgs", () => {
 
 		describe("0.0001", () => {
 			it("correctly rounds price amounts for validity buy", async () => {
-				const order: UserOrder = {
+				const order: UserOrderV1 = {
 					tokenID: "123",
 					price: 0.0056,
 					size: 21.04,
@@ -886,7 +886,7 @@ describe("buildOrderCreationArgs", () => {
 			});
 
 			it("correctly rounds price amounts for validity buy - 2", async () => {
-				const order: UserOrder = {
+				const order: UserOrderV1 = {
 					tokenID: "123",
 					price: 0.0007,
 					size: 170,
@@ -907,7 +907,7 @@ describe("buildOrderCreationArgs", () => {
 			});
 
 			it("correctly rounds price amounts for validity buy - 3", async () => {
-				const order: UserOrder = {
+				const order: UserOrderV1 = {
 					tokenID: "123",
 					price: 0.0082,
 					size: 101,
@@ -928,7 +928,7 @@ describe("buildOrderCreationArgs", () => {
 			});
 
 			it("correctly rounds price amounts for validity buy - 4", async () => {
-				const order: UserOrder = {
+				const order: UserOrderV1 = {
 					tokenID: "123",
 					size: 12.8205,
 					price: 0.0078,
@@ -949,7 +949,7 @@ describe("buildOrderCreationArgs", () => {
 			});
 
 			it("correctly rounds price amounts for validity buy - 5", async () => {
-				const order: UserOrder = {
+				const order: UserOrderV1 = {
 					tokenID: "123",
 					size: 2435.89,
 					price: 0.0039,
@@ -970,7 +970,7 @@ describe("buildOrderCreationArgs", () => {
 			});
 
 			it("correctly rounds price amounts for validity sell", async () => {
-				const order: UserOrder = {
+				const order: UserOrderV1 = {
 					tokenID: "123",
 					price: 0.0056,
 					size: 21.04,
@@ -990,7 +990,7 @@ describe("buildOrderCreationArgs", () => {
 			});
 
 			it("correctly rounds price amounts for validity sell - 2", async () => {
-				const order: UserOrder = {
+				const order: UserOrderV1 = {
 					tokenID: "123",
 					price: 0.0007,
 					size: 170,
@@ -1011,7 +1011,7 @@ describe("buildOrderCreationArgs", () => {
 			});
 
 			it("correctly rounds price amounts for validity sell - 3", async () => {
-				const order: UserOrder = {
+				const order: UserOrderV1 = {
 					tokenID: "123",
 					price: 0.0082,
 					size: 101,
@@ -1032,7 +1032,7 @@ describe("buildOrderCreationArgs", () => {
 			});
 
 			it("correctly rounds price amounts for validity sell - 4", async () => {
-				const order: UserOrder = {
+				const order: UserOrderV1 = {
 					tokenID: "123",
 					size: 12.8205,
 					price: 0.0078,
@@ -1053,7 +1053,7 @@ describe("buildOrderCreationArgs", () => {
 			});
 
 			it("correctly rounds price amounts for validity sell - 5", async () => {
-				const order: UserOrder = {
+				const order: UserOrderV1 = {
 					tokenID: "123",
 					size: 2435.89,
 					price: 0.0039,
@@ -1072,6 +1072,50 @@ describe("buildOrderCreationArgs", () => {
 					Number(orderData.takerAmount) / Number(orderData.makerAmount),
 				).toBeGreaterThanOrEqual(0.0039);
 			});
+		});
+	});
+
+	describe("builderCode", () => {
+		const base: UserOrderV2 = {
+			tokenID: "123",
+			price: 0.5,
+			size: 100,
+			side: Side.BUY,
+		};
+
+		it("no builderCode → builder = bytes32Zero", async () => {
+			const orderData = await buildOrderCreationArgs(
+				"",
+				"",
+				SignatureTypeV2.EOA,
+				base,
+				ROUNDING_CONFIG["0.1"],
+			);
+			expect(orderData.builder).toBe(bytes32Zero);
+		});
+
+		it("builderCode set → builder = builderCode", async () => {
+			const builderCode =
+				"0x1234567890abcdef1234567890abcdef1234567890abcdef1234567890abcdef";
+			const orderData = await buildOrderCreationArgs(
+				"",
+				"",
+				SignatureTypeV2.EOA,
+				{ ...base, builderCode },
+				ROUNDING_CONFIG["0.1"],
+			);
+			expect(orderData.builder).toBe(builderCode);
+		});
+
+		it("builderCode = bytes32Zero → builder = bytes32Zero", async () => {
+			const orderData = await buildOrderCreationArgs(
+				"",
+				"",
+				SignatureTypeV2.EOA,
+				{ ...base, builderCode: bytes32Zero },
+				ROUNDING_CONFIG["0.1"],
+			);
+			expect(orderData.builder).toBe(bytes32Zero);
 		});
 	});
 });
