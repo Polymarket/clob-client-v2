@@ -26,74 +26,65 @@ describe("fee calculations", () => {
 
 		it("price=0.5 → fee = 1.5625", () => {
 			const price = 0.5;
-			expect(calculatePlatformFee(contracts * price, price, feeRate, feeExponent)).toBeCloseTo(
-				1.5625,
-				6,
-			);
+			expect(
+				calculatePlatformFee(contracts * price, price, feeRate, feeExponent),
+			).toBeCloseTo(1.5625, 6);
 		});
 
 		it("price=0.3 → fee = 1.1025", () => {
 			const price = 0.3;
-			expect(calculatePlatformFee(contracts * price, price, feeRate, feeExponent)).toBeCloseTo(
-				1.1025,
-				6,
-			);
+			expect(
+				calculatePlatformFee(contracts * price, price, feeRate, feeExponent),
+			).toBeCloseTo(1.1025, 6);
 		});
 
 		it("price=0.1 → fee = 0.2025", () => {
 			const price = 0.1;
-			expect(calculatePlatformFee(contracts * price, price, feeRate, feeExponent)).toBeCloseTo(
-				0.2025,
-				6,
-			);
+			expect(
+				calculatePlatformFee(contracts * price, price, feeRate, feeExponent),
+			).toBeCloseTo(0.2025, 6);
 		});
 
 		it("price=0.05 → fee = 0.05640625", () => {
 			const price = 0.05;
-			expect(calculatePlatformFee(contracts * price, price, feeRate, feeExponent)).toBeCloseTo(
-				0.05640625,
-				6,
-			);
+			expect(
+				calculatePlatformFee(contracts * price, price, feeRate, feeExponent),
+			).toBeCloseTo(0.05640625, 6);
 		});
 
 		it("price=0.01 → fee = 0.00245025", () => {
 			const price = 0.01;
-			expect(calculatePlatformFee(contracts * price, price, feeRate, feeExponent)).toBeCloseTo(
-				0.00245025,
-				6,
-			);
+			expect(
+				calculatePlatformFee(contracts * price, price, feeRate, feeExponent),
+			).toBeCloseTo(0.00245025, 6);
 		});
 
 		it("price=0.7 → fee = 1.1025 (symmetric with 0.3)", () => {
 			const price = 0.7;
-			expect(calculatePlatformFee(contracts * price, price, feeRate, feeExponent)).toBeCloseTo(
-				1.1025,
-				6,
-			);
+			expect(
+				calculatePlatformFee(contracts * price, price, feeRate, feeExponent),
+			).toBeCloseTo(1.1025, 6);
 		});
 
 		it("price=0.9 → fee = 0.2025 (symmetric with 0.1)", () => {
 			const price = 0.9;
-			expect(calculatePlatformFee(contracts * price, price, feeRate, feeExponent)).toBeCloseTo(
-				0.2025,
-				6,
-			);
+			expect(
+				calculatePlatformFee(contracts * price, price, feeRate, feeExponent),
+			).toBeCloseTo(0.2025, 6);
 		});
 
 		it("price=0.95 → fee = 0.05640625 (symmetric with 0.05)", () => {
 			const price = 0.95;
-			expect(calculatePlatformFee(contracts * price, price, feeRate, feeExponent)).toBeCloseTo(
-				0.05640625,
-				6,
-			);
+			expect(
+				calculatePlatformFee(contracts * price, price, feeRate, feeExponent),
+			).toBeCloseTo(0.05640625, 6);
 		});
 
 		it("price=0.99 → fee = 0.00245025 (symmetric with 0.01)", () => {
 			const price = 0.99;
-			expect(calculatePlatformFee(contracts * price, price, feeRate, feeExponent)).toBeCloseTo(
-				0.00245025,
-				6,
-			);
+			expect(
+				calculatePlatformFee(contracts * price, price, feeRate, feeExponent),
+			).toBeCloseTo(0.00245025, 6);
 		});
 
 		it("price=0.5, C=125.5 → fee = 1.9609375", () => {
@@ -168,7 +159,13 @@ describe("fee calculations", () => {
 			const feeExponent = 2;
 			const builderTakerFeeRate = 0.01;
 
-			const effective = calculateEffective(budget, price, feeRate, feeExponent, builderTakerFeeRate);
+			const effective = calculateEffective(
+				budget,
+				price,
+				feeRate,
+				feeExponent,
+				builderTakerFeeRate,
+			);
 			const platformFee = calculatePlatformFee(effective, price, feeRate, feeExponent);
 			const builderFee = calculateBuilderFee(effective, builderTakerFeeRate);
 

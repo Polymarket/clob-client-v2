@@ -38,6 +38,6 @@ export const buildOrderCreationArgs = async (
 		signatureType,
 		timestamp: Math.floor(Date.now() / 1000).toString(),
 		metadata: bytes32Zero,
-		builder: bytes32Zero,
+		builder: userOrder.builderCode ?? bytes32Zero,
 	};
 };

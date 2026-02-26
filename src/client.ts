@@ -1,8 +1,8 @@
 import type { JsonRpcSigner } from "@ethersproject/providers";
 import type { Wallet } from "@ethersproject/wallet";
-import type { BuilderConfig, BuilderHeaderPayload } from "./builder-signing";
 import {
 	BUILDER_FEES_BPS,
+	bytes32Zero,
 	END_CURSOR,
 	INITIAL_CURSOR,
 	ORDER_VERSION_MISMATCH_ERROR,
@@ -15,13 +15,11 @@ import {
 	CANCEL_ORDERS,
 	CLOSED_ONLY,
 	CREATE_API_KEY,
-	CREATE_BUILDER_API_KEY,
 	DELETE_API_KEY,
 	DERIVE_API_KEY,
 	DROP_NOTIFICATIONS,
 	GET_API_KEYS,
 	GET_BALANCE_ALLOWANCE,
-	GET_BUILDER_API_KEYS,
 	GET_BUILDER_TRADES,
 	GET_CLOB_MARKET,
 	GET_EARNINGS_FOR_USER_FOR_DAY,
@@ -58,17 +56,11 @@ import {
 	IS_ORDER_SCORING,
 	POST_ORDER,
 	POST_ORDERS,
-	REVOKE_BUILDER_API_KEY,
 	TIME,
 	UPDATE_BALANCE_ALLOWANCE,
 } from "./endpoints";
-import {
-	BUILDER_AUTH_FAILED,
-	BUILDER_AUTH_NOT_AVAILABLE,
-	L1_AUTH_UNAVAILABLE_ERROR,
-	L2_AUTH_NOT_AVAILABLE,
-} from "./errors";
-import { createL1Headers, createL2Headers, injectBuilderHeaders } from "./headers";
+import { L1_AUTH_UNAVAILABLE_ERROR, L2_AUTH_NOT_AVAILABLE } from "./errors";
+import { createL1Headers, createL2Headers } from "./headers";
 import {
 	DELETE,
 	del,
@@ -90,8 +82,7 @@ import type {
 	BalanceAllowanceResponse,
 	BanStatus,
 	BookParams,
-	BuilderApiKey,
-	BuilderApiKeyResponse,
+	BuilderConfig,
 	BuilderFeeRates,
 	BuilderTrade,
 	Chain,
@@ -100,9 +91,6 @@ import type {
 	DropNotificationParams,
 	FeeExponents,
 	FeeRates,
-	L2HeaderArgs,
-	L2PolyHeader,
-	L2WithBuilderHeader,
 	MarketDetails,
 	MarketPrice,
 	MarketReward,
@@ -665,7 +653,7 @@ export class ClobClient {
 		limit: number;
 		count: number;
 	}> {
-		this.mustBuilderAuth();
+		this.canL2Auth();
 
 		const endpoint = GET_BUILDER_TRADES;
 		const headerArgs = {
@@ -673,11 +661,12 @@ export class ClobClient {
 			requestPath: endpoint,
 		};
 
-		const headers = await this._getBuilderHeaders(headerArgs.method, headerArgs.requestPath);
-
-		if (!headers) {
-			throw BUILDER_AUTH_FAILED;
-		}
+		const headers = await createL2Headers(
+			this.signer as Wallet | JsonRpcSigner,
+			this.creds as ApiKeyCreds,
+			headerArgs,
+			this.useServerTime ? await this.getServerTime() : undefined,
+		);
 
 		next_cursor = next_cursor || INITIAL_CURSOR;
 
@@ -799,6 +788,10 @@ export class ClobClient {
 	): Promise<SignedOrder> {
 		this.canL1Auth();
 
+		if (this.builderConfig?.builderCode && !userOrder.builderCode) {
+			userOrder.builderCode = this.builderConfig.builderCode;
+		}
+
 		const { tokenID } = userOrder;
 
 		// const tickSize = await this._resolveTickSize(tokenID, options?.tickSize);
@@ -859,10 +852,14 @@ export class ClobClient {
 
 		const orderToSign = { ...userMarketOrder };
 
+		if (this.builderConfig?.builderCode && !orderToSign.builderCode) {
+			orderToSign.builderCode = this.builderConfig.builderCode;
+		}
+
 		if (orderToSign.side === Side.BUY && orderToSign.userUSDCBalance !== undefined) {
 			// biome-ignore lint/style/noNonNullAssertion: price is validated above
 			const price = orderToSign.price!;
-			const builderTakerFeeRate = this.canBuilderAuth()
+			const builderTakerFeeRate = this.isBuilderOrder(orderToSign.builderCode)
 				? (this.builderFeeRates[tokenID]?.taker ?? 0)
 				: 0;
 
@@ -986,20 +983,12 @@ export class ClobClient {
 			body: JSON.stringify(orderPayload),
 		};
 
-		let headers = await createL2Headers(
+		const headers = await createL2Headers(
 			this.signer as Wallet | JsonRpcSigner,
 			this.creds as ApiKeyCreds,
 			l2HeaderArgs,
 			this.useServerTime ? await this.getServerTime() : undefined,
 		);
-
-		// builders flow
-		if (this.canBuilderAuth()) {
-			const builderHeaders = await this._generateBuilderHeaders(headers, l2HeaderArgs);
-			if (builderHeaders !== undefined) {
-				headers = builderHeaders;
-			}
-		}
 
 		const res = await this.post(`${this.host}${endpoint}`, {
 			headers,
@@ -1033,20 +1022,12 @@ export class ClobClient {
 			body: JSON.stringify(ordersPayload),
 		};
 
-		let headers = await createL2Headers(
+		const headers = await createL2Headers(
 			this.signer as Wallet | JsonRpcSigner,
 			this.creds as ApiKeyCreds,
 			l2HeaderArgs,
 			this.useServerTime ? await this.getServerTime() : undefined,
 		);
-
-		// builders flow
-		if (this.canBuilderAuth()) {
-			const builderHeaders = await this._generateBuilderHeaders(headers, l2HeaderArgs);
-			if (builderHeaders !== undefined) {
-				headers = builderHeaders;
-			}
-		}
 
 		const res = await this.post(`${this.host}${endpoint}`, {
 			headers,
@@ -1354,62 +1335,6 @@ export class ClobClient {
 		}
 	}
 
-	public async createBuilderApiKey(): Promise<BuilderApiKey> {
-		this.canL2Auth();
-
-		const endpoint = CREATE_BUILDER_API_KEY;
-		const headerArgs = {
-			method: POST,
-			requestPath: endpoint,
-		};
-
-		const headers = await createL2Headers(
-			this.signer as Wallet | JsonRpcSigner,
-			this.creds as ApiKeyCreds,
-			headerArgs,
-			this.useServerTime ? await this.getServerTime() : undefined,
-		);
-
-		return this.post(`${this.host}${endpoint}`, { headers });
-	}
-
-	public async getBuilderApiKeys(): Promise<BuilderApiKeyResponse[]> {
-		this.canL2Auth();
-
-		const endpoint = GET_BUILDER_API_KEYS;
-		const headerArgs = {
-			method: GET,
-			requestPath: endpoint,
-		};
-
-		const headers = await createL2Headers(
-			this.signer as Wallet | JsonRpcSigner,
-			this.creds as ApiKeyCreds,
-			headerArgs,
-			this.useServerTime ? await this.getServerTime() : undefined,
-		);
-
-		return this.get(`${this.host}${endpoint}`, { headers });
-	}
-
-	public async revokeBuilderApiKey(): Promise<any> {
-		this.mustBuilderAuth();
-
-		const endpoint = REVOKE_BUILDER_API_KEY;
-		const headerArgs = {
-			method: DELETE,
-			requestPath: endpoint,
-		};
-
-		const headers = await this._getBuilderHeaders(headerArgs.method, headerArgs.requestPath);
-
-		if (!headers) {
-			throw BUILDER_AUTH_FAILED;
-		}
-
-		return this.del(`${this.host}${endpoint}`, { headers });
-	}
-
 	private canL1Auth(): void {
 		if (this.signer === undefined) {
 			throw L1_AUTH_UNAVAILABLE_ERROR;
@@ -1426,14 +1351,8 @@ export class ClobClient {
 		}
 	}
 
-	private mustBuilderAuth(): void {
-		if (!this.canBuilderAuth()) {
-			throw BUILDER_AUTH_NOT_AVAILABLE;
-		}
-	}
-
-	private canBuilderAuth(): boolean {
-		return this.builderConfig?.isValid() ?? false;
+	private isBuilderOrder(builderCode?: string): boolean {
+		return builderCode !== undefined && builderCode !== bytes32Zero;
 	}
 
 	private async _ensureMarketInfoCached(tokenID: string): Promise<void> {
@@ -1508,33 +1427,6 @@ export class ClobClient {
 	// 	}
 	// 	return marketFeeRateBps;
 	// }
-
-	private async _generateBuilderHeaders(
-		headers: L2PolyHeader,
-		headerArgs: L2HeaderArgs,
-	): Promise<L2WithBuilderHeader | undefined> {
-		if (this.builderConfig !== undefined) {
-			const builderHeaders = await this._getBuilderHeaders(
-				headerArgs.method,
-				headerArgs.requestPath,
-				headerArgs.body,
-			);
-			if (!builderHeaders) {
-				return undefined;
-			}
-			return injectBuilderHeaders(headers, builderHeaders);
-		}
-
-		return undefined;
-	}
-
-	private async _getBuilderHeaders(
-		method: string,
-		path: string,
-		body?: string,
-	): Promise<BuilderHeaderPayload | undefined> {
-		return (this.builderConfig as BuilderConfig).generateBuilderHeaders(method, path, body);
-	}
 
 	private async _retryOnVersionUpdate(retryFunc: () => Promise<unknown>) {
 		const version = await this.resolveVersion();

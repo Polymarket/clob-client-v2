@@ -55,6 +55,11 @@ export interface UserOrderV2 {
 	 * Timestamp after which the order is expired.
 	 */
 	expiration?: number;
+
+	/**
+	 * Builder code (bytes32)
+	 */
+	builderCode?: string;
 }
 
 // Simplified market order for users
@@ -94,4 +99,9 @@ export interface UserMarketOrderV2 {
 	 * If this field is left empty, the default flow is to use the order amount as-is
 	 */
 	userUSDCBalance?: number;
+
+	/**
+	 * Builder code (bytes32)
+	 */
+	builderCode?: string;
 }
