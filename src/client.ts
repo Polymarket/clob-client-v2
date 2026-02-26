@@ -788,11 +788,13 @@ export class ClobClient {
 	): Promise<SignedOrder> {
 		this.canL1Auth();
 
-		if (this.builderConfig?.builderCode && !userOrder.builderCode) {
-			userOrder.builderCode = this.builderConfig.builderCode;
+		const orderToSign = { ...userOrder };
+
+		if (this.builderConfig?.builderCode && !orderToSign.builderCode) {
+			orderToSign.builderCode = this.builderConfig.builderCode;
 		}
 
-		const { tokenID } = userOrder;
+		const { tokenID } = orderToSign;
 
 		// const tickSize = await this._resolveTickSize(tokenID, options?.tickSize);
 		if (!options?.tickSize) {
@@ -800,9 +802,9 @@ export class ClobClient {
 		}
 		const tickSize = options.tickSize;
 
-		if (!priceValid(userOrder.price, tickSize)) {
+		if (!priceValid(orderToSign.price, tickSize)) {
 			throw new Error(
-				`invalid price (${userOrder.price}), min: ${parseFloat(tickSize)} - max: ${
+				`invalid price (${orderToSign.price}), min: ${parseFloat(tickSize)} - max: ${
 					1 - parseFloat(tickSize)
 				}`,
 			);
@@ -812,7 +814,7 @@ export class ClobClient {
 		const version = await this.resolveVersion();
 
 		return this.orderBuilder.buildOrder(
-			userOrder,
+			orderToSign,
 			{
 				tickSize,
 				negRisk,
