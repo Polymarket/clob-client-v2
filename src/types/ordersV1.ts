@@ -69,6 +69,11 @@ export interface UserOrderV1 {
 	 * Address of the order taker. The zero address is used to indicate a public order
 	 */
 	taker?: string;
+
+	/**
+	 * Builder code (bytes32)
+	 */
+	builderCode?: string;
 }
 
 // Simplified market order for users
@@ -116,4 +121,9 @@ export interface UserMarketOrderV1 {
 	 * - FAK (Fill and Kill): The order can be partially filled, and any unfilled portion is canceled.
 	 */
 	orderType?: OrderType.FOK | OrderType.FAK;
+
+	/**
+	 * Builder code (bytes32)
+	 */
+	builderCode?: string;
 }
