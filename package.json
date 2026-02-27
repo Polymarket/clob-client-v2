@@ -1,33 +1,7 @@
 {
-	"name": "@polymarket/clob-client",
+	"name": "@polymarket/clob-client-v2",
 	"description": "Typescript client for Polymarket's CLOB",
-	"version": "4.22.8",
-	"contributors": [
-		{
-			"name": "Jonathan Amenechi",
-			"url": "https://github.com/JonathanAmenechi"
-		},
-		{
-			"name": "Rodrigo Calvo",
-			"url": "https://github.com/poly-rodr"
-		},
-		{
-			"name": "Matt Walker",
-			"url": "https://github.com/mttwlkr"
-		},
-		{
-			"name": "Liam Kovatch",
-			"url": "https://github.com/l-kov"
-		},
-		{
-			"name": "Mike Shrieve",
-			"url": "https://github.com/mshrieve"
-		},
-		{
-			"name": "Danny Dresner",
-			"url": "https://github.com/ddresner-pm"
-		}
-	],
+	"version": "0.0.1",
 	"main": "dist/index.js",
 	"types": "dist/index.d.ts",
 	"files": [
