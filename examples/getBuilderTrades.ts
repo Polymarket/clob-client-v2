@@ -18,7 +18,8 @@ async function main() {
     };
     const clobClient = new ClobClient(host, chainId, wallet, creds);
 
-    const trades = await clobClient.getBuilderTrades();
+    const builderCode = `${process.env.BUILDER_CODE}`;
+    const trades = await clobClient.getBuilderTrades({ builderCode });
     console.log(trades);
     console.log(`Done!`);
 }

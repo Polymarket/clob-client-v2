@@ -134,7 +134,10 @@ export interface TradeParams {
 	asset_id?: string;
 	before?: string;
 	after?: string;
-	builderCode?: string;
+}
+
+export interface BuilderTradeParams extends TradeParams {
+	builderCode: string;
 }
 
 export interface OpenOrderParams {

@@ -89,6 +89,7 @@ import type {
 	BuilderConfig,
 	BuilderFeeRates,
 	BuilderTrade,
+	BuilderTradeParams,
 	Chain,
 	ClobErrorResponseBody,
 	CreateOrderOptions,
@@ -649,7 +650,7 @@ export class ClobClient {
 	}
 
 	public async getBuilderTrades(
-		params?: TradeParams,
+		params: BuilderTradeParams,
 		next_cursor?: string,
 	): Promise<{
 		trades: BuilderTrade[];
@@ -657,6 +658,9 @@ export class ClobClient {
 		limit: number;
 		count: number;
 	}> {
+		if (!params.builderCode || params.builderCode === bytes32Zero) {
+			throw new Error("builderCode is required and cannot be zero");
+		}
 		this.canL2Auth();
 
 		const endpoint = GET_BUILDER_TRADES;
