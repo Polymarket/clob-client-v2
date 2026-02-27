@@ -17,7 +17,6 @@ const calculateBuilderFee = (amountUSD: number, builderTakerFeeRate: number): nu
 };
 
 describe("fee calculations", () => {
-	// Matches https://github.com/Polymarket/clob-v2/blob/74851ea2dd5592cc7efb97deab0c6c19682200a4/packages/fees/pkg/app/platform_fee_test.go
 	// rate=0.25, exp=2, C=100 contracts
 	describe("platform fee (builder fee = 0)", () => {
 		const feeRate = 0.25;
@@ -97,7 +96,6 @@ describe("fee calculations", () => {
 		});
 	});
 
-	// Matches https://github.com/Polymarket/clob-v2/blob/74851ea2dd5592cc7efb97deab0c6c19682200a4/packages/fees/pkg/app/builder_fee_test.go#L31
 	// builderTakerFeeRate is in decimal (bps / 10000), e.g. 100 bps → 0.01
 	describe("builder fee (platform fee = 0)", () => {
 		it("1% on 100 tokens at 50c → fee = 0.5", () => {
@@ -114,7 +112,6 @@ describe("fee calculations", () => {
 			expect(calculateBuilderFee(contracts * price, builderTakerFeeRate)).toBeCloseTo(7.5, 6);
 		});
 	});
-
 	// fee-adjusted amount: effective + fees = budget
 	// effective = budget / (1 + platformFeeRate/price + builderTakerFeeRate)
 	describe("fee-adjusted effective amount", () => {
