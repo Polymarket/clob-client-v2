@@ -65,5 +65,9 @@ export const GET_REWARDS_MARKETS_CURRENT = "/rewards/markets/current";
 export const GET_REWARDS_MARKETS = "/rewards/markets/";
 export const GET_REWARDS_EARNINGS_PERCENTAGES = "/rewards/user/markets";
 
+// Builder API Key endpoints
+export const CREATE_BUILDER_API_KEY = "/auth/builder-api-key";
+export const GET_BUILDER_API_KEYS = "/auth/builder-api-key";
+
 // Builder endpoints
 export const GET_BUILDER_TRADES = "/builder/trades";

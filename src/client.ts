@@ -20,6 +20,8 @@ import {
 	DROP_NOTIFICATIONS,
 	GET_API_KEYS,
 	GET_BALANCE_ALLOWANCE,
+	CREATE_BUILDER_API_KEY,
+	GET_BUILDER_API_KEYS,
 	GET_BUILDER_TRADES,
 	GET_CLOB_MARKET,
 	GET_EARNINGS_FOR_USER_FOR_DAY,
@@ -82,6 +84,8 @@ import type {
 	BalanceAllowanceResponse,
 	BanStatus,
 	BookParams,
+	BuilderApiKey,
+	BuilderApiKeyResponse,
 	BuilderConfig,
 	BuilderFeeRates,
 	BuilderTrade,
@@ -642,6 +646,44 @@ export class ClobClient {
 		});
 
 		return { trades: Array.isArray(data) ? [...data] : [], ...rest };
+	}
+
+	public async createBuilderApiKey(): Promise<BuilderApiKey> {
+		this.canL2Auth();
+
+		const endpoint = CREATE_BUILDER_API_KEY;
+		const headerArgs = {
+			method: POST,
+			requestPath: endpoint,
+		};
+
+		const headers = await createL2Headers(
+			this.signer as Wallet | JsonRpcSigner,
+			this.creds as ApiKeyCreds,
+			headerArgs,
+			this.useServerTime ? await this.getServerTime() : undefined,
+		);
+
+		return this.post(`${this.host}${endpoint}`, { headers });
+	}
+
+	public async getBuilderApiKeys(): Promise<BuilderApiKeyResponse[]> {
+		this.canL2Auth();
+
+		const endpoint = GET_BUILDER_API_KEYS;
+		const headerArgs = {
+			method: GET,
+			requestPath: endpoint,
+		};
+
+		const headers = await createL2Headers(
+			this.signer as Wallet | JsonRpcSigner,
+			this.creds as ApiKeyCreds,
+			headerArgs,
+			this.useServerTime ? await this.getServerTime() : undefined,
+		);
+
+		return this.get(`${this.host}${endpoint}`, { headers });
 	}
 
 	public async getBuilderTrades(

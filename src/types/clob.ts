@@ -419,6 +419,18 @@ export interface BuilderTrade {
 	updatedAt: string | null;
 }
 
+export interface BuilderApiKey {
+	key: string;
+	secret: string;
+	passphrase: string;
+}
+
+export interface BuilderApiKeyResponse {
+	key: string;
+	createdAt?: string;
+	revokedAt?: string;
+}
+
 export type ClobErrorResponseBody = {
 	error: string;
 };
