@@ -137,7 +137,7 @@ export interface TradeParams {
 }
 
 export interface BuilderTradeParams extends TradeParams {
-	builderCode: string;
+	builder_code: string;
 }
 
 export interface OpenOrderParams {

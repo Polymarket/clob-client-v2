@@ -658,7 +658,7 @@ export class ClobClient {
 		limit: number;
 		count: number;
 	}> {
-		if (!params.builderCode || params.builderCode === bytes32Zero) {
+		if (!params.builder_code || params.builder_code === bytes32Zero) {
 			throw new Error("builderCode is required and cannot be zero");
 		}
 		this.canL2Auth();
