@@ -173,6 +173,8 @@ export class ClobClient {
 
 	private cachedVersion?: number;
 
+	readonly retryOnError?: boolean;
+
 	// eslint-disable-next-line max-params
 	constructor(
 		host: string,
@@ -184,6 +186,7 @@ export class ClobClient {
 		geoBlockToken?: string,
 		useServerTime?: boolean,
 		builderConfig?: BuilderConfig,
+		retryOnError?: boolean,
 		getSigner?: () => Promise<Wallet | JsonRpcSigner> | (Wallet | JsonRpcSigner),
 	) {
 		this.host = host.endsWith("/") ? host.slice(0, -1) : host;
@@ -209,6 +212,7 @@ export class ClobClient {
 		this.builderFeeRates = {};
 		this.tokenConditionMap = {};
 		this.geoBlockToken = geoBlockToken;
+		this.retryOnError = retryOnError;
 		this.useServerTime = useServerTime;
 		if (builderConfig !== undefined) {
 			this.builderConfig = builderConfig;
@@ -1503,10 +1507,14 @@ export class ClobClient {
 	}
 
 	private async post(endpoint: string, options?: RequestOptions) {
-		return post(endpoint, {
-			...options,
-			params: { ...options?.params, geo_block_token: this.geoBlockToken },
-		});
+		return post(
+			endpoint,
+			{
+				...options,
+				params: { ...options?.params, geo_block_token: this.geoBlockToken },
+			},
+			this.retryOnError,
+		);
 	}
 
 	private async del(endpoint: string, options?: RequestOptions) {

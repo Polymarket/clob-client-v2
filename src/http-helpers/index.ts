@@ -46,7 +46,13 @@ export interface RequestOptions {
 	params?: QueryParams;
 }
 
-export const post = async (endpoint: string, options?: RequestOptions): Promise<any> => {
+const sleep = (ms: number) => new Promise(res => setTimeout(res, ms));
+
+export const post = async (
+	endpoint: string,
+	options?: RequestOptions,
+	retryOnError: boolean = false,
+): Promise<any> => {
 	try {
 		const resp = await request(
 			endpoint,
@@ -57,6 +63,22 @@ export const post = async (endpoint: string, options?: RequestOptions): Promise<
 		);
 		return resp.data;
 	} catch (err: unknown) {
+		if (retryOnError && isTransientAxiosError(err)) {
+			console.log("[CLOB Client-v2] transient error, retrying once after 30 ms");
+			await sleep(30);
+			try {
+				const resp = await request(
+					endpoint,
+					POST,
+					options?.headers,
+					options?.data,
+					options?.params,
+				);
+				return resp.data;
+			} catch (retryErr: unknown) {
+				return errorHandling(retryErr);
+			}
+		}
 		return errorHandling(err);
 	}
 };
@@ -126,6 +148,15 @@ const errorHandling = (err: unknown) => {
 
 	console.error("[CLOB Client] request error", err);
 	return { error: err };
+};
+
+const isTransientAxiosError = (err: unknown): boolean => {
+	if (!axios.isAxiosError(err)) return false;
+	if (!err.response) return true; // network error
+	const status = err.response.status ?? 0;
+	if (status >= 500 && status < 600) return true; // 5xx
+	const code = (err.code ?? "").toString();
+	return ["ECONNABORTED", "ENETUNREACH", "EAI_AGAIN", "ETIMEDOUT"].includes(code);
 };
 
 export const parseOrdersScoringParams = (orderScoringParams?: OrdersScoringParams): QueryParams => {
