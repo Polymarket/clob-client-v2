@@ -115,8 +115,7 @@ import type {
 	OrdersScoring,
 	OrdersScoringParams,
 	PaginationPayload,
-	PostOrdersV1Args,
-	PostOrdersV2Args,
+	PostOrdersArgs,
 	PriceHistoryFilterParams,
 	RewardsPercentages,
 	TickSize,
@@ -139,6 +138,20 @@ import {
 	orderToJsonV2,
 	priceValid,
 } from "./utilities";
+
+export interface ClobClientOptions {
+	host: string;
+	chain: Chain;
+	signer?: Wallet | JsonRpcSigner;
+	creds?: ApiKeyCreds;
+	signatureType?: SignatureTypeV2;
+	funderAddress?: string;
+	geoBlockToken?: string;
+	useServerTime?: boolean;
+	builderConfig?: BuilderConfig;
+	getSigner?: () => Promise<Wallet | JsonRpcSigner> | (Wallet | JsonRpcSigner);
+	retryOnError?: boolean;
+}
 
 export class ClobClient {
 	readonly host: string;
@@ -173,21 +186,23 @@ export class ClobClient {
 
 	private cachedVersion?: number;
 
-	// eslint-disable-next-line max-params
-	constructor(
-		host: string,
-		chainId: Chain,
-		signer?: Wallet | JsonRpcSigner,
-		creds?: ApiKeyCreds,
-		signatureType?: SignatureTypeV2,
-		funderAddress?: string,
-		geoBlockToken?: string,
-		useServerTime?: boolean,
-		builderConfig?: BuilderConfig,
-		getSigner?: () => Promise<Wallet | JsonRpcSigner> | (Wallet | JsonRpcSigner),
-	) {
+	readonly retryOnError?: boolean;
+
+	constructor({
+		host,
+		chain,
+		signer,
+		creds,
+		signatureType,
+		funderAddress,
+		geoBlockToken,
+		useServerTime,
+		builderConfig,
+		getSigner,
+		retryOnError,
+	}: ClobClientOptions) {
 		this.host = host.endsWith("/") ? host.slice(0, -1) : host;
-		this.chainId = chainId;
+		this.chainId = chain;
 
 		if (signer !== undefined) {
 			this.signer = signer;
@@ -197,7 +212,7 @@ export class ClobClient {
 		}
 		this.orderBuilder = new OrderBuilder(
 			signer as Wallet | JsonRpcSigner,
-			chainId,
+			chain,
 			signatureType,
 			funderAddress,
 			getSigner,
@@ -209,6 +224,7 @@ export class ClobClient {
 		this.builderFeeRates = {};
 		this.tokenConditionMap = {};
 		this.geoBlockToken = geoBlockToken;
+		this.retryOnError = retryOnError;
 		this.useServerTime = useServerTime;
 		if (builderConfig !== undefined) {
 			this.builderConfig = builderConfig;
@@ -1010,10 +1026,7 @@ export class ClobClient {
 		return res;
 	}
 
-	public async postOrders(
-		args: (PostOrdersV2Args | PostOrdersV1Args)[],
-		deferExec = false,
-	): Promise<any> {
+	public async postOrders(args: PostOrdersArgs[], deferExec = false): Promise<any> {
 		this.canL2Auth();
 		const endpoint = POST_ORDERS;
 		const ordersPayload: (NewOrderV2<any> | NewOrderV1<any>)[] = [];
@@ -1503,10 +1516,14 @@ export class ClobClient {
 	}
 
 	private async post(endpoint: string, options?: RequestOptions) {
-		return post(endpoint, {
-			...options,
-			params: { ...options?.params, geo_block_token: this.geoBlockToken },
-		});
+		return post(
+			endpoint,
+			{
+				...options,
+				params: { ...options?.params, geo_block_token: this.geoBlockToken },
+			},
+			this.retryOnError,
+		);
 	}
 
 	private async del(endpoint: string, options?: RequestOptions) {

@@ -1,10 +1,11 @@
 import type { SignedOrderV1, SignedOrderV2 } from "../order-utils";
+import type { OrderType } from "./clob";
 import type { PostOrdersV1Args, UserMarketOrderV1, UserOrderV1 } from "./ordersV1";
 import type { PostOrdersV2Args, UserMarketOrderV2, UserOrderV2 } from "./ordersV2";
 
 export type SignedOrder = SignedOrderV1 | SignedOrderV2;
 
-export type PostOrdersArgs = PostOrdersV1Args | PostOrdersV2Args;
+export type PostOrdersArgs = { order: SignedOrder; orderType: OrderType };
 
 export type VersionedSignedOrder =
 	| { version: 1; order: SignedOrderV1 }

@@ -22,8 +22,6 @@ async function populateBook(client: ClobClient) {
                 side: newOrder.side,
                 price: newOrder.price,
                 size: newOrder.size,
-                feeRateBps: 100,
-                nonce: i++,
             }),
         );
     }
@@ -43,14 +41,14 @@ async function main() {
 
     // Create a clob client, using the poly proxy signature scheme
     // and providing the proxy address
-    const clobPolyClient = new ClobClient(
+    const clobPolyClient = new ClobClient({
         host,
-        chainId,
-        wallet,
+        chain: chainId,
+        signer: wallet,
         creds,
-        SignatureType.POLY_PROXY,
-        "0xb57af06b944df7df17b9661652f72b954286ee07",
-    );
+        signatureType: SignatureType.POLY_PROXY,
+        funderAddress: "0xb57af06b944df7df17b9661652f72b954286ee07",
+    });
 
     await populateBook(clobPolyClient);
 

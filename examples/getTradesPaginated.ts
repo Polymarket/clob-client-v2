@@ -17,7 +17,7 @@ async function main() {
         secret: `${process.env.CLOB_SECRET}`,
         passphrase: `${process.env.CLOB_PASS_PHRASE}`,
     };
-    const clobClient = new ClobClient(host, chainId, wallet, creds);
+    const clobClient = new ClobClient({ host, chain: chainId, signer: wallet, creds });
 
     // only first page 
     console.log(

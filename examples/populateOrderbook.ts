@@ -16,7 +16,7 @@ async function main() {
         secret: `${process.env.CLOB_SECRET}`,
         passphrase: `${process.env.CLOB_PASS_PHRASE}`,
     };
-    const clobClient = new ClobClient(host, chainId, wallet, creds);
+    const clobClient = new ClobClient({ host, chain: chainId, signer: wallet, creds });
 
     const YES = "71321045679252212594626385532706912750332728571942532289631379312455583992563";
     const yes_bid = await clobClient.createOrder({
@@ -24,8 +24,6 @@ async function main() {
         price: 0.4,
         side: Side.BUY,
         size: 100,
-        feeRateBps: 0,
-        nonce: 0,
     });
     console.log("creating order", yes_bid);
     await clobClient.postOrder(yes_bid);
@@ -35,8 +33,6 @@ async function main() {
         price: 0.6,
         side: Side.SELL,
         size: 100,
-        feeRateBps: 0,
-        nonce: 0,
     });
     console.log("creating order", yes_ask);
     await clobClient.postOrder(yes_ask);
@@ -47,8 +43,6 @@ async function main() {
         price: 0.4,
         side: Side.BUY,
         size: 100,
-        feeRateBps: 0,
-        nonce: 0,
     });
     console.log("creating order", no_bid);
     await clobClient.postOrder(no_bid);
@@ -58,8 +52,6 @@ async function main() {
         price: 0.6,
         side: Side.SELL,
         size: 100,
-        feeRateBps: 0,
-        nonce: 0,
     });
     console.log("creating order", no_ask);
     await clobClient.postOrder(no_ask);

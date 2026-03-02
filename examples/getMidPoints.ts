@@ -16,7 +16,7 @@ async function main() {
         secret: `${process.env.CLOB_SECRET}`,
         passphrase: `${process.env.CLOB_PASS_PHRASE}`,
     };
-    const clobClient = new ClobClient(host, chainId, wallet, creds);
+    const clobClient = new ClobClient({ host, chain: chainId, signer: wallet, creds });
 
     const YES = "71321045679252212594626385532706912750332728571942532289631379312455583992563";
     const NO = "52114319501245915516055106046884209969926127482827954674443846427813813222426";
