@@ -1026,10 +1026,7 @@ export class ClobClient {
 		return res;
 	}
 
-	public async postOrders(
-		args: PostOrdersArgs[],
-		deferExec = false,
-	): Promise<any> {
+	public async postOrders(args: PostOrdersArgs[], deferExec = false): Promise<any> {
 		this.canL2Auth();
 		const endpoint = POST_ORDERS;
 		const ordersPayload: (NewOrderV2<any> | NewOrderV1<any>)[] = [];
