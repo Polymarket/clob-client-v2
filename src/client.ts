@@ -115,8 +115,7 @@ import type {
 	OrdersScoring,
 	OrdersScoringParams,
 	PaginationPayload,
-	PostOrdersV1Args,
-	PostOrdersV2Args,
+	PostOrdersArgs,
 	PriceHistoryFilterParams,
 	RewardsPercentages,
 	TickSize,
@@ -139,6 +138,20 @@ import {
 	orderToJsonV2,
 	priceValid,
 } from "./utilities";
+
+export interface ClobClientOptions {
+	host: string;
+	chain: Chain;
+	signer?: Wallet | JsonRpcSigner;
+	creds?: ApiKeyCreds;
+	signatureType?: SignatureTypeV2;
+	funderAddress?: string;
+	geoBlockToken?: string;
+	useServerTime?: boolean;
+	builderConfig?: BuilderConfig;
+	getSigner?: () => Promise<Wallet | JsonRpcSigner> | (Wallet | JsonRpcSigner);
+	retryOnError?: boolean;
+}
 
 export class ClobClient {
 	readonly host: string;
@@ -175,22 +188,21 @@ export class ClobClient {
 
 	readonly retryOnError?: boolean;
 
-	// eslint-disable-next-line max-params
-	constructor(
-		host: string,
-		chainId: Chain,
-		signer?: Wallet | JsonRpcSigner,
-		creds?: ApiKeyCreds,
-		signatureType?: SignatureTypeV2,
-		funderAddress?: string,
-		geoBlockToken?: string,
-		useServerTime?: boolean,
-		builderConfig?: BuilderConfig,
-		getSigner?: () => Promise<Wallet | JsonRpcSigner> | (Wallet | JsonRpcSigner),
-		retryOnError?: boolean,
-	) {
+	constructor({
+		host,
+		chain,
+		signer,
+		creds,
+		signatureType,
+		funderAddress,
+		geoBlockToken,
+		useServerTime,
+		builderConfig,
+		getSigner,
+		retryOnError,
+	}: ClobClientOptions) {
 		this.host = host.endsWith("/") ? host.slice(0, -1) : host;
-		this.chainId = chainId;
+		this.chainId = chain;
 
 		if (signer !== undefined) {
 			this.signer = signer;
@@ -200,7 +212,7 @@ export class ClobClient {
 		}
 		this.orderBuilder = new OrderBuilder(
 			signer as Wallet | JsonRpcSigner,
-			chainId,
+			chain,
 			signatureType,
 			funderAddress,
 			getSigner,
@@ -1015,7 +1027,7 @@ export class ClobClient {
 	}
 
 	public async postOrders(
-		args: (PostOrdersV2Args | PostOrdersV1Args)[],
+		args: PostOrdersArgs[],
 		deferExec = false,
 	): Promise<any> {
 		this.canL2Auth();

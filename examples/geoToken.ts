@@ -18,15 +18,7 @@ async function main() {
         passphrase: `${process.env.CLOB_PASS_PHRASE}`,
     };
 
-    const clobClient = new ClobClient(
-        host,
-        chainId,
-        wallet,
-        creds,
-        undefined,
-        undefined,
-        geoBlockToken,
-    );
+    const clobClient = new ClobClient({ host, chain: chainId, signer: wallet, creds, geoBlockToken });
 
     // Create a buy order for 100 YES for 0.50c
     const YES = "71321045679252212594626385532706912750332728571942532289631379312455583992563";

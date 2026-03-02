@@ -16,7 +16,7 @@ async function main() {
         secret: `${process.env.CLOB_SECRET}`,
         passphrase: `${process.env.CLOB_PASS_PHRASE}`,
     };
-    const clobClient = new ClobClient(host, chainId, wallet, creds);
+    const clobClient = new ClobClient({ host, chain: chainId, signer: wallet, creds });
 
     // Create a buy order for 100 YES for 0.50c with an expiration of 1 minute
     // We add an extra 10s because Clob has a security threshold of 10 seconds before canceling it.

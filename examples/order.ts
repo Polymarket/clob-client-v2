@@ -11,13 +11,13 @@ const signer = new Wallet(""); //This is your Private Key. If using email login 
 
 
 //In general don't create a new API key, always derive or createOrDerive
-const creds = new ClobClient(host, 137, signer).createOrDeriveApiKey();
+const creds = new ClobClient({ host, chain: 137, signer }).createOrDeriveApiKey();
 
 //0: Browser Wallet(Metamask, Coinbase Wallet, etc)
 //1: Magic/Email Login
 const signatureType = 1; 
   (async () => {
-    const clobClient = new ClobClient(host, 137, signer, await creds, signatureType, funder);
+    const clobClient = new ClobClient({ host, chain: 137, signer, creds: await creds, signatureType, funderAddress: funder });
     const resp2 = await clobClient.createAndPostOrder(
         {
             tokenID: "", //Use https://docs.polymarket.com/developers/gamma-markets-api/get-markets to grab a sample token

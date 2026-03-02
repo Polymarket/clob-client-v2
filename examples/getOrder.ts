@@ -16,7 +16,7 @@ async function main() {
         secret: `${process.env.CLOB_SECRET}`,
         passphrase: `${process.env.CLOB_PASS_PHRASE}`,
     };
-    const clobClient = new ClobClient(host, chainId, wallet, creds);
+    const clobClient = new ClobClient({ host, chain: chainId, signer: wallet, creds });
 
     const order = await clobClient.getOrder(
         "0x831680cb77da95792af5a052c87c8abf9d2ae5cb21f275670bc0ff58f2823c5c",

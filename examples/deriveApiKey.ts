@@ -11,7 +11,7 @@ async function main() {
     console.log(`Address: ${await wallet.getAddress()}, chainId: ${chainId}`);
 
     const host = process.env.CLOB_API_URL || "http://localhost:8080";
-    const clobClient = new ClobClient(host, chainId, wallet);
+    const clobClient = new ClobClient({ host, chain: chainId, signer: wallet });
 
     console.log(`Response: `);
     const resp = await clobClient.deriveApiKey();
