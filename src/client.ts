@@ -186,8 +186,8 @@ export class ClobClient {
 		geoBlockToken?: string,
 		useServerTime?: boolean,
 		builderConfig?: BuilderConfig,
-		retryOnError?: boolean,
 		getSigner?: () => Promise<Wallet | JsonRpcSigner> | (Wallet | JsonRpcSigner),
+		retryOnError?: boolean,
 	) {
 		this.host = host.endsWith("/") ? host.slice(0, -1) : host;
 		this.chainId = chainId;
