@@ -107,7 +107,7 @@ export class ExchangeOrderBuilderV2 {
 				makerAmount: order.makerAmount,
 				takerAmount: order.takerAmount,
 				timestamp: order.timestamp,
-				side: order.side,
+				side: order.side === "BUY" ? 0 : 1,
 				signatureType: order.signatureType,
 				metadata: order.metadata,
 				builder: order.builder,

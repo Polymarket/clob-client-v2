@@ -51,7 +51,7 @@ describe("exchangeOrderBuilderV1", () => {
 				expect(order.tokenId).toBe("1234");
 				expect(order.makerAmount).toBe("100000000");
 				expect(order.takerAmount).toBe("50000000");
-				expect(order.side).toBe(0);
+				expect(order.side).toBe(Side.BUY);
 				expect(order.expiration).toBe("0");
 				expect(order.nonce).toBe("0");
 				expect(order.feeRateBps).toBe("100");
@@ -88,7 +88,7 @@ describe("exchangeOrderBuilderV1", () => {
 					expiration: "0",
 					nonce: "0",
 					feeRateBps: "100",
-					side: 0,
+					side: Side.BUY,
 					signatureType: 0,
 				});
 			});
@@ -374,7 +374,7 @@ describe("exchangeOrderBuilderV1", () => {
 				expect(signedOrder.tokenId).toBe("1234");
 				expect(signedOrder.makerAmount).toBe("100000000");
 				expect(signedOrder.takerAmount).toBe("50000000");
-				expect(signedOrder.side).toBe(0);
+				expect(signedOrder.side).toBe(Side.BUY);
 				expect(signedOrder.expiration).toBe("0");
 				expect(signedOrder.nonce).toBe("0");
 				expect(signedOrder.feeRateBps).toBe("100");
@@ -408,7 +408,7 @@ describe("exchangeOrderBuilderV1", () => {
 					tokenId: "1234",
 					makerAmount: "100000000",
 					takerAmount: "50000000",
-					side: 0,
+					side: Side.BUY,
 					expiration: "0",
 					nonce: "0",
 					feeRateBps: "100",
@@ -465,7 +465,7 @@ describe("exchangeOrderBuilderV1", () => {
 				expect(order.tokenId).toBe("1234");
 				expect(order.makerAmount).toBe("100000000");
 				expect(order.takerAmount).toBe("50000000");
-				expect(order.side).toBe(0);
+				expect(order.side).toBe(Side.BUY);
 				expect(order.expiration).toBe("0");
 				expect(order.nonce).toBe("0");
 				expect(order.feeRateBps).toBe("100");
@@ -502,7 +502,7 @@ describe("exchangeOrderBuilderV1", () => {
 					expiration: "0",
 					nonce: "0",
 					feeRateBps: "100",
-					side: 0,
+					side: Side.BUY,
 					signatureType: 0,
 				});
 			});
@@ -788,7 +788,7 @@ describe("exchangeOrderBuilderV1", () => {
 				expect(signedOrder.tokenId).toBe("1234");
 				expect(signedOrder.makerAmount).toBe("100000000");
 				expect(signedOrder.takerAmount).toBe("50000000");
-				expect(signedOrder.side).toBe(0);
+				expect(signedOrder.side).toBe(Side.BUY);
 				expect(signedOrder.expiration).toBe("0");
 				expect(signedOrder.nonce).toBe("0");
 				expect(signedOrder.feeRateBps).toBe("100");
@@ -822,7 +822,7 @@ describe("exchangeOrderBuilderV1", () => {
 					tokenId: "1234",
 					makerAmount: "100000000",
 					takerAmount: "50000000",
-					side: 0,
+					side: Side.BUY,
 					expiration: "0",
 					nonce: "0",
 					feeRateBps: "100",

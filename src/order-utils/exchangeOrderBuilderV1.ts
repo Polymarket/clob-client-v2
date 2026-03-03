@@ -139,7 +139,7 @@ export class ExchangeOrderBuilderV1 {
 				expiration: order.expiration,
 				nonce: order.nonce,
 				feeRateBps: order.feeRateBps,
-				side: order.side,
+				side: order.side === "BUY" ? 0 : 1,
 				signatureType: order.signatureType,
 			},
 		};
