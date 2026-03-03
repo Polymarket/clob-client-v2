@@ -1,15 +1,7 @@
 import { createHash } from "node:crypto";
 import type { SignedOrderV2 } from "./order-utils";
 import type { SignedOrderV1 } from "./order-utils/model/orderDataV1";
-import { SideString } from "./order-utils/model/side";
-import {
-	type NewOrderV1,
-	type NewOrderV2,
-	type OrderBookSummary,
-	type OrderType,
-	Side,
-	type TickSize,
-} from "./types";
+import type { NewOrderV1, NewOrderV2, OrderBookSummary, OrderType, TickSize } from "./types";
 
 export function orderToJsonV1<T extends OrderType>(
 	order: SignedOrderV1,
@@ -17,13 +9,6 @@ export function orderToJsonV1<T extends OrderType>(
 	orderType: T,
 	deferExec = false,
 ): NewOrderV1<T> {
-	let side: string;
-	if (order.side === Side.BUY) {
-		side = SideString.BUY;
-	} else {
-		side = SideString.SELL;
-	}
-
 	return {
 		deferExec,
 		order: {
@@ -34,7 +19,7 @@ export function orderToJsonV1<T extends OrderType>(
 			tokenId: order.tokenId,
 			makerAmount: order.makerAmount,
 			takerAmount: order.takerAmount,
-			side: side,
+			side: order.side,
 			expiration: order.expiration,
 			nonce: order.nonce,
 			feeRateBps: order.feeRateBps,
@@ -52,13 +37,6 @@ export function orderToJsonV2<T extends OrderType>(
 	orderType: T,
 	deferExec = false,
 ): NewOrderV2<T> {
-	let side: string;
-	if (order.side === Side.BUY) {
-		side = SideString.BUY;
-	} else {
-		side = SideString.SELL;
-	}
-
 	return {
 		deferExec,
 		order: {
@@ -69,7 +47,7 @@ export function orderToJsonV2<T extends OrderType>(
 			tokenId: order.tokenId,
 			makerAmount: order.makerAmount,
 			takerAmount: order.takerAmount,
-			side: side,
+			side: order.side,
 			expiration: order.expiration,
 			signatureType: order.signatureType,
 			timestamp: order.timestamp,
