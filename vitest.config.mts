@@ -5,6 +5,5 @@ export default defineConfig({
 		globals: true,
 		include: ["tests/**/*.test.ts"],
 		testTimeout: 300000,
-		environment: "jsdom",
 	},
 });

@@ -1,4 +1,4 @@
-import { Wallet } from "ethers";
+import { Wallet } from "@ethersproject/wallet";
 import { beforeEach, describe, expect, it } from "vitest";
 import { createL1Headers, createL2Headers } from "../../src/headers/index";
 import { type ApiKeyCreds, Chain } from "../../src/types";
