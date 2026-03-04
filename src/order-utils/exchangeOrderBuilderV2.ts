@@ -2,17 +2,17 @@ import type { JsonRpcSigner } from "@ethersproject/providers";
 import type { Wallet } from "@ethersproject/wallet";
 import { hashTypedData } from "viem";
 
-import { bytes32Zero } from "../constants";
+import { bytes32Zero } from "../constants.js";
 import {
 	CTF_EXCHANGE_V2_DOMAIN_NAME,
 	CTF_EXCHANGE_V2_DOMAIN_VERSION,
 	CTF_EXCHANGE_V2_ORDER_STRUCT,
-} from "./model/ctfExchangeV2TypedData";
-import { EIP712_DOMAIN, type EIP712TypedData } from "./model/eip712";
-import type { OrderHash, OrderSignature } from "./model/order";
+} from "./model/ctfExchangeV2TypedData.js";
+import { EIP712_DOMAIN, type EIP712TypedData } from "./model/eip712.js";
+import type { OrderHash, OrderSignature } from "./model/order.js";
 import type { OrderDataV2, OrderV2, SignedOrderV2 } from "./model/orderDataV2.js";
 import { SignatureTypeV2 } from "./model/signatureTypeV2.js";
-import { generateOrderSalt } from "./utils";
+import { generateOrderSalt } from "./utils.js";
 
 export class ExchangeOrderBuilderV2 {
 	constructor(

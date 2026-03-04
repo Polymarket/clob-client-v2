@@ -1,7 +1,13 @@
 import { createHash } from "node:crypto";
-import type { SignedOrderV2 } from "./order-utils";
-import type { SignedOrderV1 } from "./order-utils/model/orderDataV1";
-import type { NewOrderV1, NewOrderV2, OrderBookSummary, OrderType, TickSize } from "./types";
+import type { SignedOrderV2 } from "./order-utils/index.js";
+import type { SignedOrderV1 } from "./order-utils/model/orderDataV1.js";
+import type {
+	NewOrderV1,
+	NewOrderV2,
+	OrderBookSummary,
+	OrderType,
+	TickSize,
+} from "./types/index.js";
 
 export function orderToJsonV1<T extends OrderType>(
 	order: SignedOrderV1,

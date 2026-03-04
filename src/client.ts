@@ -6,7 +6,7 @@ import {
 	END_CURSOR,
 	INITIAL_CURSOR,
 	ORDER_VERSION_MISMATCH_ERROR,
-} from "./constants";
+} from "./constants.js";
 import {
 	ARE_ORDERS_SCORING,
 	CANCEL_ALL,
@@ -60,9 +60,9 @@ import {
 	POST_ORDERS,
 	TIME,
 	UPDATE_BALANCE_ALLOWANCE,
-} from "./endpoints";
-import { L1_AUTH_UNAVAILABLE_ERROR, L2_AUTH_NOT_AVAILABLE } from "./errors";
-import { createL1Headers, createL2Headers } from "./headers";
+} from "./endpoints.js";
+import { L1_AUTH_UNAVAILABLE_ERROR, L2_AUTH_NOT_AVAILABLE } from "./errors.js";
+import { createL1Headers, createL2Headers } from "./headers/index.js";
 import {
 	DELETE,
 	del,
@@ -72,10 +72,13 @@ import {
 	parseDropNotificationParams,
 	post,
 	type RequestOptions,
-} from "./http-helpers";
-import { OrderBuilder } from "./order-builder";
-import { calculateBuyMarketPrice, calculateSellMarketPrice } from "./order-builder/helpers";
-import type { SignatureTypeV2 } from "./order-utils/model/signatureTypeV2";
+} from "./http-helpers/index.js";
+import {
+	calculateBuyMarketPrice,
+	calculateSellMarketPrice,
+} from "./order-builder/helpers/index.js";
+import { OrderBuilder } from "./order-builder/index.js";
+import type { SignatureTypeV2 } from "./order-utils/model/signatureTypeV2.js";
 import type {
 	ApiKeyCreds,
 	ApiKeyRaw,
@@ -128,16 +131,16 @@ import type {
 	UserMarketOrderV2,
 	UserOrderV2,
 	UserRewardsEarning,
-} from "./types";
-import { OrderType, Side } from "./types";
-import { isV2Order, type SignedOrder } from "./types/unifiedOrder";
+} from "./types/index.js";
+import { OrderType, Side } from "./types/index.js";
+import { isV2Order, type SignedOrder } from "./types/unifiedOrder.js";
 import {
 	generateOrderBookSummaryHash,
 	isTickSizeSmaller,
 	orderToJsonV1,
 	orderToJsonV2,
 	priceValid,
-} from "./utilities";
+} from "./utilities.js";
 
 export interface ClobClientOptions {
 	host: string;

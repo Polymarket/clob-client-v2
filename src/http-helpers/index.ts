@@ -2,7 +2,7 @@
 import axios, { type Method, type RawAxiosRequestHeaders } from "axios";
 import { isBrowser } from "browser-or-node";
 
-import type { DropNotificationParams, OrdersScoringParams } from "../types";
+import type { DropNotificationParams, OrdersScoringParams } from "../types/index.js";
 
 export const GET = "GET";
 export const POST = "POST";

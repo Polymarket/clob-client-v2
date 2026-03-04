@@ -1,8 +1,8 @@
-import type { Side } from "../../types/index.ts";
+import type { Side } from "../../types/index.js";
 
-import type { EIP712Object } from "./eip712.ts";
-import type { OrderSignature } from "./order.ts";
-import type { SignatureTypeV1 } from "./signatureTypeV1.ts";
+import type { EIP712Object } from "./eip712.js";
+import type { OrderSignature } from "./order.js";
+import type { SignatureTypeV1 } from "./signatureTypeV1.js";
 
 export interface OrderDataV1 {
 	/**

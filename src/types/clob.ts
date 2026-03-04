@@ -1,4 +1,4 @@
-import { Side } from "../order-utils/model/side";
+import { Side } from "../order-utils/model/side.js";
 
 export { Side };
 

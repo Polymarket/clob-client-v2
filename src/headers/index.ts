@@ -1,7 +1,13 @@
 import type { JsonRpcSigner } from "@ethersproject/providers";
 import type { Wallet } from "@ethersproject/wallet";
-import { buildClobEip712Signature, buildPolyHmacSignature } from "../signing";
-import type { ApiKeyCreds, Chain, L1PolyHeader, L2HeaderArgs, L2PolyHeader } from "../types";
+import { buildClobEip712Signature, buildPolyHmacSignature } from "../signing/index.js";
+import type {
+	ApiKeyCreds,
+	Chain,
+	L1PolyHeader,
+	L2HeaderArgs,
+	L2PolyHeader,
+} from "../types/index.js";
 
 export const createL1Headers = async (
 	signer: Wallet | JsonRpcSigner,

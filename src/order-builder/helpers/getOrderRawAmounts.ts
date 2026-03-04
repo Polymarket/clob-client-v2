@@ -1,5 +1,5 @@
-import { type RoundConfig, Side } from "../../types";
-import { decimalPlaces, roundDown, roundNormal, roundUp } from "../../utilities";
+import { type RoundConfig, Side } from "../../types/index.js";
+import { decimalPlaces, roundDown, roundNormal, roundUp } from "../../utilities.js";
 
 export const getOrderRawAmounts = (
 	side: Side,

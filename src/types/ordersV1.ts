@@ -1,6 +1,6 @@
-import type { SignatureTypeV1, SignedOrderV1 } from "../order-utils";
+import type { SignatureTypeV1, SignedOrderV1 } from "../order-utils/index.js";
 
-import type { OrderType, Side } from "./clob";
+import type { OrderType, Side } from "./clob.js";
 
 export interface PostOrdersV1Args {
 	order: SignedOrderV1;
