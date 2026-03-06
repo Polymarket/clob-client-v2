@@ -8,7 +8,7 @@ import {
 	type OrderDataV2,
 	type SignedOrderV1,
 	type SignedOrderV2,
-} from "../../order-utils";
+} from "../../order-utils/index.js";
 
 /**
  * Generate and sign a order

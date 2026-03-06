@@ -1,4 +1,4 @@
-import { type OrderSummary, OrderType } from "../../types";
+import { type OrderSummary, OrderType } from "../../types/index.js";
 
 /**
  * calculateSellMarketPrice calculates the market price to sell a shares

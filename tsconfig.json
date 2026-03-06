@@ -9,15 +9,13 @@
     ],
     "compilerOptions": {
         "baseUrl": "./",
-        "module": "commonjs",
-        "target": "es6",
+        "module": "nodenext",
+        "target": "es2022",
         "outDir": "./dist",
         "sourceMap": true,
         "declaration": true,
-        "moduleResolution": "node",
+        "moduleResolution": "nodenext",
         "esModuleInterop": true,
-        "experimentalDecorators": true,
-        "allowSyntheticDefaultImports": true,
         "importHelpers": true,
         "strict": true,
         "noFallthroughCasesInSwitch": true,
@@ -26,8 +24,7 @@
         "noUnusedParameters": true,
         "resolveJsonModule": true,
         "strictNullChecks": true,
-        "typeRoots": ["node_modules/@types"],
-        "lib": ["es2018", "dom"],
+        "lib": ["es2022", "dom"],
         "skipLibCheck": true
     },
 }

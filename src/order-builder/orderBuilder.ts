@@ -1,7 +1,7 @@
 import type { JsonRpcSigner } from "@ethersproject/providers";
 import type { Wallet } from "@ethersproject/wallet";
 
-import { SignatureTypeV2, type SignedOrderV1, type SignedOrderV2 } from "../order-utils";
+import { SignatureTypeV2, type SignedOrderV1, type SignedOrderV2 } from "../order-utils/index.js";
 import type {
 	Chain,
 	CreateOrderOptions,
@@ -9,9 +9,9 @@ import type {
 	UserMarketOrderV2,
 	UserOrderV1,
 	UserOrderV2,
-} from "../types";
+} from "../types/index.js";
 
-import { createMarketOrder, createOrder } from "./helpers";
+import { createMarketOrder, createOrder } from "./helpers/index.js";
 
 export class OrderBuilder {
 	readonly signer: Wallet | JsonRpcSigner;

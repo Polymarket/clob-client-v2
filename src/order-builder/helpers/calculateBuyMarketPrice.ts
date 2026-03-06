@@ -1,4 +1,4 @@
-import { type OrderSummary, OrderType } from "../../types";
+import { type OrderSummary, OrderType } from "../../types/index.js";
 
 /**
  * calculateBuyMarketPrice calculates the market price to buy a $$ amount
