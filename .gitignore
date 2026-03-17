@@ -20,3 +20,4 @@ scripts/
 .DS_Store
 packages/tracker/main
 package-lock.json
+*.txt
