@@ -38,12 +38,6 @@ export interface OrderDataV2 {
 	signer?: string;
 
 	/**
-	 * Timestamp after which the order is expired.
-	 * Optional, if it is not present the value is '0' (no expiration)
-	 */
-	expiration?: string;
-
-	/**
 	 * Signature type used by the Order. Default value 'EOA'
 	 */
 	signatureType?: SignatureTypeV2;
@@ -96,11 +90,6 @@ export interface OrderV2 extends EIP712Object {
 	 * Taker amount, i.e the minimum amount of tokens to be received
 	 */
 	readonly takerAmount: string;
-
-	/**
-	 * Timestamp after which the order is expired
-	 */
-	readonly expiration: string;
 
 	/**
 	 * The side of the order, BUY or SELL

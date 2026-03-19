@@ -16,7 +16,6 @@ export interface NewOrderV2<T extends OrderType> {
 		readonly tokenId: string;
 		readonly makerAmount: string;
 		readonly takerAmount: string;
-		readonly expiration: string;
 		readonly side: string;
 		readonly signatureType: SignatureTypeV2;
 		readonly timestamp: string;
@@ -52,9 +51,9 @@ export interface UserOrderV2 {
 	side: Side;
 
 	/**
-	 * Timestamp after which the order is expired.
+	 * Metadata (bytes32)
 	 */
-	expiration?: number;
+	metadata?: string;
 
 	/**
 	 * Builder code (bytes32)
@@ -99,6 +98,11 @@ export interface UserMarketOrderV2 {
 	 * If this field is left empty, the default flow is to use the order amount as-is
 	 */
 	userUSDCBalance?: number;
+
+	/**
+	 * Metadata (bytes32)
+	 */
+	metadata?: string;
 
 	/**
 	 * Builder code (bytes32)
