@@ -2,6 +2,34 @@ import type { SignatureTypeV1, SignedOrderV1 } from "../order-utils/index.js";
 
 import type { OrderType, Side } from "./clob.js";
 
+export function orderToJsonV1<T extends OrderType>(
+	order: SignedOrderV1,
+	owner: string,
+	orderType: T,
+	deferExec = false,
+): NewOrderV1<T> {
+	return {
+		deferExec,
+		order: {
+			salt: parseInt(order.salt, 10),
+			maker: order.maker,
+			signer: order.signer,
+			taker: order.taker,
+			tokenId: order.tokenId,
+			makerAmount: order.makerAmount,
+			takerAmount: order.takerAmount,
+			side: order.side,
+			expiration: order.expiration,
+			nonce: order.nonce,
+			feeRateBps: order.feeRateBps,
+			signatureType: order.signatureType,
+			signature: order.signature,
+		},
+		owner,
+		orderType,
+	} as NewOrderV1<T>;
+}
+
 export interface PostOrdersV1Args {
 	order: SignedOrderV1;
 	orderType: OrderType;

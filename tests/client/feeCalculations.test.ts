@@ -1,6 +1,7 @@
 import { describe, expect, it } from "vitest";
+import { adjustBuyAmountForFees } from "../../src/client.js";
 
-// platform_fee = C * rate * (p*(1-p))^exp, where C = amountUSD / price (already in USD)
+// platform_fee = C * rate * (p*(1-p))^exp, where C = amountUSD / price
 const calculatePlatformFee = (
 	amountUSD: number,
 	price: number,
@@ -112,63 +113,6 @@ describe("fee calculations", () => {
 			expect(calculateBuilderFee(contracts * price, builderTakerFeeRate)).toBeCloseTo(7.5, 6);
 		});
 	});
-	// fee-adjusted amount: effective + fees = budget
-	// effective = budget / (1 + platformFeeRate/price + builderTakerFeeRate)
-	describe("fee-adjusted effective amount", () => {
-		const calculateEffective = (
-			budget: number,
-			price: number,
-			feeRate: number,
-			feeExponent: number,
-			builderTakerFeeRate = 0,
-		): number => {
-			const platformFeeRate = feeRate * (price * (1 - price)) ** feeExponent;
-			return budget / (1 + platformFeeRate / price + builderTakerFeeRate);
-		};
-
-		it("platform fee only: effective + platformFee = budget", () => {
-			const budget = 50;
-			const price = 0.5;
-			const feeRate = 0.25;
-			const feeExponent = 2;
-
-			const effective = calculateEffective(budget, price, feeRate, feeExponent);
-			const platformFee = calculatePlatformFee(effective, price, feeRate, feeExponent);
-
-			expect(effective + platformFee).toBeCloseTo(budget, 10);
-		});
-
-		it("builder fee only: effective + builderFee = budget", () => {
-			const budget = 50;
-			const price = 0.5;
-			const builderTakerFeeRate = 0.01;
-
-			const effective = calculateEffective(budget, price, 0, 0, builderTakerFeeRate);
-			const builderFee = calculateBuilderFee(effective, builderTakerFeeRate);
-
-			expect(effective + builderFee).toBeCloseTo(budget, 10);
-		});
-
-		it("combined: effective + platformFee + builderFee = budget", () => {
-			const budget = 50;
-			const price = 0.5;
-			const feeRate = 0.25;
-			const feeExponent = 2;
-			const builderTakerFeeRate = 0.01;
-
-			const effective = calculateEffective(
-				budget,
-				price,
-				feeRate,
-				feeExponent,
-				builderTakerFeeRate,
-			);
-			const platformFee = calculatePlatformFee(effective, price, feeRate, feeExponent);
-			const builderFee = calculateBuilderFee(effective, builderTakerFeeRate);
-
-			expect(effective + platformFee + builderFee).toBeCloseTo(budget, 10);
-		});
-	});
 
 	// Combined: total fee = platform fee + builder fee (different bases)
 	describe("combined platform + builder fee", () => {
@@ -188,6 +132,139 @@ describe("fee calculations", () => {
 			expect(platformFee).toBeCloseTo(1.5625, 6);
 			expect(builderFee).toBeCloseTo(0.5, 6);
 			expect(platformFee + builderFee).toBeCloseTo(2.0625, 6);
+		});
+	});
+
+	describe("adjustBuyAmountForFees", () => {
+		const feeRate = 0.25;
+		const feeExponent = 2;
+
+		describe("no adjustment when balance covers amount + fees", () => {
+			it("exact balance equal to amount (no fees) → no adjustment", () => {
+				// feeRate=0, builderRate=0: totalCost = amount, balance = amount → no adjustment
+				const amount = 50;
+				const result = adjustBuyAmountForFees(amount, 0.5, amount, 0, 0, 0);
+				expect(result).toBe(amount);
+			});
+
+			it("balance strictly greater than totalCost → returns amount unchanged", () => {
+				const amount = 50;
+				const price = 0.5;
+				const platformFee = calculatePlatformFee(amount, price, feeRate, feeExponent);
+				const totalCost = amount + platformFee;
+				const balance = totalCost + 1; // comfortably above
+				const result = adjustBuyAmountForFees(
+					amount,
+					price,
+					balance,
+					feeRate,
+					feeExponent,
+					0,
+				);
+				expect(result).toBe(amount);
+			});
+
+			it("balance exactly equal to totalCost → no adjustment (boundary: not strictly less)", () => {
+				const amount = 50;
+				const price = 0.5;
+				const platformFee = calculatePlatformFee(amount, price, feeRate, feeExponent);
+				const totalCost = amount + platformFee;
+				// balance === totalCost: condition is `balance <= totalCost`, so adjustment fires
+				// This checks the boundary is `<=`, not `<`
+				const result = adjustBuyAmountForFees(
+					amount,
+					price,
+					totalCost,
+					feeRate,
+					feeExponent,
+					0,
+				);
+				// balance === totalCost triggers adjustment
+				const platformFeeRate = feeRate * (price * (1 - price)) ** feeExponent;
+				const expected = amount / (1 + platformFeeRate / price);
+				expect(result).toBeCloseTo(expected, 10);
+			});
+		});
+
+		describe("adjustment applied when balance is insufficient", () => {
+			it("platform fee only: adjusted amount + fee = original amount", () => {
+				const amount = 50;
+				const price = 0.5;
+				// balance = amount (no room for fees)
+				const adjusted = adjustBuyAmountForFees(
+					amount,
+					price,
+					amount,
+					feeRate,
+					feeExponent,
+					0,
+				);
+				const fee = calculatePlatformFee(adjusted, price, feeRate, feeExponent);
+				expect(adjusted + fee).toBeCloseTo(amount, 10);
+			});
+
+			it("builder fee only: adjusted amount + fee = original amount", () => {
+				const amount = 50;
+				const price = 0.5;
+				const builderTakerFeeRate = 0.01;
+				const adjusted = adjustBuyAmountForFees(
+					amount,
+					price,
+					amount,
+					0,
+					0,
+					builderTakerFeeRate,
+				);
+				const fee = calculateBuilderFee(adjusted, builderTakerFeeRate);
+				expect(adjusted + fee).toBeCloseTo(amount, 10);
+			});
+
+			it("platform + builder fee: adjusted amount + both fees = original amount", () => {
+				const amount = 50;
+				const price = 0.5;
+				const builderTakerFeeRate = 0.01;
+				const adjusted = adjustBuyAmountForFees(
+					amount,
+					price,
+					amount,
+					feeRate,
+					feeExponent,
+					builderTakerFeeRate,
+				);
+				const platformFee = calculatePlatformFee(adjusted, price, feeRate, feeExponent);
+				const builderFee = calculateBuilderFee(adjusted, builderTakerFeeRate);
+				expect(adjusted + platformFee + builderFee).toBeCloseTo(amount, 10);
+			});
+
+			it("adjusted amount is strictly less than original", () => {
+				const amount = 50;
+				const adjusted = adjustBuyAmountForFees(
+					amount,
+					0.5,
+					amount,
+					feeRate,
+					feeExponent,
+					0,
+				);
+				expect(adjusted).toBeLessThan(amount);
+			});
+
+			it("price=0.3, platform+builder: adjusted + fees = amount", () => {
+				const amount = 30;
+				const price = 0.3;
+				const builderTakerFeeRate = 0.02;
+				const adjusted = adjustBuyAmountForFees(
+					amount,
+					price,
+					amount,
+					feeRate,
+					feeExponent,
+					builderTakerFeeRate,
+				);
+				const platformFee = calculatePlatformFee(adjusted, price, feeRate, feeExponent);
+				const builderFee = calculateBuilderFee(adjusted, builderTakerFeeRate);
+				expect(adjusted + platformFee + builderFee).toBeCloseTo(amount, 10);
+			});
 		});
 	});
 });

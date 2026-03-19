@@ -132,15 +132,26 @@ import type {
 	UserOrderV2,
 	UserRewardsEarning,
 } from "./types/index.js";
-import { OrderType, Side } from "./types/index.js";
+import { OrderType, orderToJsonV1, orderToJsonV2, Side } from "./types/index.js";
 import { isV2Order, type SignedOrder } from "./types/unifiedOrder.js";
-import {
-	generateOrderBookSummaryHash,
-	isTickSizeSmaller,
-	orderToJsonV1,
-	orderToJsonV2,
-	priceValid,
-} from "./utilities.js";
+import { generateOrderBookSummaryHash, isTickSizeSmaller, priceValid } from "./utilities.js";
+
+export function adjustBuyAmountForFees(
+	amount: number,
+	price: number,
+	userUSDCBalance: number,
+	feeRate: number,
+	feeExponent: number,
+	builderTakerFeeRate: number,
+): number {
+	const platformFeeRate = feeRate * (price * (1 - price)) ** feeExponent;
+	const platformFee = (amount / price) * platformFeeRate;
+	const totalCost = amount + platformFee + amount * builderTakerFeeRate;
+	if (userUSDCBalance <= totalCost) {
+		return amount / (1 + platformFeeRate / price + builderTakerFeeRate);
+	}
+	return amount;
+}
 
 export interface ClobClientOptions {
 	host: string;
@@ -149,7 +160,6 @@ export interface ClobClientOptions {
 	creds?: ApiKeyCreds;
 	signatureType?: SignatureTypeV2;
 	funderAddress?: string;
-	geoBlockToken?: string;
 	useServerTime?: boolean;
 	builderConfig?: BuilderConfig;
 	getSigner?: () => Promise<Wallet | JsonRpcSigner> | (Wallet | JsonRpcSigner);
@@ -181,8 +191,6 @@ export class ClobClient {
 
 	private readonly tokenConditionMap: TokenConditionMap;
 
-	readonly geoBlockToken?: string;
-
 	readonly useServerTime?: boolean;
 
 	readonly builderConfig?: BuilderConfig;
@@ -198,7 +206,6 @@ export class ClobClient {
 		creds,
 		signatureType,
 		funderAddress,
-		geoBlockToken,
 		useServerTime,
 		builderConfig,
 		getSigner,
@@ -226,7 +233,6 @@ export class ClobClient {
 		this.feeExponents = {};
 		this.builderFeeRates = {};
 		this.tokenConditionMap = {};
-		this.geoBlockToken = geoBlockToken;
 		this.retryOnError = retryOnError;
 		this.useServerTime = useServerTime;
 		if (builderConfig !== undefined) {
@@ -891,26 +897,14 @@ export class ClobClient {
 			const builderTakerFeeRate = this.isBuilderOrder(orderToSign.builderCode)
 				? (this.builderFeeRates[tokenID]?.taker ?? 0)
 				: 0;
-
-			const platformFeeRate = this._calculatePlatformFeeRate(
+			orderToSign.amount = adjustBuyAmountForFees(
+				orderToSign.amount,
 				price,
+				orderToSign.userUSDCBalance,
 				this.feeRates[tokenID],
 				this.feeExponents[tokenID],
+				builderTakerFeeRate,
 			);
-			// platform_fee = C * platform_fee_rate, C = amount / price
-			const platformFee = (orderToSign.amount / price) * platformFeeRate;
-			const totalCost =
-				orderToSign.amount + platformFee + orderToSign.amount * builderTakerFeeRate;
-
-			if (orderToSign.userUSDCBalance <= totalCost) {
-				orderToSign.amount = this._calculateFeeAdjustedAmount(
-					orderToSign.amount,
-					price,
-					this.feeRates[tokenID],
-					this.feeExponents[tokenID],
-					builderTakerFeeRate,
-				);
-			}
 		}
 
 		const negRisk = options?.negRisk ?? (await this.getNegRisk(tokenID));
@@ -1460,38 +1454,6 @@ export class ClobClient {
 		return apiVersion;
 	}
 
-	private _calculatePlatformFeeRate(price: number, feeRate: number, feeExponent: number): number {
-		// platform_fee_rate = rate * (p*(1-p))^exp
-		return feeRate * (price * (1 - price)) ** feeExponent;
-	}
-
-	private _calculateFeeAdjustedAmount(
-		budget: number,
-		price: number,
-		feeRate: number,
-		feeExponent: number,
-		builderTakerFeeRate: number = 0,
-	): number {
-		// effective + (effective/price)*feeRate*(p*(1-p))^exp + effective*builderRate = budget
-		// effective * (1 + (feeRate*(p*(1-p))^exp)/price + builderRate) = budget
-		const platformFeeRate = this._calculatePlatformFeeRate(price, feeRate, feeExponent);
-		return budget / (1 + platformFeeRate / price + builderTakerFeeRate);
-	}
-
-	// private async _resolveFeeRateBps(tokenID: string, userFeeRateBps?: number): Promise<number> {
-	// 	const marketFeeRateBps = await this.getFeeRateBps(tokenID);
-	// 	if (
-	// 		marketFeeRateBps > 0 &&
-	// 		userFeeRateBps !== undefined &&
-	// 		userFeeRateBps !== marketFeeRateBps
-	// 	) {
-	// 		throw new Error(
-	// 			`invalid user provided fee rate: ${userFeeRateBps}, fee rate for the market must be ${marketFeeRateBps}`,
-	// 		);
-	// 	}
-	// 	return marketFeeRateBps;
-	// }
-
 	private async _retryOnVersionUpdate(retryFunc: () => Promise<unknown>) {
 		const version = await this.resolveVersion();
 
@@ -1512,27 +1474,14 @@ export class ClobClient {
 
 	// http methods
 	private async get(endpoint: string, options?: RequestOptions) {
-		return get(endpoint, {
-			...options,
-			params: { ...options?.params, geo_block_token: this.geoBlockToken },
-		});
+		return get(endpoint, options);
 	}
 
 	private async post(endpoint: string, options?: RequestOptions) {
-		return post(
-			endpoint,
-			{
-				...options,
-				params: { ...options?.params, geo_block_token: this.geoBlockToken },
-			},
-			this.retryOnError,
-		);
+		return post(endpoint, options, this.retryOnError);
 	}
 
 	private async del(endpoint: string, options?: RequestOptions) {
-		return del(endpoint, {
-			...options,
-			params: { ...options?.params, geo_block_token: this.geoBlockToken },
-		});
+		return del(endpoint, options);
 	}
 }
