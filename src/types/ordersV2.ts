@@ -21,6 +21,7 @@ export function orderToJsonV2<T extends OrderType>(
 			side: order.side,
 			signatureType: order.signatureType,
 			timestamp: order.timestamp,
+			expiration: order.expiration,
 			metadata: order.metadata,
 			builder: order.builder,
 			signature: order.signature,
@@ -47,6 +48,7 @@ export interface NewOrderV2<T extends OrderType> {
 		readonly side: string;
 		readonly signatureType: SignatureTypeV2;
 		readonly timestamp: string;
+		readonly expiration: string;
 		readonly metadata: string;
 		readonly builder: string;
 		readonly signature: string;
@@ -87,6 +89,11 @@ export interface UserOrderV2 {
 	 * Builder code (bytes32)
 	 */
 	builderCode?: string;
+
+	/**
+	 * Expiration timestamp (unix seconds). Defaults to 0 (no expiration).
+	 */
+	expiration?: number;
 }
 
 // Simplified market order for users

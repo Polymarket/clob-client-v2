@@ -54,6 +54,7 @@ export class ExchangeOrderBuilderV2 {
 		timestamp,
 		metadata,
 		builder,
+		expiration,
 	}: OrderDataV2): Promise<OrderV2> {
 		if (!signer) {
 			signer = maker;
@@ -76,6 +77,7 @@ export class ExchangeOrderBuilderV2 {
 			metadata: metadata ?? bytes32Zero,
 			builder: builder ?? bytes32Zero,
 			timestamp: timestamp ?? Math.floor(Date.now() / 1000).toString(),
+			expiration: expiration ?? "0",
 		};
 	}
 

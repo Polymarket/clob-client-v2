@@ -31,6 +31,7 @@ describe("buildOrderCreationArgs", () => {
 			expect(orderData.builder).toBe(bytes32Zero);
 			expect(orderData.metadata).toBe(bytes32Zero);
 			expect(orderData.signatureType).toBe(SignatureTypeV2.EOA);
+			expect(orderData.expiration).toBe("50000");
 		});
 
 		it("0.01", async () => {
@@ -58,6 +59,7 @@ describe("buildOrderCreationArgs", () => {
 			expect(orderData.builder).toBe(bytes32Zero);
 			expect(orderData.metadata).toBe(bytes32Zero);
 			expect(orderData.signatureType).toBe(SignatureTypeV2.EOA);
+			expect(orderData.expiration).toBe("50000");
 		});
 
 		it("0.001", async () => {
@@ -85,6 +87,7 @@ describe("buildOrderCreationArgs", () => {
 			expect(orderData.builder).toBe(bytes32Zero);
 			expect(orderData.metadata).toBe(bytes32Zero);
 			expect(orderData.signatureType).toBe(SignatureTypeV2.EOA);
+			expect(orderData.expiration).toBe("50000");
 		});
 
 		it("0.0001", async () => {
@@ -112,6 +115,7 @@ describe("buildOrderCreationArgs", () => {
 			expect(orderData.builder).toBe(bytes32Zero);
 			expect(orderData.metadata).toBe(bytes32Zero);
 			expect(orderData.signatureType).toBe(SignatureTypeV2.EOA);
+			expect(orderData.expiration).toBe("50000");
 		});
 	});
 
@@ -140,6 +144,7 @@ describe("buildOrderCreationArgs", () => {
 			expect(orderData.builder).toBe(bytes32Zero);
 			expect(orderData.metadata).toBe(bytes32Zero);
 			expect(orderData.signatureType).toBe(SignatureTypeV2.POLY_PROXY);
+			expect(orderData.expiration).toBe("0");
 		});
 
 		it("0.01", async () => {
@@ -166,6 +171,7 @@ describe("buildOrderCreationArgs", () => {
 			expect(orderData.builder).toBe(bytes32Zero);
 			expect(orderData.metadata).toBe(bytes32Zero);
 			expect(orderData.signatureType).toBe(SignatureTypeV2.POLY_PROXY);
+			expect(orderData.expiration).toBe("0");
 		});
 
 		it("0.001", async () => {
@@ -192,6 +198,7 @@ describe("buildOrderCreationArgs", () => {
 			expect(orderData.builder).toBe(bytes32Zero);
 			expect(orderData.metadata).toBe(bytes32Zero);
 			expect(orderData.signatureType).toBe(SignatureTypeV2.POLY_PROXY);
+			expect(orderData.expiration).toBe("0");
 		});
 
 		it("0.0001", async () => {
@@ -218,6 +225,7 @@ describe("buildOrderCreationArgs", () => {
 			expect(orderData.builder).toBe(bytes32Zero);
 			expect(orderData.metadata).toBe(bytes32Zero);
 			expect(orderData.signatureType).toBe(SignatureTypeV2.POLY_PROXY);
+			expect(orderData.expiration).toBe("0");
 		});
 	});
 

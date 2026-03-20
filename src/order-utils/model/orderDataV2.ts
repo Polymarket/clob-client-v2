@@ -56,6 +56,11 @@ export interface OrderDataV2 {
 	 * Builder of the order
 	 */
 	readonly builder?: string;
+
+	/**
+	 * Expiration timestamp of the order (unix seconds, "0" = no expiration)
+	 */
+	expiration?: string;
 }
 
 export interface OrderV2 extends EIP712Object {
@@ -115,6 +120,11 @@ export interface OrderV2 extends EIP712Object {
 	 * Builder of the order
 	 */
 	readonly builder: string;
+
+	/**
+	 * Expiration timestamp of the order (unix seconds, "0" = no expiration)
+	 */
+	readonly expiration: string;
 }
 
 export interface SignedOrderV2 extends OrderV2 {

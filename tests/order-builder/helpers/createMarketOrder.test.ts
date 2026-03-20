@@ -46,6 +46,7 @@ describe("createMarketOrder", () => {
 				expect(signedOrder.metadata).toBe(bytes32Zero);
 				expect(signedOrder.signatureType).toBe(SignatureTypeV2.EOA);
 				expect(signedOrder.signature).not.toBe("");
+				expect(signedOrder.expiration).toBe("0");
 			});
 
 			it("0.01", async () => {
@@ -80,6 +81,7 @@ describe("createMarketOrder", () => {
 				expect(signedOrder.metadata).toBe(bytes32Zero);
 				expect(signedOrder.signatureType).toBe(SignatureTypeV2.EOA);
 				expect(signedOrder.signature).not.toBe("");
+				expect(signedOrder.expiration).toBe("0");
 			});
 
 			it("0.001", async () => {
@@ -114,6 +116,7 @@ describe("createMarketOrder", () => {
 				expect(signedOrder.metadata).toBe(bytes32Zero);
 				expect(signedOrder.signatureType).toBe(SignatureTypeV2.EOA);
 				expect(signedOrder.signature).not.toBe("");
+				expect(signedOrder.expiration).toBe("0");
 			});
 
 			it("0.0001", async () => {
@@ -148,6 +151,7 @@ describe("createMarketOrder", () => {
 				expect(signedOrder.metadata).toBe(bytes32Zero);
 				expect(signedOrder.signatureType).toBe(SignatureTypeV2.EOA);
 				expect(signedOrder.signature).not.toBe("");
+				expect(signedOrder.expiration).toBe("0");
 			});
 		});
 
@@ -184,6 +188,7 @@ describe("createMarketOrder", () => {
 				expect(signedOrder.metadata).toBe(bytes32Zero);
 				expect(signedOrder.signatureType).toBe(SignatureTypeV2.EOA);
 				expect(signedOrder.signature).not.toBe("");
+				expect(signedOrder.expiration).toBe("0");
 			});
 
 			it("0.01", async () => {
@@ -218,6 +223,7 @@ describe("createMarketOrder", () => {
 				expect(signedOrder.metadata).toBe(bytes32Zero);
 				expect(signedOrder.signatureType).toBe(SignatureTypeV2.EOA);
 				expect(signedOrder.signature).not.toBe("");
+				expect(signedOrder.expiration).toBe("0");
 			});
 
 			it("0.001", async () => {
@@ -252,6 +258,7 @@ describe("createMarketOrder", () => {
 				expect(signedOrder.metadata).toBe(bytes32Zero);
 				expect(signedOrder.signatureType).toBe(SignatureTypeV2.EOA);
 				expect(signedOrder.signature).not.toBe("");
+				expect(signedOrder.expiration).toBe("0");
 			});
 
 			it("0.0001", async () => {
@@ -286,6 +293,7 @@ describe("createMarketOrder", () => {
 				expect(signedOrder.metadata).toBe(bytes32Zero);
 				expect(signedOrder.signatureType).toBe(SignatureTypeV2.EOA);
 				expect(signedOrder.signature).not.toBe("");
+				expect(signedOrder.expiration).toBe("0");
 			});
 		});
 	});
@@ -324,6 +332,7 @@ describe("createMarketOrder", () => {
 				expect(signedOrder.metadata).toBe(bytes32Zero);
 				expect(signedOrder.signatureType).toBe(SignatureTypeV2.EOA);
 				expect(signedOrder.signature).not.toBe("");
+				expect(signedOrder.expiration).toBe("0");
 			});
 
 			it("0.01", async () => {
@@ -358,6 +367,7 @@ describe("createMarketOrder", () => {
 				expect(signedOrder.metadata).toBe(bytes32Zero);
 				expect(signedOrder.signatureType).toBe(SignatureTypeV2.EOA);
 				expect(signedOrder.signature).not.toBe("");
+				expect(signedOrder.expiration).toBe("0");
 			});
 
 			it("0.001", async () => {
@@ -392,6 +402,7 @@ describe("createMarketOrder", () => {
 				expect(signedOrder.metadata).toBe(bytes32Zero);
 				expect(signedOrder.signatureType).toBe(SignatureTypeV2.EOA);
 				expect(signedOrder.signature).not.toBe("");
+				expect(signedOrder.expiration).toBe("0");
 			});
 
 			it("0.0001", async () => {
@@ -426,6 +437,7 @@ describe("createMarketOrder", () => {
 				expect(signedOrder.metadata).toBe(bytes32Zero);
 				expect(signedOrder.signatureType).toBe(SignatureTypeV2.EOA);
 				expect(signedOrder.signature).not.toBe("");
+				expect(signedOrder.expiration).toBe("0");
 			});
 		});
 
@@ -462,6 +474,7 @@ describe("createMarketOrder", () => {
 				expect(signedOrder.metadata).toBe(bytes32Zero);
 				expect(signedOrder.signatureType).toBe(SignatureTypeV2.EOA);
 				expect(signedOrder.signature).not.toBe("");
+				expect(signedOrder.expiration).toBe("0");
 			});
 
 			it("0.01", async () => {
@@ -496,6 +509,7 @@ describe("createMarketOrder", () => {
 				expect(signedOrder.metadata).toBe(bytes32Zero);
 				expect(signedOrder.signatureType).toBe(SignatureTypeV2.EOA);
 				expect(signedOrder.signature).not.toBe("");
+				expect(signedOrder.expiration).toBe("0");
 			});
 
 			it("0.001", async () => {
@@ -530,6 +544,7 @@ describe("createMarketOrder", () => {
 				expect(signedOrder.metadata).toBe(bytes32Zero);
 				expect(signedOrder.signatureType).toBe(SignatureTypeV2.EOA);
 				expect(signedOrder.signature).not.toBe("");
+				expect(signedOrder.expiration).toBe("0");
 			});
 
 			it("0.0001", async () => {
@@ -564,6 +579,7 @@ describe("createMarketOrder", () => {
 				expect(signedOrder.metadata).toBe(bytes32Zero);
 				expect(signedOrder.signatureType).toBe(SignatureTypeV2.EOA);
 				expect(signedOrder.signature).not.toBe("");
+				expect(signedOrder.expiration).toBe("0");
 			});
 		});
 	});
