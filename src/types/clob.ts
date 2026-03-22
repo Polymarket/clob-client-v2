@@ -255,16 +255,17 @@ export interface NegRisk {
 	[tokenId: string]: boolean;
 }
 
-export interface FeeRates {
-	[tokenId: string]: number;
+export interface FeeInfo {
+	rate: number;
+	exponent: number;
 }
 
-export interface FeeExponents {
-	[tokenId: string]: number;
+export interface FeeInfos {
+	[tokenId: string]: FeeInfo;
 }
 
 export interface BuilderFeeRates {
-	[tokenId: string]: { maker: number; taker: number };
+	[builderCode: string]: { maker: number; taker: number };
 }
 
 export type TokenConditionMap = Record<string, string>;
@@ -286,8 +287,8 @@ export interface MarketDetails {
 	mts: number; // min tick size
 	nr: boolean; // neg risk
 	fd?: FeeDetails; // platform fee details
-	mbf?: number; // builder maker fee rate
-	tbf?: number; // builder taker fee rate
+	mbf?: number; // v1 maker base fee
+	tbf?: number; // v1 taker base fee
 }
 
 export interface PaginationPayload {
@@ -438,3 +439,17 @@ export interface BuilderApiKeyResponse {
 export type ClobErrorResponseBody = {
 	error: string;
 };
+
+export interface TradesPaginatedResponse {
+	trades: Trade[];
+	next_cursor: string;
+	limit: number;
+	count: number;
+}
+
+export interface BuilderTradesResponse {
+	trades: BuilderTrade[];
+	next_cursor: string;
+	limit: number;
+	count: number;
+}

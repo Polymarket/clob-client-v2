@@ -22,6 +22,7 @@ import {
 	GET_API_KEYS,
 	GET_BALANCE_ALLOWANCE,
 	GET_BUILDER_API_KEYS,
+	GET_BUILDER_FEES,
 	GET_BUILDER_TRADES,
 	GET_CLOB_MARKET,
 	GET_EARNINGS_FOR_USER_FOR_DAY,
@@ -93,12 +94,12 @@ import type {
 	BuilderFeeRates,
 	BuilderTrade,
 	BuilderTradeParams,
+	BuilderTradesResponse,
 	Chain,
 	ClobErrorResponseBody,
 	CreateOrderOptions,
 	DropNotificationParams,
-	FeeExponents,
-	FeeRates,
+	FeeInfos,
 	MarketDetails,
 	MarketPrice,
 	MarketReward,
@@ -127,6 +128,7 @@ import type {
 	TotalUserEarning,
 	Trade,
 	TradeParams,
+	TradesPaginatedResponse,
 	UserEarning,
 	UserMarketOrderV2,
 	UserOrderV2,
@@ -183,9 +185,7 @@ export class ClobClient {
 
 	readonly negRisk: NegRisk;
 
-	readonly feeRates: FeeRates;
-
-	readonly feeExponents: FeeExponents;
+	readonly feeInfos: FeeInfos;
 
 	readonly builderFeeRates: BuilderFeeRates;
 
@@ -229,8 +229,7 @@ export class ClobClient {
 		);
 		this.tickSizes = {};
 		this.negRisk = {};
-		this.feeRates = {};
-		this.feeExponents = {};
+		this.feeInfos = {};
 		this.builderFeeRates = {};
 		this.tokenConditionMap = {};
 		this.retryOnError = retryOnError;
@@ -302,15 +301,10 @@ export class ClobClient {
 			this.tickSizes[tokenId] = result.mts.toString() as TickSize;
 			this.negRisk[tokenId] = result.nr;
 
-			this.feeRates[tokenId] = result.fd?.r ?? 0;
-			this.feeExponents[tokenId] = result.fd?.e ?? 0;
-
-			if (result.mbf !== undefined || result.tbf !== undefined) {
-				this.builderFeeRates[tokenId] = {
-					maker: (result.mbf ?? 0) / BUILDER_FEES_BPS,
-					taker: (result.tbf ?? 0) / BUILDER_FEES_BPS,
-				};
-			}
+			this.feeInfos[tokenId] = {
+				rate: result.fd?.r ?? 0,
+				exponent: result.fd?.e ?? 0,
+			};
 		}
 
 		return result;
@@ -365,30 +359,30 @@ export class ClobClient {
 	}
 
 	public async getFeeRateBps(tokenID: string): Promise<number> {
-		if (tokenID in this.feeRates) {
-			return this.feeRates[tokenID];
+		if (tokenID in this.feeInfos) {
+			return this.feeInfos[tokenID].rate;
 		}
 
 		if (tokenID in this.tokenConditionMap) {
 			await this.getClobMarketInfo(this.tokenConditionMap[tokenID]);
-			return this.feeRates[tokenID];
+			return this.feeInfos[tokenID].rate;
 		}
 
 		const result = await this.get(`${this.host}${GET_FEE_RATE}`, {
 			params: { token_id: tokenID },
 		});
-		this.feeRates[tokenID] = result.base_fee as number;
+		this.feeInfos[tokenID] = { rate: result.base_fee as number, exponent: 0 };
 
-		return this.feeRates[tokenID];
+		return this.feeInfos[tokenID].rate;
 	}
 
 	public async getFeeExponent(tokenID: string): Promise<number> {
-		if (tokenID in this.feeExponents) {
-			return this.feeExponents[tokenID];
+		if (tokenID in this.feeInfos) {
+			return this.feeInfos[tokenID].exponent;
 		}
 
 		await this._ensureMarketInfoCached(tokenID);
-		return this.feeExponents[tokenID];
+		return this.feeInfos[tokenID].exponent;
 	}
 
 	/**
@@ -633,12 +627,7 @@ export class ClobClient {
 	public async getTradesPaginated(
 		params?: TradeParams,
 		next_cursor?: string,
-	): Promise<{
-		trades: Trade[];
-		next_cursor: string;
-		limit: number;
-		count: number;
-	}> {
+	): Promise<TradesPaginatedResponse> {
 		this.canL2Auth();
 
 		const endpoint = GET_TRADES;
@@ -661,15 +650,10 @@ export class ClobClient {
 		const {
 			data,
 			...rest
-		}: {
-			data: Trade[];
-			next_cursor: string;
-			limit: number;
-			count: number;
-		} = await this.get(`${this.host}${endpoint}`, {
-			headers,
-			params: _params,
-		});
+		}: { data: Trade[]; next_cursor: string; limit: number; count: number } = await this.get(
+			`${this.host}${endpoint}`,
+			{ headers, params: _params },
+		);
 
 		return { trades: Array.isArray(data) ? [...data] : [], ...rest };
 	}
@@ -677,12 +661,7 @@ export class ClobClient {
 	public async getBuilderTrades(
 		params: BuilderTradeParams,
 		next_cursor?: string,
-	): Promise<{
-		trades: BuilderTrade[];
-		next_cursor: string;
-		limit: number;
-		count: number;
-	}> {
+	): Promise<BuilderTradesResponse> {
 		if (!params.builder_code || params.builder_code === bytes32Zero) {
 			throw new Error("builderCode is required and cannot be zero");
 		}
@@ -708,15 +687,8 @@ export class ClobClient {
 		const {
 			data,
 			...rest
-		}: {
-			data: BuilderTrade[];
-			next_cursor: string;
-			limit: number;
-			count: number;
-		} = await this.get(`${this.host}${endpoint}`, {
-			headers,
-			params: _params,
-		});
+		}: { data: BuilderTrade[]; next_cursor: string; limit: number; count: number } =
+			await this.get(`${this.host}${endpoint}`, { headers, params: _params });
 
 		return { trades: Array.isArray(data) ? [...data] : [], ...rest };
 	}
@@ -891,18 +863,20 @@ export class ClobClient {
 			orderToSign.builderCode = this.builderConfig.builderCode;
 		}
 
+		await this.ensureBuilderFeeRateCached(orderToSign.builderCode);
+
 		if (orderToSign.side === Side.BUY && orderToSign.userUSDCBalance !== undefined) {
 			// biome-ignore lint/style/noNonNullAssertion: price is validated above
 			const price = orderToSign.price!;
 			const builderTakerFeeRate = this.isBuilderOrder(orderToSign.builderCode)
-				? (this.builderFeeRates[tokenID]?.taker ?? 0)
+				? (this.builderFeeRates[orderToSign.builderCode ?? ""]?.taker ?? 0)
 				: 0;
 			orderToSign.amount = adjustBuyAmountForFees(
 				orderToSign.amount,
 				price,
 				orderToSign.userUSDCBalance,
-				this.feeRates[tokenID],
-				this.feeExponents[tokenID],
+				this.feeInfos[tokenID].rate,
+				this.feeInfos[tokenID].exponent,
 				builderTakerFeeRate,
 			);
 		}
@@ -1414,7 +1388,7 @@ export class ClobClient {
 	}
 
 	private async _ensureMarketInfoCached(tokenID: string): Promise<void> {
-		if (tokenID in this.feeRates && tokenID in this.feeExponents) return;
+		if (tokenID in this.feeInfos) return;
 
 		if (!(tokenID in this.tokenConditionMap)) {
 			const result = await this.get(`${this.host}${GET_MARKET_BY_TOKEN}${tokenID}`);
@@ -1425,6 +1399,17 @@ export class ClobClient {
 		}
 
 		await this.getClobMarketInfo(this.tokenConditionMap[tokenID]);
+	}
+
+	private async ensureBuilderFeeRateCached(builderCode?: string): Promise<void> {
+		if (!builderCode || builderCode === bytes32Zero) return;
+		if (builderCode in this.builderFeeRates) return;
+
+		const result = await this.get(`${this.host}${GET_BUILDER_FEES}${builderCode}`);
+		this.builderFeeRates[builderCode] = {
+			maker: result.builder_maker_fee_rate_bps / BUILDER_FEES_BPS,
+			taker: result.builder_taker_fee_rate_bps / BUILDER_FEES_BPS,
+		};
 	}
 
 	private async _resolveTickSize(tokenID: string, tickSize?: TickSize): Promise<TickSize> {

@@ -71,3 +71,6 @@ export const GET_BUILDER_API_KEYS = "/auth/builder-api-key";
 
 // Builder endpoints
 export const GET_BUILDER_TRADES = "/builder/trades";
+
+// Fees
+export const GET_BUILDER_FEES = "/fees/builder-fees/";
