@@ -1,8 +1,8 @@
 import { Wallet } from "@ethersproject/wallet";
-import { beforeEach, describe, expect, it } from "vitest";
 import { createWalletClient, http } from "viem";
 import { privateKeyToAccount } from "viem/accounts";
 import { polygon } from "viem/chains";
+import { beforeEach, describe, expect, it } from "vitest";
 
 import { getContractConfig } from "../../src/config";
 import {
@@ -10,7 +10,7 @@ import {
 	buildOrderCreationArgs,
 	ROUNDING_CONFIG,
 } from "../../src/order-builder/helpers";
-import { SignatureTypeV2, type OrderDataV2 } from "../../src/order-utils";
+import { type OrderDataV2, SignatureTypeV2 } from "../../src/order-utils";
 import { buildClobEip712Signature } from "../../src/signing/eip712";
 import { getSignerAddress, signTypedData } from "../../src/signing/signer";
 import { Chain, Side } from "../../src/types";
