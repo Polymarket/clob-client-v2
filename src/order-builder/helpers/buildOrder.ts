@@ -1,6 +1,4 @@
-import type { JsonRpcSigner } from "@ethersproject/providers";
-import type { Wallet } from "@ethersproject/wallet";
-
+import { type ClobSigner } from "../../signing/signer.js";
 import {
 	ExchangeOrderBuilderV1,
 	ExchangeOrderBuilderV2,
@@ -20,7 +18,7 @@ import {
  * @returns SignedOrder
  */
 export const buildOrder = async (
-	signer: Wallet | JsonRpcSigner,
+	signer: ClobSigner,
 	exchangeAddress: string,
 	chainId: number,
 	orderData: OrderDataV1 | OrderDataV2,
@@ -37,7 +35,7 @@ export const buildOrder = async (
 };
 
 export const buildOrderV1 = async (
-	signer: Wallet | JsonRpcSigner,
+	signer: ClobSigner,
 	exchangeAddress: string,
 	chainId: number,
 	orderData: OrderDataV1,
@@ -47,7 +45,7 @@ export const buildOrderV1 = async (
 };
 
 export const buildOrderV2 = async (
-	signer: Wallet | JsonRpcSigner,
+	signer: ClobSigner,
 	exchangeAddress: string,
 	chainId: number,
 	orderData: OrderDataV2,

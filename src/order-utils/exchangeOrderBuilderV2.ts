@@ -1,5 +1,3 @@
-import type { JsonRpcSigner } from "@ethersproject/providers";
-import type { Wallet } from "@ethersproject/wallet";
 import { hashTypedData } from "viem";
 
 import { bytes32Zero } from "../constants.js";
@@ -12,13 +10,14 @@ import { EIP712_DOMAIN, type EIP712TypedData } from "./model/eip712.js";
 import type { OrderHash, OrderSignature } from "./model/order.js";
 import type { OrderDataV2, OrderV2, SignedOrderV2 } from "./model/orderDataV2.js";
 import { SignatureTypeV2 } from "./model/signatureTypeV2.js";
+import { type ClobSigner, getSignerAddress, signTypedData } from "../signing/signer.js";
 import { generateOrderSalt } from "./utils.js";
 
 export class ExchangeOrderBuilderV2 {
 	constructor(
 		private readonly contractAddress: string,
 		private readonly chainId: number,
-		private readonly signer: Wallet | JsonRpcSigner,
+		private readonly signer: ClobSigner,
 		private readonly generateSalt = generateOrderSalt,
 	) {}
 
@@ -60,7 +59,7 @@ export class ExchangeOrderBuilderV2 {
 			signer = maker;
 		}
 
-		const signerAddress = await this.signer.getAddress();
+		const signerAddress = await getSignerAddress(this.signer);
 		if (signer !== signerAddress) {
 			throw new Error("signer does not match");
 		}
@@ -122,7 +121,7 @@ export class ExchangeOrderBuilderV2 {
 	 */
 	buildOrderSignature(typedData: EIP712TypedData): Promise<OrderSignature> {
 		delete typedData.types.EIP712Domain;
-		return this.signer._signTypedData(typedData.domain, typedData.types, typedData.message);
+		return signTypedData(this.signer, typedData.domain, typedData.types, typedData.message);
 	}
 
 	/**
