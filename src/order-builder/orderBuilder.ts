@@ -1,5 +1,5 @@
 import { SignatureTypeV2, type SignedOrderV1, type SignedOrderV2 } from "../order-utils/index.js";
-import { type ClobSigner } from "../signing/signer.js";
+import type { ClobSigner } from "../signing/signer.js";
 import type {
 	Chain,
 	CreateOrderOptions,
@@ -31,14 +31,14 @@ export class OrderBuilder {
 	 * Should return a Wallet or JsonRpcSigner, or a Promise resolving to one.
 	 * If not provided, the static `signer` property is used.
 	 */
-	private getSigner?: () => Promise<ClobSigner> | (ClobSigner);
+	private getSigner?: () => Promise<ClobSigner> | ClobSigner;
 
 	constructor(
 		signer: ClobSigner,
 		chainId: Chain,
 		signatureType?: SignatureTypeV2,
 		funderAddress?: string,
-		getSigner?: () => Promise<ClobSigner> | (ClobSigner),
+		getSigner?: () => Promise<ClobSigner> | ClobSigner,
 	) {
 		this.signer = signer;
 		this.chainId = chainId;

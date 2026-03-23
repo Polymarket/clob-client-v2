@@ -1,4 +1,3 @@
-import { type ClobSigner } from "./signing/signer.js";
 import {
 	BUILDER_FEES_BPS,
 	bytes32Zero,
@@ -79,6 +78,7 @@ import {
 } from "./order-builder/helpers/index.js";
 import { OrderBuilder } from "./order-builder/index.js";
 import type { SignatureTypeV2 } from "./order-utils/model/signatureTypeV2.js";
+import type { ClobSigner } from "./signing/signer.js";
 import type {
 	ApiKeyCreds,
 	ApiKeyRaw,

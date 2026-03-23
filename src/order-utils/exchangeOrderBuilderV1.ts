@@ -1,4 +1,5 @@
 import { hashTypedData } from "viem";
+import { type ClobSigner, getSignerAddress, signTypedData } from "../signing/signer.js";
 import {
 	CTF_EXCHANGE_V1_DOMAIN_NAME,
 	CTF_EXCHANGE_V1_DOMAIN_VERSION,
@@ -8,7 +9,6 @@ import { EIP712_DOMAIN, type EIP712TypedData } from "./model/eip712.js";
 import type { OrderHash, OrderSignature } from "./model/order.js";
 import type { OrderDataV1, OrderV1, SignedOrderV1 } from "./model/orderDataV1.js";
 import { SignatureTypeV1 } from "./model/signatureTypeV1.js";
-import { type ClobSigner, getSignerAddress, signTypedData } from "../signing/signer.js";
 import { generateOrderSalt } from "./utils.js";
 
 const ZERO_ADDRESS = "0x0000000000000000000000000000000000000000";

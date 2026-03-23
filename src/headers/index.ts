@@ -1,4 +1,8 @@
-import { buildClobEip712Signature, buildPolyHmacSignature, type ClobSigner } from "../signing/index.js";
+import {
+	buildClobEip712Signature,
+	buildPolyHmacSignature,
+	type ClobSigner,
+} from "../signing/index.js";
 import { getSignerAddress } from "../signing/signer.js";
 import type {
 	ApiKeyCreds,

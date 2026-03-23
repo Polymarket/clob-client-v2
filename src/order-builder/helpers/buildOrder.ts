@@ -1,4 +1,3 @@
-import { type ClobSigner } from "../../signing/signer.js";
 import {
 	ExchangeOrderBuilderV1,
 	ExchangeOrderBuilderV2,
@@ -7,6 +6,7 @@ import {
 	type SignedOrderV1,
 	type SignedOrderV2,
 } from "../../order-utils/index.js";
+import type { ClobSigner } from "../../signing/signer.js";
 
 /**
  * Generate and sign a order
