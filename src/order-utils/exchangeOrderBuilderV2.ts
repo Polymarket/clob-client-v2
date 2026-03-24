@@ -75,7 +75,7 @@ export class ExchangeOrderBuilderV2 {
 			signatureType: signatureType ?? SignatureTypeV2.EOA,
 			metadata: metadata ?? bytes32Zero,
 			builder: builder ?? bytes32Zero,
-			timestamp: timestamp ?? Math.floor(Date.now() / 1000).toString(),
+			timestamp: timestamp ?? Date.now().toString(),
 			expiration: expiration ?? "0",
 		};
 	}
