@@ -38,12 +38,6 @@ export interface OrderDataV2 {
 	signer?: string;
 
 	/**
-	 * Timestamp after which the order is expired.
-	 * Optional, if it is not present the value is '0' (no expiration)
-	 */
-	expiration?: string;
-
-	/**
 	 * Signature type used by the Order. Default value 'EOA'
 	 */
 	signatureType?: SignatureTypeV2;
@@ -62,6 +56,11 @@ export interface OrderDataV2 {
 	 * Builder of the order
 	 */
 	readonly builder?: string;
+
+	/**
+	 * Expiration timestamp of the order (unix seconds, "0" = no expiration)
+	 */
+	expiration?: string;
 }
 
 export interface OrderV2 extends EIP712Object {
@@ -98,11 +97,6 @@ export interface OrderV2 extends EIP712Object {
 	readonly takerAmount: string;
 
 	/**
-	 * Timestamp after which the order is expired
-	 */
-	readonly expiration: string;
-
-	/**
 	 * The side of the order, BUY or SELL
 	 */
 	readonly side: Side;
@@ -126,6 +120,11 @@ export interface OrderV2 extends EIP712Object {
 	 * Builder of the order
 	 */
 	readonly builder: string;
+
+	/**
+	 * Expiration timestamp of the order (unix seconds, "0" = no expiration)
+	 */
+	readonly expiration: string;
 }
 
 export interface SignedOrderV2 extends OrderV2 {

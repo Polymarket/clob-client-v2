@@ -34,10 +34,10 @@ export const buildOrderCreationArgs = async (
 		takerAmount,
 		side,
 		signer,
-		expiration: userOrder.expiration ? userOrder.expiration.toString() : "0",
 		signatureType,
-		timestamp: Math.floor(Date.now() / 1000).toString(),
-		metadata: bytes32Zero,
+		timestamp: Date.now().toString(),
+		metadata: userOrder.metadata ?? bytes32Zero,
 		builder: userOrder.builderCode ?? bytes32Zero,
+		expiration: userOrder.expiration !== undefined ? userOrder.expiration.toString() : "0",
 	};
 };

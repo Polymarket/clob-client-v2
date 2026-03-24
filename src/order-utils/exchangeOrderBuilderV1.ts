@@ -1,6 +1,5 @@
-import type { JsonRpcSigner } from "@ethersproject/providers";
-import type { Wallet } from "@ethersproject/wallet";
 import { hashTypedData } from "viem";
+import { type ClobSigner, getSignerAddress, signTypedData } from "../signing/signer.js";
 import {
 	CTF_EXCHANGE_V1_DOMAIN_NAME,
 	CTF_EXCHANGE_V1_DOMAIN_VERSION,
@@ -18,7 +17,7 @@ export class ExchangeOrderBuilderV1 {
 	constructor(
 		private readonly contractAddress: string,
 		private readonly chainId: number,
-		private readonly signer: Wallet | JsonRpcSigner,
+		private readonly signer: ClobSigner,
 		private readonly generateSalt = generateOrderSalt,
 	) {}
 
@@ -59,7 +58,7 @@ export class ExchangeOrderBuilderV1 {
 			signer = maker;
 		}
 
-		const signerAddress = await this.signer.getAddress();
+		const signerAddress = await getSignerAddress(this.signer);
 		if (signer !== signerAddress) {
 			throw new Error("signer does not match");
 		}
@@ -152,7 +151,7 @@ export class ExchangeOrderBuilderV1 {
 	 */
 	buildOrderSignature(typedData: EIP712TypedData): Promise<OrderSignature> {
 		delete typedData.types.EIP712Domain;
-		return this.signer._signTypedData(typedData.domain, typedData.types, typedData.message);
+		return signTypedData(this.signer, typedData.domain, typedData.types, typedData.message);
 	}
 
 	/**

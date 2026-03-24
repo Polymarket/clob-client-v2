@@ -1,6 +1,9 @@
-import type { JsonRpcSigner } from "@ethersproject/providers";
-import type { Wallet } from "@ethersproject/wallet";
-import { buildClobEip712Signature, buildPolyHmacSignature } from "../signing/index.js";
+import {
+	buildClobEip712Signature,
+	buildPolyHmacSignature,
+	type ClobSigner,
+} from "../signing/index.js";
+import { getSignerAddress } from "../signing/signer.js";
 import type {
 	ApiKeyCreds,
 	Chain,
@@ -10,7 +13,7 @@ import type {
 } from "../types/index.js";
 
 export const createL1Headers = async (
-	signer: Wallet | JsonRpcSigner,
+	signer: ClobSigner,
 	chainId: Chain,
 	nonce?: number,
 	timestamp?: number,
@@ -25,7 +28,7 @@ export const createL1Headers = async (
 	}
 
 	const sig = await buildClobEip712Signature(signer, chainId, ts, n);
-	const address = await signer.getAddress();
+	const address = await getSignerAddress(signer);
 
 	const headers = {
 		POLY_ADDRESS: address,
@@ -37,7 +40,7 @@ export const createL1Headers = async (
 };
 
 export const createL2Headers = async (
-	signer: Wallet | JsonRpcSigner,
+	signer: ClobSigner,
 	creds: ApiKeyCreds,
 	l2HeaderArgs: L2HeaderArgs,
 	timestamp?: number,
@@ -46,7 +49,7 @@ export const createL2Headers = async (
 	if (timestamp !== undefined) {
 		ts = timestamp;
 	}
-	const address = await signer.getAddress();
+	const address = await getSignerAddress(signer);
 
 	const sig = buildPolyHmacSignature(
 		creds.secret,

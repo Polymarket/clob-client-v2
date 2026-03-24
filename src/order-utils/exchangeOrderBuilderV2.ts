@@ -1,8 +1,7 @@
-import type { JsonRpcSigner } from "@ethersproject/providers";
-import type { Wallet } from "@ethersproject/wallet";
 import { hashTypedData } from "viem";
 
 import { bytes32Zero } from "../constants.js";
+import { type ClobSigner, getSignerAddress, signTypedData } from "../signing/signer.js";
 import {
 	CTF_EXCHANGE_V2_DOMAIN_NAME,
 	CTF_EXCHANGE_V2_DOMAIN_VERSION,
@@ -18,7 +17,7 @@ export class ExchangeOrderBuilderV2 {
 	constructor(
 		private readonly contractAddress: string,
 		private readonly chainId: number,
-		private readonly signer: Wallet | JsonRpcSigner,
+		private readonly signer: ClobSigner,
 		private readonly generateSalt = generateOrderSalt,
 	) {}
 
@@ -50,17 +49,17 @@ export class ExchangeOrderBuilderV2 {
 		takerAmount,
 		side,
 		signer,
-		expiration,
 		signatureType,
 		timestamp,
 		metadata,
 		builder,
+		expiration,
 	}: OrderDataV2): Promise<OrderV2> {
 		if (!signer) {
 			signer = maker;
 		}
 
-		const signerAddress = await this.signer.getAddress();
+		const signerAddress = await getSignerAddress(this.signer);
 		if (signer !== signerAddress) {
 			throw new Error("signer does not match");
 		}
@@ -73,11 +72,11 @@ export class ExchangeOrderBuilderV2 {
 			makerAmount,
 			takerAmount,
 			side,
-			expiration: expiration ?? "0",
 			signatureType: signatureType ?? SignatureTypeV2.EOA,
 			metadata: metadata ?? bytes32Zero,
 			builder: builder ?? bytes32Zero,
-			timestamp: timestamp ?? Math.floor(Date.now() / 1000).toString(),
+			timestamp: timestamp ?? Date.now().toString(),
+			expiration: expiration ?? "0",
 		};
 	}
 
@@ -122,7 +121,7 @@ export class ExchangeOrderBuilderV2 {
 	 */
 	buildOrderSignature(typedData: EIP712TypedData): Promise<OrderSignature> {
 		delete typedData.types.EIP712Domain;
-		return this.signer._signTypedData(typedData.domain, typedData.types, typedData.message);
+		return signTypedData(this.signer, typedData.domain, typedData.types, typedData.message);
 	}
 
 	/**

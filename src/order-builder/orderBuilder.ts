@@ -1,7 +1,5 @@
-import type { JsonRpcSigner } from "@ethersproject/providers";
-import type { Wallet } from "@ethersproject/wallet";
-
 import { SignatureTypeV2, type SignedOrderV1, type SignedOrderV2 } from "../order-utils/index.js";
+import type { ClobSigner } from "../signing/signer.js";
 import type {
 	Chain,
 	CreateOrderOptions,
@@ -14,7 +12,7 @@ import type {
 import { createMarketOrder, createOrder } from "./helpers/index.js";
 
 export class OrderBuilder {
-	readonly signer: Wallet | JsonRpcSigner;
+	readonly signer: ClobSigner;
 
 	readonly chainId: Chain;
 
@@ -33,14 +31,14 @@ export class OrderBuilder {
 	 * Should return a Wallet or JsonRpcSigner, or a Promise resolving to one.
 	 * If not provided, the static `signer` property is used.
 	 */
-	private getSigner?: () => Promise<Wallet | JsonRpcSigner> | (Wallet | JsonRpcSigner);
+	private getSigner?: () => Promise<ClobSigner> | ClobSigner;
 
 	constructor(
-		signer: Wallet | JsonRpcSigner,
+		signer: ClobSigner,
 		chainId: Chain,
 		signatureType?: SignatureTypeV2,
 		funderAddress?: string,
-		getSigner?: () => Promise<Wallet | JsonRpcSigner> | (Wallet | JsonRpcSigner),
+		getSigner?: () => Promise<ClobSigner> | ClobSigner,
 	) {
 		this.signer = signer;
 		this.chainId = chainId;
@@ -90,7 +88,7 @@ export class OrderBuilder {
 	}
 
 	/** Unified getter: use fresh signer if available */
-	private async resolveSigner(): Promise<Wallet | JsonRpcSigner> {
+	private async resolveSigner(): Promise<ClobSigner> {
 		if (this.getSigner) {
 			const s = await this.getSigner();
 			if (!s) throw new Error("getSigner() function returned undefined or null");

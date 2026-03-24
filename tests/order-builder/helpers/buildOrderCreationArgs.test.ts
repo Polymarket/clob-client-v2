@@ -27,11 +27,11 @@ describe("buildOrderCreationArgs", () => {
 			expect(orderData.makerAmount).toBe("10520000");
 			expect(orderData.takerAmount).toBe("21040000");
 			expect(orderData.side).toBe(Side.BUY);
-			expect(orderData.expiration).toBe("50000");
 			expect(orderData.timestamp).toBeDefined();
 			expect(orderData.builder).toBe(bytes32Zero);
 			expect(orderData.metadata).toBe(bytes32Zero);
 			expect(orderData.signatureType).toBe(SignatureTypeV2.EOA);
+			expect(orderData.expiration).toBe("50000");
 		});
 
 		it("0.01", async () => {
@@ -55,11 +55,11 @@ describe("buildOrderCreationArgs", () => {
 			expect(orderData.makerAmount).toBe("11782400");
 			expect(orderData.takerAmount).toBe("21040000");
 			expect(orderData.side).toBe(Side.BUY);
-			expect(orderData.expiration).toBe("50000");
 			expect(orderData.timestamp).toBeDefined();
 			expect(orderData.builder).toBe(bytes32Zero);
 			expect(orderData.metadata).toBe(bytes32Zero);
 			expect(orderData.signatureType).toBe(SignatureTypeV2.EOA);
+			expect(orderData.expiration).toBe("50000");
 		});
 
 		it("0.001", async () => {
@@ -83,11 +83,11 @@ describe("buildOrderCreationArgs", () => {
 			expect(orderData.makerAmount).toBe("1178240");
 			expect(orderData.takerAmount).toBe("21040000");
 			expect(orderData.side).toBe(Side.BUY);
-			expect(orderData.expiration).toBe("50000");
 			expect(orderData.timestamp).toBeDefined();
 			expect(orderData.builder).toBe(bytes32Zero);
 			expect(orderData.metadata).toBe(bytes32Zero);
 			expect(orderData.signatureType).toBe(SignatureTypeV2.EOA);
+			expect(orderData.expiration).toBe("50000");
 		});
 
 		it("0.0001", async () => {
@@ -111,11 +111,11 @@ describe("buildOrderCreationArgs", () => {
 			expect(orderData.makerAmount).toBe("117824");
 			expect(orderData.takerAmount).toBe("21040000");
 			expect(orderData.side).toBe(Side.BUY);
-			expect(orderData.expiration).toBe("50000");
 			expect(orderData.timestamp).toBeDefined();
 			expect(orderData.builder).toBe(bytes32Zero);
 			expect(orderData.metadata).toBe(bytes32Zero);
 			expect(orderData.signatureType).toBe(SignatureTypeV2.EOA);
+			expect(orderData.expiration).toBe("50000");
 		});
 	});
 
@@ -140,11 +140,11 @@ describe("buildOrderCreationArgs", () => {
 			expect(orderData.makerAmount).toBe("21040000");
 			expect(orderData.takerAmount).toBe("10520000");
 			expect(orderData.side).toBe(Side.SELL);
-			expect(orderData.expiration).toBe("0");
 			expect(orderData.timestamp).toBeDefined();
 			expect(orderData.builder).toBe(bytes32Zero);
 			expect(orderData.metadata).toBe(bytes32Zero);
 			expect(orderData.signatureType).toBe(SignatureTypeV2.POLY_PROXY);
+			expect(orderData.expiration).toBe("0");
 		});
 
 		it("0.01", async () => {
@@ -167,11 +167,11 @@ describe("buildOrderCreationArgs", () => {
 			expect(orderData.makerAmount).toBe("21040000");
 			expect(orderData.takerAmount).toBe("11782400");
 			expect(orderData.side).toBe(Side.SELL);
-			expect(orderData.expiration).toBe("0");
 			expect(orderData.timestamp).toBeDefined();
 			expect(orderData.builder).toBe(bytes32Zero);
 			expect(orderData.metadata).toBe(bytes32Zero);
 			expect(orderData.signatureType).toBe(SignatureTypeV2.POLY_PROXY);
+			expect(orderData.expiration).toBe("0");
 		});
 
 		it("0.001", async () => {
@@ -194,11 +194,11 @@ describe("buildOrderCreationArgs", () => {
 			expect(orderData.makerAmount).toBe("21040000");
 			expect(orderData.takerAmount).toBe("1178240");
 			expect(orderData.side).toBe(Side.SELL);
-			expect(orderData.expiration).toBe("0");
 			expect(orderData.timestamp).toBeDefined();
 			expect(orderData.builder).toBe(bytes32Zero);
 			expect(orderData.metadata).toBe(bytes32Zero);
 			expect(orderData.signatureType).toBe(SignatureTypeV2.POLY_PROXY);
+			expect(orderData.expiration).toBe("0");
 		});
 
 		it("0.0001", async () => {
@@ -221,11 +221,11 @@ describe("buildOrderCreationArgs", () => {
 			expect(orderData.makerAmount).toBe("21040000");
 			expect(orderData.takerAmount).toBe("117824");
 			expect(orderData.side).toBe(Side.SELL);
-			expect(orderData.expiration).toBe("0");
 			expect(orderData.timestamp).toBeDefined();
 			expect(orderData.builder).toBe(bytes32Zero);
 			expect(orderData.metadata).toBe(bytes32Zero);
 			expect(orderData.signatureType).toBe(SignatureTypeV2.POLY_PROXY);
+			expect(orderData.expiration).toBe("0");
 		});
 	});
 

@@ -1,5 +1,3 @@
-import type { JsonRpcSigner } from "@ethersproject/providers";
-import type { Wallet } from "@ethersproject/wallet";
 import {
 	BUILDER_FEES_BPS,
 	bytes32Zero,
@@ -22,6 +20,7 @@ import {
 	GET_API_KEYS,
 	GET_BALANCE_ALLOWANCE,
 	GET_BUILDER_API_KEYS,
+	GET_BUILDER_FEES,
 	GET_BUILDER_TRADES,
 	GET_CLOB_MARKET,
 	GET_EARNINGS_FOR_USER_FOR_DAY,
@@ -79,6 +78,7 @@ import {
 } from "./order-builder/helpers/index.js";
 import { OrderBuilder } from "./order-builder/index.js";
 import type { SignatureTypeV2 } from "./order-utils/model/signatureTypeV2.js";
+import type { ClobSigner } from "./signing/signer.js";
 import type {
 	ApiKeyCreds,
 	ApiKeyRaw,
@@ -93,12 +93,12 @@ import type {
 	BuilderFeeRates,
 	BuilderTrade,
 	BuilderTradeParams,
+	BuilderTradesResponse,
 	Chain,
 	ClobErrorResponseBody,
 	CreateOrderOptions,
 	DropNotificationParams,
-	FeeExponents,
-	FeeRates,
+	FeeInfos,
 	MarketDetails,
 	MarketPrice,
 	MarketReward,
@@ -127,32 +127,43 @@ import type {
 	TotalUserEarning,
 	Trade,
 	TradeParams,
+	TradesPaginatedResponse,
 	UserEarning,
 	UserMarketOrderV2,
 	UserOrderV2,
 	UserRewardsEarning,
 } from "./types/index.js";
-import { OrderType, Side } from "./types/index.js";
+import { OrderType, orderToJsonV1, orderToJsonV2, Side } from "./types/index.js";
 import { isV2Order, type SignedOrder } from "./types/unifiedOrder.js";
-import {
-	generateOrderBookSummaryHash,
-	isTickSizeSmaller,
-	orderToJsonV1,
-	orderToJsonV2,
-	priceValid,
-} from "./utilities.js";
+import { generateOrderBookSummaryHash, isTickSizeSmaller, priceValid } from "./utilities.js";
+
+export function adjustBuyAmountForFees(
+	amount: number,
+	price: number,
+	userUSDCBalance: number,
+	feeRate: number,
+	feeExponent: number,
+	builderTakerFeeRate: number,
+): number {
+	const platformFeeRate = feeRate * (price * (1 - price)) ** feeExponent;
+	const platformFee = (amount / price) * platformFeeRate;
+	const totalCost = amount + platformFee + amount * builderTakerFeeRate;
+	if (userUSDCBalance <= totalCost) {
+		return amount / (1 + platformFeeRate / price + builderTakerFeeRate);
+	}
+	return amount;
+}
 
 export interface ClobClientOptions {
 	host: string;
 	chain: Chain;
-	signer?: Wallet | JsonRpcSigner;
+	signer?: ClobSigner;
 	creds?: ApiKeyCreds;
 	signatureType?: SignatureTypeV2;
 	funderAddress?: string;
-	geoBlockToken?: string;
 	useServerTime?: boolean;
 	builderConfig?: BuilderConfig;
-	getSigner?: () => Promise<Wallet | JsonRpcSigner> | (Wallet | JsonRpcSigner);
+	getSigner?: () => Promise<ClobSigner> | ClobSigner;
 	retryOnError?: boolean;
 }
 
@@ -162,7 +173,7 @@ export class ClobClient {
 	readonly chainId: Chain;
 
 	// Used to perform Level 1 authentication and sign orders
-	readonly signer?: Wallet | JsonRpcSigner;
+	readonly signer?: ClobSigner;
 
 	// Used to perform Level 2 authentication
 	readonly creds?: ApiKeyCreds;
@@ -173,15 +184,11 @@ export class ClobClient {
 
 	readonly negRisk: NegRisk;
 
-	readonly feeRates: FeeRates;
-
-	readonly feeExponents: FeeExponents;
+	readonly feeInfos: FeeInfos;
 
 	readonly builderFeeRates: BuilderFeeRates;
 
 	private readonly tokenConditionMap: TokenConditionMap;
-
-	readonly geoBlockToken?: string;
 
 	readonly useServerTime?: boolean;
 
@@ -198,7 +205,6 @@ export class ClobClient {
 		creds,
 		signatureType,
 		funderAddress,
-		geoBlockToken,
 		useServerTime,
 		builderConfig,
 		getSigner,
@@ -214,7 +220,7 @@ export class ClobClient {
 			this.creds = creds;
 		}
 		this.orderBuilder = new OrderBuilder(
-			signer as Wallet | JsonRpcSigner,
+			signer as ClobSigner,
 			chain,
 			signatureType,
 			funderAddress,
@@ -222,11 +228,9 @@ export class ClobClient {
 		);
 		this.tickSizes = {};
 		this.negRisk = {};
-		this.feeRates = {};
-		this.feeExponents = {};
+		this.feeInfos = {};
 		this.builderFeeRates = {};
 		this.tokenConditionMap = {};
-		this.geoBlockToken = geoBlockToken;
 		this.retryOnError = retryOnError;
 		this.useServerTime = useServerTime;
 		if (builderConfig !== undefined) {
@@ -296,15 +300,10 @@ export class ClobClient {
 			this.tickSizes[tokenId] = result.mts.toString() as TickSize;
 			this.negRisk[tokenId] = result.nr;
 
-			this.feeRates[tokenId] = result.fd?.r ?? 0;
-			this.feeExponents[tokenId] = result.fd?.e ?? 0;
-
-			if (result.mbf !== undefined || result.tbf !== undefined) {
-				this.builderFeeRates[tokenId] = {
-					maker: (result.mbf ?? 0) / BUILDER_FEES_BPS,
-					taker: (result.tbf ?? 0) / BUILDER_FEES_BPS,
-				};
-			}
+			this.feeInfos[tokenId] = {
+				rate: result.fd?.r ?? 0,
+				exponent: result.fd?.e ?? 0,
+			};
 		}
 
 		return result;
@@ -359,30 +358,30 @@ export class ClobClient {
 	}
 
 	public async getFeeRateBps(tokenID: string): Promise<number> {
-		if (tokenID in this.feeRates) {
-			return this.feeRates[tokenID];
+		if (tokenID in this.feeInfos) {
+			return this.feeInfos[tokenID].rate;
 		}
 
 		if (tokenID in this.tokenConditionMap) {
 			await this.getClobMarketInfo(this.tokenConditionMap[tokenID]);
-			return this.feeRates[tokenID];
+			return this.feeInfos[tokenID].rate;
 		}
 
 		const result = await this.get(`${this.host}${GET_FEE_RATE}`, {
 			params: { token_id: tokenID },
 		});
-		this.feeRates[tokenID] = result.base_fee as number;
+		this.feeInfos[tokenID] = { rate: result.base_fee as number, exponent: 0 };
 
-		return this.feeRates[tokenID];
+		return this.feeInfos[tokenID].rate;
 	}
 
 	public async getFeeExponent(tokenID: string): Promise<number> {
-		if (tokenID in this.feeExponents) {
-			return this.feeExponents[tokenID];
+		if (tokenID in this.feeInfos) {
+			return this.feeInfos[tokenID].exponent;
 		}
 
 		await this._ensureMarketInfoCached(tokenID);
-		return this.feeExponents[tokenID];
+		return this.feeInfos[tokenID].exponent;
 	}
 
 	/**
@@ -460,7 +459,7 @@ export class ClobClient {
 
 		const endpoint = `${this.host}${CREATE_API_KEY}`;
 		const headers = await createL1Headers(
-			this.signer as Wallet | JsonRpcSigner,
+			this.signer as ClobSigner,
 			this.chainId,
 			nonce,
 			this.useServerTime ? await this.getServerTime() : undefined,
@@ -486,7 +485,7 @@ export class ClobClient {
 
 		const endpoint = `${this.host}${DERIVE_API_KEY}`;
 		const headers = await createL1Headers(
-			this.signer as Wallet | JsonRpcSigner,
+			this.signer as ClobSigner,
 			this.chainId,
 			nonce,
 			this.useServerTime ? await this.getServerTime() : undefined,
@@ -521,7 +520,7 @@ export class ClobClient {
 		};
 
 		const headers = await createL2Headers(
-			this.signer as Wallet | JsonRpcSigner,
+			this.signer as ClobSigner,
 			this.creds as ApiKeyCreds,
 			headerArgs,
 			this.useServerTime ? await this.getServerTime() : undefined,
@@ -540,7 +539,7 @@ export class ClobClient {
 		};
 
 		const headers = await createL2Headers(
-			this.signer as Wallet | JsonRpcSigner,
+			this.signer as ClobSigner,
 			this.creds as ApiKeyCreds,
 			headerArgs,
 			this.useServerTime ? await this.getServerTime() : undefined,
@@ -559,7 +558,7 @@ export class ClobClient {
 		};
 
 		const headers = await createL2Headers(
-			this.signer as Wallet | JsonRpcSigner,
+			this.signer as ClobSigner,
 			this.creds as ApiKeyCreds,
 			headerArgs,
 			this.useServerTime ? await this.getServerTime() : undefined,
@@ -578,7 +577,7 @@ export class ClobClient {
 		};
 
 		const headers = await createL2Headers(
-			this.signer as Wallet | JsonRpcSigner,
+			this.signer as ClobSigner,
 			this.creds as ApiKeyCreds,
 			headerArgs,
 			this.useServerTime ? await this.getServerTime() : undefined,
@@ -601,7 +600,7 @@ export class ClobClient {
 		};
 
 		const headers = await createL2Headers(
-			this.signer as Wallet | JsonRpcSigner,
+			this.signer as ClobSigner,
 			this.creds as ApiKeyCreds,
 			headerArgs,
 			this.useServerTime ? await this.getServerTime() : undefined,
@@ -627,12 +626,7 @@ export class ClobClient {
 	public async getTradesPaginated(
 		params?: TradeParams,
 		next_cursor?: string,
-	): Promise<{
-		trades: Trade[];
-		next_cursor: string;
-		limit: number;
-		count: number;
-	}> {
+	): Promise<TradesPaginatedResponse> {
 		this.canL2Auth();
 
 		const endpoint = GET_TRADES;
@@ -642,7 +636,7 @@ export class ClobClient {
 		};
 
 		const headers = await createL2Headers(
-			this.signer as Wallet | JsonRpcSigner,
+			this.signer as ClobSigner,
 			this.creds as ApiKeyCreds,
 			headerArgs,
 			this.useServerTime ? await this.getServerTime() : undefined,
@@ -655,15 +649,10 @@ export class ClobClient {
 		const {
 			data,
 			...rest
-		}: {
-			data: Trade[];
-			next_cursor: string;
-			limit: number;
-			count: number;
-		} = await this.get(`${this.host}${endpoint}`, {
-			headers,
-			params: _params,
-		});
+		}: { data: Trade[]; next_cursor: string; limit: number; count: number } = await this.get(
+			`${this.host}${endpoint}`,
+			{ headers, params: _params },
+		);
 
 		return { trades: Array.isArray(data) ? [...data] : [], ...rest };
 	}
@@ -671,12 +660,7 @@ export class ClobClient {
 	public async getBuilderTrades(
 		params: BuilderTradeParams,
 		next_cursor?: string,
-	): Promise<{
-		trades: BuilderTrade[];
-		next_cursor: string;
-		limit: number;
-		count: number;
-	}> {
+	): Promise<BuilderTradesResponse> {
 		if (!params.builder_code || params.builder_code === bytes32Zero) {
 			throw new Error("builderCode is required and cannot be zero");
 		}
@@ -689,7 +673,7 @@ export class ClobClient {
 		};
 
 		const headers = await createL2Headers(
-			this.signer as Wallet | JsonRpcSigner,
+			this.signer as ClobSigner,
 			this.creds as ApiKeyCreds,
 			headerArgs,
 			this.useServerTime ? await this.getServerTime() : undefined,
@@ -702,15 +686,8 @@ export class ClobClient {
 		const {
 			data,
 			...rest
-		}: {
-			data: BuilderTrade[];
-			next_cursor: string;
-			limit: number;
-			count: number;
-		} = await this.get(`${this.host}${endpoint}`, {
-			headers,
-			params: _params,
-		});
+		}: { data: BuilderTrade[]; next_cursor: string; limit: number; count: number } =
+			await this.get(`${this.host}${endpoint}`, { headers, params: _params });
 
 		return { trades: Array.isArray(data) ? [...data] : [], ...rest };
 	}
@@ -725,7 +702,7 @@ export class ClobClient {
 		};
 
 		const headers = await createL2Headers(
-			this.signer as Wallet | JsonRpcSigner,
+			this.signer as ClobSigner,
 			this.creds as ApiKeyCreds,
 			headerArgs,
 			this.useServerTime ? await this.getServerTime() : undefined,
@@ -747,7 +724,7 @@ export class ClobClient {
 		};
 
 		const headers = await createL2Headers(
-			this.signer as Wallet | JsonRpcSigner,
+			this.signer as ClobSigner,
 			this.creds as ApiKeyCreds,
 			l2HeaderArgs,
 			this.useServerTime ? await this.getServerTime() : undefined,
@@ -771,7 +748,7 @@ export class ClobClient {
 		};
 
 		const headers = await createL2Headers(
-			this.signer as Wallet | JsonRpcSigner,
+			this.signer as ClobSigner,
 			this.creds as ApiKeyCreds,
 			headerArgs,
 			this.useServerTime ? await this.getServerTime() : undefined,
@@ -795,7 +772,7 @@ export class ClobClient {
 		};
 
 		const headers = await createL2Headers(
-			this.signer as Wallet | JsonRpcSigner,
+			this.signer as ClobSigner,
 			this.creds as ApiKeyCreds,
 			headerArgs,
 			this.useServerTime ? await this.getServerTime() : undefined,
@@ -885,32 +862,22 @@ export class ClobClient {
 			orderToSign.builderCode = this.builderConfig.builderCode;
 		}
 
+		await this.ensureBuilderFeeRateCached(orderToSign.builderCode);
+
 		if (orderToSign.side === Side.BUY && orderToSign.userUSDCBalance !== undefined) {
 			// biome-ignore lint/style/noNonNullAssertion: price is validated above
 			const price = orderToSign.price!;
 			const builderTakerFeeRate = this.isBuilderOrder(orderToSign.builderCode)
-				? (this.builderFeeRates[tokenID]?.taker ?? 0)
+				? (this.builderFeeRates[orderToSign.builderCode ?? ""]?.taker ?? 0)
 				: 0;
-
-			const platformFeeRate = this._calculatePlatformFeeRate(
+			orderToSign.amount = adjustBuyAmountForFees(
+				orderToSign.amount,
 				price,
-				this.feeRates[tokenID],
-				this.feeExponents[tokenID],
+				orderToSign.userUSDCBalance,
+				this.feeInfos[tokenID].rate,
+				this.feeInfos[tokenID].exponent,
+				builderTakerFeeRate,
 			);
-			// platform_fee = C * platform_fee_rate, C = amount / price
-			const platformFee = (orderToSign.amount / price) * platformFeeRate;
-			const totalCost =
-				orderToSign.amount + platformFee + orderToSign.amount * builderTakerFeeRate;
-
-			if (orderToSign.userUSDCBalance <= totalCost) {
-				orderToSign.amount = this._calculateFeeAdjustedAmount(
-					orderToSign.amount,
-					price,
-					this.feeRates[tokenID],
-					this.feeExponents[tokenID],
-					builderTakerFeeRate,
-				);
-			}
 		}
 
 		const negRisk = options?.negRisk ?? (await this.getNegRisk(tokenID));
@@ -971,7 +938,7 @@ export class ClobClient {
 		};
 
 		const headers = await createL2Headers(
-			this.signer as Wallet | JsonRpcSigner,
+			this.signer as ClobSigner,
 			this.creds as ApiKeyCreds,
 			l2HeaderArgs,
 			this.useServerTime ? await this.getServerTime() : undefined,
@@ -1013,7 +980,7 @@ export class ClobClient {
 		};
 
 		const headers = await createL2Headers(
-			this.signer as Wallet | JsonRpcSigner,
+			this.signer as ClobSigner,
 			this.creds as ApiKeyCreds,
 			l2HeaderArgs,
 			this.useServerTime ? await this.getServerTime() : undefined,
@@ -1049,7 +1016,7 @@ export class ClobClient {
 		};
 
 		const headers = await createL2Headers(
-			this.signer as Wallet | JsonRpcSigner,
+			this.signer as ClobSigner,
 			this.creds as ApiKeyCreds,
 			l2HeaderArgs,
 			this.useServerTime ? await this.getServerTime() : undefined,
@@ -1075,7 +1042,7 @@ export class ClobClient {
 		};
 
 		const headers = await createL2Headers(
-			this.signer as Wallet | JsonRpcSigner,
+			this.signer as ClobSigner,
 			this.creds as ApiKeyCreds,
 			l2HeaderArgs,
 			this.useServerTime ? await this.getServerTime() : undefined,
@@ -1093,7 +1060,7 @@ export class ClobClient {
 		};
 
 		const headers = await createL2Headers(
-			this.signer as Wallet | JsonRpcSigner,
+			this.signer as ClobSigner,
 			this.creds as ApiKeyCreds,
 			l2HeaderArgs,
 			this.useServerTime ? await this.getServerTime() : undefined,
@@ -1110,7 +1077,7 @@ export class ClobClient {
 		};
 
 		const headers = await createL2Headers(
-			this.signer as Wallet | JsonRpcSigner,
+			this.signer as ClobSigner,
 			this.creds as ApiKeyCreds,
 			l2HeaderArgs,
 			this.useServerTime ? await this.getServerTime() : undefined,
@@ -1128,7 +1095,7 @@ export class ClobClient {
 		};
 
 		const headers = await createL2Headers(
-			this.signer as Wallet | JsonRpcSigner,
+			this.signer as ClobSigner,
 			this.creds as ApiKeyCreds,
 			l2HeaderArgs,
 			this.useServerTime ? await this.getServerTime() : undefined,
@@ -1146,7 +1113,7 @@ export class ClobClient {
 		};
 
 		const headers = await createL2Headers(
-			this.signer as Wallet | JsonRpcSigner,
+			this.signer as ClobSigner,
 			this.creds as ApiKeyCreds,
 			headerArgs,
 			this.useServerTime ? await this.getServerTime() : undefined,
@@ -1167,7 +1134,7 @@ export class ClobClient {
 		};
 
 		const headers = await createL2Headers(
-			this.signer as Wallet | JsonRpcSigner,
+			this.signer as ClobSigner,
 			this.creds as ApiKeyCreds,
 			headerArgs,
 			this.useServerTime ? await this.getServerTime() : undefined,
@@ -1190,7 +1157,7 @@ export class ClobClient {
 		};
 
 		const headers = await createL2Headers(
-			this.signer as Wallet | JsonRpcSigner,
+			this.signer as ClobSigner,
 			this.creds as ApiKeyCreds,
 			headerArgs,
 			this.useServerTime ? await this.getServerTime() : undefined,
@@ -1225,7 +1192,7 @@ export class ClobClient {
 		};
 
 		const headers = await createL2Headers(
-			this.signer as Wallet | JsonRpcSigner,
+			this.signer as ClobSigner,
 			this.creds as ApiKeyCreds,
 			headerArgs,
 			this.useServerTime ? await this.getServerTime() : undefined,
@@ -1257,7 +1224,7 @@ export class ClobClient {
 		};
 
 		const headers = await createL2Headers(
-			this.signer as Wallet | JsonRpcSigner,
+			this.signer as ClobSigner,
 			this.creds as ApiKeyCreds,
 			headerArgs,
 			this.useServerTime ? await this.getServerTime() : undefined,
@@ -1295,7 +1262,7 @@ export class ClobClient {
 		};
 
 		const headers = await createL2Headers(
-			this.signer as Wallet | JsonRpcSigner,
+			this.signer as ClobSigner,
 			this.creds as ApiKeyCreds,
 			headerArgs,
 			this.useServerTime ? await this.getServerTime() : undefined,
@@ -1371,7 +1338,7 @@ export class ClobClient {
 		};
 
 		const headers = await createL2Headers(
-			this.signer as Wallet | JsonRpcSigner,
+			this.signer as ClobSigner,
 			this.creds as ApiKeyCreds,
 			headerArgs,
 			this.useServerTime ? await this.getServerTime() : undefined,
@@ -1390,7 +1357,7 @@ export class ClobClient {
 		};
 
 		const headers = await createL2Headers(
-			this.signer as Wallet | JsonRpcSigner,
+			this.signer as ClobSigner,
 			this.creds as ApiKeyCreds,
 			headerArgs,
 			this.useServerTime ? await this.getServerTime() : undefined,
@@ -1420,7 +1387,7 @@ export class ClobClient {
 	}
 
 	private async _ensureMarketInfoCached(tokenID: string): Promise<void> {
-		if (tokenID in this.feeRates && tokenID in this.feeExponents) return;
+		if (tokenID in this.feeInfos) return;
 
 		if (!(tokenID in this.tokenConditionMap)) {
 			const result = await this.get(`${this.host}${GET_MARKET_BY_TOKEN}${tokenID}`);
@@ -1431,6 +1398,17 @@ export class ClobClient {
 		}
 
 		await this.getClobMarketInfo(this.tokenConditionMap[tokenID]);
+	}
+
+	private async ensureBuilderFeeRateCached(builderCode?: string): Promise<void> {
+		if (!builderCode || builderCode === bytes32Zero) return;
+		if (builderCode in this.builderFeeRates) return;
+
+		const result = await this.get(`${this.host}${GET_BUILDER_FEES}${builderCode}`);
+		this.builderFeeRates[builderCode] = {
+			maker: result.builder_maker_fee_rate_bps / BUILDER_FEES_BPS,
+			taker: result.builder_taker_fee_rate_bps / BUILDER_FEES_BPS,
+		};
 	}
 
 	private async _resolveTickSize(tokenID: string, tickSize?: TickSize): Promise<TickSize> {
@@ -1460,38 +1438,6 @@ export class ClobClient {
 		return apiVersion;
 	}
 
-	private _calculatePlatformFeeRate(price: number, feeRate: number, feeExponent: number): number {
-		// platform_fee_rate = rate * (p*(1-p))^exp
-		return feeRate * (price * (1 - price)) ** feeExponent;
-	}
-
-	private _calculateFeeAdjustedAmount(
-		budget: number,
-		price: number,
-		feeRate: number,
-		feeExponent: number,
-		builderTakerFeeRate: number = 0,
-	): number {
-		// effective + (effective/price)*feeRate*(p*(1-p))^exp + effective*builderRate = budget
-		// effective * (1 + (feeRate*(p*(1-p))^exp)/price + builderRate) = budget
-		const platformFeeRate = this._calculatePlatformFeeRate(price, feeRate, feeExponent);
-		return budget / (1 + platformFeeRate / price + builderTakerFeeRate);
-	}
-
-	// private async _resolveFeeRateBps(tokenID: string, userFeeRateBps?: number): Promise<number> {
-	// 	const marketFeeRateBps = await this.getFeeRateBps(tokenID);
-	// 	if (
-	// 		marketFeeRateBps > 0 &&
-	// 		userFeeRateBps !== undefined &&
-	// 		userFeeRateBps !== marketFeeRateBps
-	// 	) {
-	// 		throw new Error(
-	// 			`invalid user provided fee rate: ${userFeeRateBps}, fee rate for the market must be ${marketFeeRateBps}`,
-	// 		);
-	// 	}
-	// 	return marketFeeRateBps;
-	// }
-
 	private async _retryOnVersionUpdate(retryFunc: () => Promise<unknown>) {
 		const version = await this.resolveVersion();
 
@@ -1512,27 +1458,14 @@ export class ClobClient {
 
 	// http methods
 	private async get(endpoint: string, options?: RequestOptions) {
-		return get(endpoint, {
-			...options,
-			params: { ...options?.params, geo_block_token: this.geoBlockToken },
-		});
+		return get(endpoint, options);
 	}
 
 	private async post(endpoint: string, options?: RequestOptions) {
-		return post(
-			endpoint,
-			{
-				...options,
-				params: { ...options?.params, geo_block_token: this.geoBlockToken },
-			},
-			this.retryOnError,
-		);
+		return post(endpoint, options, this.retryOnError);
 	}
 
 	private async del(endpoint: string, options?: RequestOptions) {
-		return del(endpoint, {
-			...options,
-			params: { ...options?.params, geo_block_token: this.geoBlockToken },
-		});
+		return del(endpoint, options);
 	}
 }

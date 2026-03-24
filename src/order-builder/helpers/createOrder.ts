@@ -1,16 +1,15 @@
-import type { JsonRpcSigner } from "@ethersproject/providers";
-import type { Wallet } from "@ethersproject/wallet";
 import { zeroAddress } from "viem";
 import { getContractConfig } from "../../config.js";
 import type { OrderDataV1, SignedOrderV1, SignedOrderV2 } from "../../order-utils/index.js";
 import { SignatureTypeV2 } from "../../order-utils/index.js";
+import { type ClobSigner, getSignerAddress } from "../../signing/signer.js";
 import type { Chain, CreateOrderOptions, UserOrderV2 } from "../../types/index.js";
 import { buildOrder } from "./buildOrder.js";
 import { buildOrderCreationArgs } from "./buildOrderCreationArgs.js";
 import { ROUNDING_CONFIG } from "./roundingConfig.js";
 
 export const createOrder = async (
-	eoaSigner: Wallet | JsonRpcSigner,
+	eoaSigner: ClobSigner,
 	chainId: Chain,
 	signatureType: SignatureTypeV2,
 	funderAddress: string | undefined,
@@ -18,7 +17,7 @@ export const createOrder = async (
 	options: CreateOrderOptions,
 	version: number,
 ): Promise<SignedOrderV1 | SignedOrderV2> => {
-	const eoaSignerAddress = await eoaSigner.getAddress();
+	const eoaSignerAddress = await getSignerAddress(eoaSigner);
 
 	// If funder address is not given, use the signer address
 	const maker = funderAddress === undefined ? eoaSignerAddress : funderAddress;
