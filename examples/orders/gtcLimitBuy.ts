@@ -19,6 +19,7 @@ async function main() {
 	};
 	const client = new ClobClient({ host, chain: chainId, signer: wallet, creds });
 
+	// Resting limit buy — sits in the book until filled or cancelled
 	const resp = await client.createAndPostOrder(
 		{
 			tokenID: YES,
