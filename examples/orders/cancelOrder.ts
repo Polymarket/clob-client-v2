@@ -1,10 +1,10 @@
 import { config as dotenvConfig } from "dotenv";
 import { ethers } from "ethers";
-import { resolve } from "path";
+import { resolve } from "node:path";
 
-import { type ApiKeyCreds, Chain, ClobClient } from "../src";
+import { ApiKeyCreds, Chain, ClobClient } from "../../src";
 
-dotenvConfig({ path: resolve(__dirname, "../.env") });
+dotenvConfig({ path: resolve(__dirname, "../../.env") });
 
 async function main() {
 	const wallet = new ethers.Wallet(`${process.env.PK}`);
@@ -19,7 +19,9 @@ async function main() {
 	};
 	const clobClient = new ClobClient({ host, chain: chainId, signer: wallet, creds });
 
-	const resp = await clobClient.cancelAll();
+	const resp = await clobClient.cancelOrder({
+		orderID: "0x989af24e7bdf0f815e464d5560a0657735a9199fa3a6cd7fb968c85cc65d18b4",
+	});
 	console.log(resp);
 	console.log(`Done!`);
 }

@@ -1,10 +1,10 @@
 import { config as dotenvConfig } from "dotenv";
 import { ethers } from "ethers";
-import { resolve } from "path";
+import { resolve } from "node:path";
 
-import { type ApiKeyCreds, Chain, ClobClient } from "../src";
+import { ApiKeyCreds, Chain, ClobClient } from "../../src";
 
-dotenvConfig({ path: resolve(__dirname, "../.env") });
+dotenvConfig({ path: resolve(__dirname, "../../.env") });
 
 async function main() {
 	const wallet = new ethers.Wallet(`${process.env.PK}`);
@@ -26,16 +26,8 @@ async function main() {
 	const CONDITION_ID = "0x5f65177b394277fd294cd75650044e32ba009a95022d88a0c1d565897d72f8f1";
 
 	console.log(await clobClient.cancelMarketOrders({ market: CONDITION_ID }));
-	console.log(
-		await clobClient.cancelMarketOrders({
-			asset_id: YES_TOKEN_ID,
-		}),
-	);
-	console.log(
-		await clobClient.cancelMarketOrders({
-			asset_id: NO_TOKEN_ID,
-		}),
-	);
+	console.log(await clobClient.cancelMarketOrders({ asset_id: YES_TOKEN_ID }));
+	console.log(await clobClient.cancelMarketOrders({ asset_id: NO_TOKEN_ID }));
 }
 
 main();
