@@ -1,16 +1,15 @@
+import { resolve } from "node:path";
 import { config as dotenvConfig } from "dotenv";
-import { resolve } from "path";
 
 dotenvConfig({ path: resolve(__dirname, "../.env") });
 
 import { WebSocket } from "ws";
 
-import { ApiKeyCreds } from "../src";
+import type { ApiKeyCreds } from "../src";
 
 const YES_TOKEN_ID =
 	"71321045679252212594626385532706912750332728571942532289631379312455583992563";
-const NO_TOKEN_ID =
-	"52114319501245915516055106046884209969926127482827954674443846427813813222426";
+const NO_TOKEN_ID = "52114319501245915516055106046884209969926127482827954674443846427813813222426";
 const CONDITION_ID = "0x5f65177b394277fd294cd75650044e32ba009a95022d88a0c1d565897d72f8f1";
 
 interface subscriptionMessage {
@@ -30,7 +29,7 @@ async function main(type: "user" | "market") {
 	let subscriptionMessage: subscriptionMessage = {} as subscriptionMessage;
 
 	let creds: ApiKeyCreds | undefined;
-	if (type == "user") {
+	if (type === "user") {
 		creds = {
 			key: `${process.env.CLOB_API_KEY}`,
 			secret: `${process.env.CLOB_SECRET}`,
@@ -40,7 +39,7 @@ async function main(type: "user" | "market") {
 
 	subscriptionMessage = {
 		auth:
-			type == "user" && creds
+			type === "user" && creds
 				? {
 						apiKey: creds.key,
 						secret: creds.secret,
@@ -53,22 +52,22 @@ async function main(type: "user" | "market") {
 		initial_dump: true,
 	};
 
-	if (type == "user") {
-		subscriptionMessage["markets"] = [CONDITION_ID];
+	if (type === "user") {
+		subscriptionMessage.markets = [CONDITION_ID];
 	} else {
-		subscriptionMessage["assets_ids"] = [NO_TOKEN_ID, YES_TOKEN_ID];
+		subscriptionMessage.assets_ids = [NO_TOKEN_ID, YES_TOKEN_ID];
 	}
 
-	ws.on("error", function (err: Error) {
+	ws.on("error", (err: Error) => {
 		console.log("error SOCKET", "error", err);
 		process.exit(1);
 	});
-	ws.on("close", function (code: number, reason: Buffer) {
+	ws.on("close", (code: number, reason: Buffer) => {
 		console.log("disconnected SOCKET", "code", code, "reason", reason.toString());
 		process.exit(1);
 	});
 
-	ws.on("open", function (ev: any) {
+	ws.on("open", (ev: any) => {
 		ws.send(JSON.stringify(subscriptionMessage), (err?: Error) => {
 			if (err) {
 				console.log("send error", err);
@@ -86,7 +85,7 @@ async function main(type: "user" | "market") {
 		}
 	});
 
-	ws.onmessage = function (msg: any) {
+	ws.onmessage = (msg: any) => {
 		console.log(msg.data);
 	};
 }

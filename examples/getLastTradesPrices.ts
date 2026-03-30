@@ -1,7 +1,7 @@
 import { config as dotenvConfig } from "dotenv";
 import { resolve } from "path";
 
-import { BookParams, Chain, ClobClient } from "../src";
+import { type BookParams, Chain, ClobClient } from "../src";
 
 dotenvConfig({ path: resolve(__dirname, "../.env") });
 
