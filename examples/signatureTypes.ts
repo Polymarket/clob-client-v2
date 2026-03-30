@@ -1,8 +1,7 @@
 import { ethers } from "ethers";
 import { config as dotenvConfig } from "dotenv";
 import { resolve } from "path";
-import { ApiKeyCreds, Chain, ClobClient } from "../src";
-import { SignatureType } from "@polymarket/order-utils";
+import { ApiKeyCreds, Chain, ClobClient, SignatureTypeV2 } from "../src";
 
 dotenvConfig({ path: resolve(__dirname, "../.env") });
 
@@ -28,7 +27,7 @@ async function main() {
         chain: chainId,
         signer: wallet,
         creds,
-        signatureType: SignatureType.POLY_PROXY,
+        signatureType: SignatureTypeV2.POLY_PROXY,
         funderAddress: proxyWalletAddress,
     });
 
@@ -39,7 +38,7 @@ async function main() {
         chain: chainId,
         signer: wallet,
         creds,
-        signatureType: SignatureType.POLY_GNOSIS_SAFE,
+        signatureType: SignatureTypeV2.POLY_GNOSIS_SAFE,
         funderAddress: gnosisSafeAddress,
     });
 }
