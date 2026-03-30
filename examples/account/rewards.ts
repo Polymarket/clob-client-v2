@@ -19,11 +19,31 @@ async function main() {
 	};
 	const clobClient = new ClobClient({ host, chain: chainId, signer: wallet, creds });
 
-	const resp = await clobClient.cancelOrders([
-		"0x7ce769d075f4f1263603fde09862f5998f5e6ae4a39a16f3780f0bd708d3fc1c",
-	]);
-	console.log(resp);
-	console.log(`Done!`);
+	console.log(
+		"today earnings",
+		await clobClient.getEarningsForUserForDay("2024-04-09" /* UTC TIME */),
+	);
+	console.log(
+		"total earnings",
+		await clobClient.getTotalEarningsForUserForDay("2024-04-09" /* UTC TIME */),
+	);
+	console.log("rewards percentages", await clobClient.getRewardPercentages());
+	console.log("current rewards", await clobClient.getCurrentRewards());
+	console.log(
+		"rewards for market",
+		await clobClient.getRawRewardsForMarket(
+			"0x5f65177b394277fd294cd75650044e32ba009a95022d88a0c1d565897d72f8f1",
+		),
+	);
+	console.log(
+		"rewards",
+		await clobClient.getUserEarningsAndMarketsConfig(
+			"2025-01-31" /* UTC TIME */,
+			"earnings",
+			"DESC",
+			true,
+		),
+	);
 }
 
 main();

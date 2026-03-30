@@ -2,7 +2,7 @@ import { resolve } from "node:path";
 import { config as dotenvConfig } from "dotenv";
 import { ethers } from "ethers";
 
-import { type ApiKeyCreds, Chain, ClobClient } from "../../src";
+import { type ApiKeyCreds, Chain, ClobClient, SignatureTypeV2 } from "../../src";
 
 dotenvConfig({ path: resolve(__dirname, "../../.env") });
 
@@ -17,13 +17,31 @@ async function main() {
 		secret: `${process.env.CLOB_SECRET}`,
 		passphrase: `${process.env.CLOB_PASS_PHRASE}`,
 	};
+
+	// Client used with an EOA: Signature type 0
 	const clobClient = new ClobClient({ host, chain: chainId, signer: wallet, creds });
 
-	const resp = await clobClient.cancelOrders([
-		"0x7ce769d075f4f1263603fde09862f5998f5e6ae4a39a16f3780f0bd708d3fc1c",
-	]);
-	console.log(resp);
-	console.log(`Done!`);
+	// Client used with a Polymarket Proxy Wallet: Signature type 1
+	const proxyWalletAddress = "0x...";
+	const polyProxyClient = new ClobClient({
+		host,
+		chain: chainId,
+		signer: wallet,
+		creds,
+		signatureType: SignatureTypeV2.POLY_PROXY,
+		funderAddress: proxyWalletAddress,
+	});
+
+	// Client used with a Polymarket Gnosis safe: Signature Type 2
+	const gnosisSafeAddress = "0x...";
+	const polyGnosisSafeClient = new ClobClient({
+		host,
+		chain: chainId,
+		signer: wallet,
+		creds,
+		signatureType: SignatureTypeV2.POLY_GNOSIS_SAFE,
+		funderAddress: gnosisSafeAddress,
+	});
 }
 
 main();

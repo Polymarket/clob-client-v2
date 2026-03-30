@@ -19,11 +19,24 @@ async function main() {
 	};
 	const clobClient = new ClobClient({ host, chain: chainId, signer: wallet, creds });
 
-	const resp = await clobClient.cancelOrders([
-		"0x7ce769d075f4f1263603fde09862f5998f5e6ae4a39a16f3780f0bd708d3fc1c",
-	]);
-	console.log(resp);
-	console.log(`Done!`);
+	// only first page
+	console.log(
+		await clobClient.getTradesPaginated({
+			market: "0x5f65177b394277fd294cd75650044e32ba009a95022d88a0c1d565897d72f8f1",
+			maker_address: await wallet.getAddress(),
+		}),
+	);
+
+	// fetch only second page
+	console.log(
+		await clobClient.getTradesPaginated(
+			{
+				market: "0x5f65177b394277fd294cd75650044e32ba009a95022d88a0c1d565897d72f8f1",
+				maker_address: await wallet.getAddress(),
+			},
+			"MzAw",
+		),
+	);
 }
 
 main();

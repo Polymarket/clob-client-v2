@@ -19,10 +19,9 @@ async function main() {
 	};
 	const clobClient = new ClobClient({ host, chain: chainId, signer: wallet, creds });
 
-	const resp = await clobClient.cancelOrders([
-		"0x7ce769d075f4f1263603fde09862f5998f5e6ae4a39a16f3780f0bd708d3fc1c",
-	]);
-	console.log(resp);
+	const builder_code = `${process.env.BUILDER_CODE}`;
+	const trades = await clobClient.getBuilderTrades({ builder_code });
+	console.log(trades);
 	console.log(`Done!`);
 }
 

@@ -19,11 +19,13 @@ async function main() {
 	};
 	const clobClient = new ClobClient({ host, chain: chainId, signer: wallet, creds });
 
-	const resp = await clobClient.cancelOrders([
-		"0x7ce769d075f4f1263603fde09862f5998f5e6ae4a39a16f3780f0bd708d3fc1c",
-	]);
-	console.log(resp);
-	console.log(`Done!`);
+	const scoring = await clobClient.areOrdersScoring({
+		orderIds: [
+			"0x9355abd8ac2f9144ec19d31756ca92a8738a20c5ad65125cc2e8ea3f58d589aa",
+			"0xde0c7c616190e34a81ce05adb3414d7f1e865bfea1f1cc40f6cc1d6fbd7b6345",
+		],
+	});
+	console.log(scoring);
 }
 
 main();

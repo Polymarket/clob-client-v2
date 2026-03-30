@@ -2,7 +2,7 @@ import { resolve } from "node:path";
 import { config as dotenvConfig } from "dotenv";
 import { ethers } from "ethers";
 
-import { type ApiKeyCreds, Chain, ClobClient } from "../../src";
+import { type ApiKeyCreds, AssetType, Chain, ClobClient } from "../../src";
 
 dotenvConfig({ path: resolve(__dirname, "../../.env") });
 
@@ -19,11 +19,20 @@ async function main() {
 	};
 	const clobClient = new ClobClient({ host, chain: chainId, signer: wallet, creds });
 
-	const resp = await clobClient.cancelOrders([
-		"0x7ce769d075f4f1263603fde09862f5998f5e6ae4a39a16f3780f0bd708d3fc1c",
-	]);
-	console.log(resp);
-	console.log(`Done!`);
+	const collateral = await clobClient.getBalanceAllowance({ asset_type: AssetType.COLLATERAL });
+	console.log(collateral);
+
+	const yes = await clobClient.getBalanceAllowance({
+		asset_type: AssetType.CONDITIONAL,
+		token_id: "71321045679252212594626385532706912750332728571942532289631379312455583992563",
+	});
+	console.log(yes);
+
+	const no = await clobClient.getBalanceAllowance({
+		asset_type: AssetType.CONDITIONAL,
+		token_id: "52114319501245915516055106046884209969926127482827954674443846427813813222426",
+	});
+	console.log(no);
 }
 
 main();

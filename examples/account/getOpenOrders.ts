@@ -6,6 +6,10 @@ import { type ApiKeyCreds, Chain, ClobClient } from "../../src";
 
 dotenvConfig({ path: resolve(__dirname, "../../.env") });
 
+const YES = "71321045679252212594626385532706912750332728571942532289631379312455583992563";
+const NO = "52114319501245915516055106046884209969926127482827954674443846427813813222426";
+const CONDITION_ID = "0x5f65177b394277fd294cd75650044e32ba009a95022d88a0c1d565897d72f8f1";
+
 async function main() {
 	const wallet = new ethers.Wallet(`${process.env.PK}`);
 	const chainId = parseInt(`${process.env.CHAIN_ID || Chain.AMOY}`) as Chain;
@@ -19,11 +23,12 @@ async function main() {
 	};
 	const clobClient = new ClobClient({ host, chain: chainId, signer: wallet, creds });
 
-	const resp = await clobClient.cancelOrders([
-		"0x7ce769d075f4f1263603fde09862f5998f5e6ae4a39a16f3780f0bd708d3fc1c",
-	]);
-	console.log(resp);
-	console.log(`Done!`);
+	console.log(await clobClient.getOpenOrders({ asset_id: NO }));
+	console.log(await clobClient.getOpenOrders({ asset_id: YES }));
+	console.log(await clobClient.getOpenOrders({ market: CONDITION_ID }));
+
+	// only first page - do not paginate
+	console.log(await clobClient.getOpenOrders({ market: CONDITION_ID }, true));
 }
 
 main();
