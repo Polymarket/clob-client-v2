@@ -25,6 +25,7 @@
         "resolveJsonModule": true,
         "strictNullChecks": true,
         "lib": ["es2022", "dom"],
-        "skipLibCheck": true
+        "skipLibCheck": true,
+        "types": ["node"]
     },
 }
