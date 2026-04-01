@@ -1,0 +1,23 @@
+import { resolve } from "node:path";
+import { config as dotenvConfig } from "dotenv";
+import { ethers } from "ethers";
+
+import { Chain, ClobClient } from "../../src";
+
+dotenvConfig({ path: resolve(__dirname, "../../.env") });
+
+async function main() {
+	const wallet = new ethers.Wallet(`${process.env.PK}`);
+	const chainId = parseInt(`${process.env.CHAIN_ID || Chain.AMOY}`) as Chain;
+	console.log(`Address: ${await wallet.getAddress()}, chainId: ${chainId}`);
+
+	const host = process.env.CLOB_API_URL || "http://localhost:8080";
+	const clobClient = new ClobClient({ host, chain: chainId, signer: wallet });
+
+	console.log(`Response: `);
+	const resp = await clobClient.deriveApiKey();
+	console.log(resp);
+	console.log(`Complete!`);
+}
+
+main();
