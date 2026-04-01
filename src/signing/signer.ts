@@ -1,44 +1,90 @@
-import type { JsonRpcSigner } from "@ethersproject/providers";
-import type { Wallet } from "@ethersproject/wallet";
-import type { WalletClient } from "viem";
+import type { Account, Address, WalletClient } from "viem";
 
-export type ClobSigner = Wallet | JsonRpcSigner | WalletClient;
+type TypedDataDomain = Record<string, unknown>;
+type TypedDataTypes = Record<string, Array<{ name: string; type: string }>>;
+type TypedDataValue = Record<string, unknown>;
 
-function isViemWalletClient(signer: ClobSigner): signer is WalletClient {
-	return (
-		typeof (signer as WalletClient).signTypedData === "function" &&
-		typeof (signer as Wallet | JsonRpcSigner)._signTypedData !== "function"
-	);
+interface EthersSigner {
+	_signTypedData(
+		domain: TypedDataDomain,
+		types: TypedDataTypes,
+		value: TypedDataValue,
+	): Promise<string>;
+	getAddress(): Promise<string>;
 }
 
-export const getSignerAddress = async (signer: ClobSigner): Promise<string> => {
-	if (isViemWalletClient(signer)) {
-		if (signer.account?.address) {
-			return signer.account.address;
-		}
-		const addresses = await signer.getAddresses();
-		return addresses[0];
+export type ClobSigner = EthersSigner | WalletClient;
+
+const isEthersTypedDataSigner = (signer: ClobSigner): signer is EthersSigner =>
+	// eslint-disable-next-line no-underscore-dangle
+	typeof (signer as EthersSigner)._signTypedData === "function";
+
+const isWalletClientSigner = (signer: ClobSigner): signer is WalletClient =>
+	typeof (signer as WalletClient).signTypedData === "function";
+
+export const getWalletClientAddress = async (walletClient: WalletClient): Promise<Address> => {
+	const accountAddress = walletClient.account?.address;
+	if (typeof accountAddress === "string" && accountAddress.length > 0) {
+		return accountAddress as Address;
 	}
-	return signer.getAddress();
+
+	if (typeof walletClient.requestAddresses === "function") {
+		const [address] = await walletClient.requestAddresses();
+		if (typeof address === "string" && address.length > 0) {
+			return address as Address;
+		}
+	}
+
+	if (typeof walletClient.getAddresses === "function") {
+		const [address] = await walletClient.getAddresses();
+		if (typeof address === "string" && address.length > 0) {
+			return address as Address;
+		}
+	}
+
+	throw new Error("wallet client is missing account address");
 };
 
-export const signTypedData = async (
-	signer: ClobSigner,
-	domain: Record<string, unknown>,
-	types: Record<string, { name: string; type: string }[]>,
-	message: Record<string, unknown>,
-): Promise<string> => {
-	if (isViemWalletClient(signer)) {
-		const account = signer.account ?? (await signer.getAddresses())[0];
-		const primaryType = Object.keys(types)[0];
+export const getSignerAddress = async (signer: ClobSigner): Promise<string> => {
+	if (isEthersTypedDataSigner(signer)) {
+		return signer.getAddress();
+	}
+
+	if (isWalletClientSigner(signer)) {
+		return getWalletClientAddress(signer);
+	}
+
+	throw new Error("unsupported signer type");
+};
+
+export const signTypedDataWithSigner = async ({
+	signer,
+	domain,
+	types,
+	value,
+	primaryType,
+}: {
+	signer: ClobSigner;
+	domain: TypedDataDomain;
+	types: TypedDataTypes;
+	value: TypedDataValue;
+	primaryType?: string;
+}): Promise<string> => {
+	if (isEthersTypedDataSigner(signer)) {
+		// eslint-disable-next-line no-underscore-dangle
+		return signer._signTypedData(domain, types, value);
+	}
+
+	if (isWalletClientSigner(signer)) {
+		const account: Account | Address = signer.account ?? (await getWalletClientAddress(signer));
 		return signer.signTypedData({
 			account,
 			domain,
 			types,
 			primaryType,
-			message,
+			message: value,
 		} as Parameters<WalletClient["signTypedData"]>[0]);
 	}
-	// eslint-disable-next-line no-underscore-dangle
-	return signer._signTypedData(domain, types, message);
+
+	throw new Error("unsupported signer type");
 };

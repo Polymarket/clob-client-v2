@@ -1,5 +1,5 @@
 import { hashTypedData } from "viem";
-import { type ClobSigner, getSignerAddress, signTypedData } from "../signing/signer.js";
+import { type ClobSigner, getSignerAddress, signTypedDataWithSigner } from "../signing/signer.js";
 import {
 	CTF_EXCHANGE_V1_DOMAIN_NAME,
 	CTF_EXCHANGE_V1_DOMAIN_VERSION,
@@ -151,7 +151,7 @@ export class ExchangeOrderBuilderV1 {
 	 */
 	buildOrderSignature(typedData: EIP712TypedData): Promise<OrderSignature> {
 		delete typedData.types.EIP712Domain;
-		return signTypedData(this.signer, typedData.domain, typedData.types, typedData.message);
+		return signTypedDataWithSigner({ signer: this.signer, domain: typedData.domain, types: typedData.types, value: typedData.message, primaryType: typedData.primaryType });
 	}
 
 	/**

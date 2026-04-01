@@ -12,7 +12,7 @@ import {
 } from "../../src/order-builder/helpers";
 import { type OrderDataV2, SignatureTypeV2 } from "../../src/order-utils";
 import { buildClobEip712Signature } from "../../src/signing/eip712";
-import { getSignerAddress, signTypedData } from "../../src/signing/signer";
+import { getSignerAddress, signTypedDataWithSigner } from "../../src/signing/signer";
 import { Chain, Side } from "../../src/types";
 
 const PRIVATE_KEY = "0xac0974bec39a17e36ba4a6b4d238ff944bacb478cbed5efcae784d7bf4f2ff80";
@@ -30,11 +30,11 @@ describe("signer adapter", () => {
 			expect(address.toLowerCase()).toBe(EXPECTED_ADDRESS.toLowerCase());
 		});
 
-		it("signTypedData produces a signature", async () => {
+		it("signTypedDataWithSigner produces a signature", async () => {
 			const domain = { name: "Test", version: "1", chainId: 80002 };
 			const types = { Foo: [{ name: "bar", type: "string" }] };
 			const message = { bar: "hello" };
-			const sig = await signTypedData(wallet, domain, types, message);
+			const sig = await signTypedDataWithSigner({ signer: wallet, domain, types, value: message, primaryType: "Foo" });
 			expect(sig).toMatch(/^0x[0-9a-f]{130}$/i);
 		});
 	});
@@ -55,11 +55,11 @@ describe("signer adapter", () => {
 			expect(address.toLowerCase()).toBe(EXPECTED_ADDRESS.toLowerCase());
 		});
 
-		it("signTypedData produces a signature", async () => {
+		it("signTypedDataWithSigner produces a signature", async () => {
 			const domain = { name: "Test", version: "1", chainId: 80002 };
 			const types = { Foo: [{ name: "bar", type: "string" }] };
 			const message = { bar: "hello" };
-			const sig = await signTypedData(walletClient, domain, types, message);
+			const sig = await signTypedDataWithSigner({ signer: walletClient, domain, types, value: message, primaryType: "Foo" });
 			expect(sig).toMatch(/^0x[0-9a-f]{130}$/i);
 		});
 

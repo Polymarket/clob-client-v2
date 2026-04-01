@@ -1,7 +1,7 @@
 import type { Chain } from "../types/index.js";
 
 import { MSG_TO_SIGN } from "./constants.js";
-import { type ClobSigner, getSignerAddress, signTypedData } from "./signer.js";
+import { type ClobSigner, getSignerAddress, signTypedDataWithSigner } from "./signer.js";
 
 /**
  * Builds the canonical Polymarket CLOB EIP712 signature
@@ -38,6 +38,6 @@ export const buildClobEip712Signature = async (
 		nonce,
 		message: MSG_TO_SIGN,
 	};
-	const sig = await signTypedData(signer, domain, types, value);
+	const sig = await signTypedDataWithSigner({ signer, domain, types, value, primaryType: "ClobAuth" });
 	return sig;
 };
