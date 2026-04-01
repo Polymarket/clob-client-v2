@@ -1,6 +1,7 @@
 import { resolve } from "node:path";
 import { config as dotenvConfig } from "dotenv";
-import { ethers } from "ethers";
+import { createWalletClient, http } from "viem";
+import { privateKeyToAccount } from "viem/accounts";
 
 import { type ApiKeyCreds, Chain, ClobClient, Side } from "../../src";
 
@@ -16,24 +17,26 @@ async function main() {
 	const chainId = parseInt(`${process.env.CHAIN_ID || Chain.AMOY}`) as Chain;
 	const host = process.env.CLOB_API_URL || "http://localhost:8080";
 
-	const wallet1 = new ethers.Wallet(`${process.env.PK}`);
+	const account1 = privateKeyToAccount(`${process.env.PK}` as `0x${string}`);
+	const walletClient1 = createWalletClient({ account: account1, transport: http() });
 	const creds1: ApiKeyCreds = {
 		key: `${process.env.CLOB_API_KEY}`,
 		secret: `${process.env.CLOB_SECRET}`,
 		passphrase: `${process.env.CLOB_PASS_PHRASE}`,
 	};
-	const client1 = new ClobClient({ host, chain: chainId, signer: wallet1, creds: creds1 });
+	const client1 = new ClobClient({ host, chain: chainId, signer: walletClient1, creds: creds1 });
 
-	const wallet2 = new ethers.Wallet(`${process.env.PK2}`);
+	const account2 = privateKeyToAccount(`${process.env.PK2}` as `0x${string}`);
+	const walletClient2 = createWalletClient({ account: account2, transport: http() });
 	const creds2: ApiKeyCreds = {
 		key: `${process.env.CLOB_API_KEY_2}`,
 		secret: `${process.env.CLOB_SECRET_2}`,
 		passphrase: `${process.env.CLOB_PASS_PHRASE_2}`,
 	};
-	const client2 = new ClobClient({ host, chain: chainId, signer: wallet2, creds: creds2 });
+	const client2 = new ClobClient({ host, chain: chainId, signer: walletClient2, creds: creds2 });
 
-	console.log(`Wallet 1: ${await wallet1.getAddress()}`);
-	console.log(`Wallet 2: ${await wallet2.getAddress()}`);
+	console.log(`Wallet 1: ${account1.address}`);
+	console.log(`Wallet 2: ${account2.address}`);
 
 	const yes_bid = await client1.createOrder({
 		tokenID: YES,

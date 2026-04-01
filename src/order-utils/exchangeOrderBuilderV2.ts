@@ -121,7 +121,13 @@ export class ExchangeOrderBuilderV2 {
 	 */
 	buildOrderSignature(typedData: EIP712TypedData): Promise<OrderSignature> {
 		delete typedData.types.EIP712Domain;
-		return signTypedDataWithSigner({ signer: this.signer, domain: typedData.domain, types: typedData.types, value: typedData.message, primaryType: typedData.primaryType });
+		return signTypedDataWithSigner({
+			signer: this.signer,
+			domain: typedData.domain,
+			types: typedData.types,
+			value: typedData.message,
+			primaryType: typedData.primaryType,
+		});
 	}
 
 	/**

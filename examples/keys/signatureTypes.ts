@@ -1,15 +1,17 @@
 import { resolve } from "node:path";
 import { config as dotenvConfig } from "dotenv";
-import { ethers } from "ethers";
+import { createWalletClient, http } from "viem";
+import { privateKeyToAccount } from "viem/accounts";
 
 import { type ApiKeyCreds, Chain, ClobClient, SignatureTypeV2 } from "../../src";
 
 dotenvConfig({ path: resolve(__dirname, "../../.env") });
 
 async function main() {
-	const wallet = new ethers.Wallet(`${process.env.PK}`);
+	const account = privateKeyToAccount(`${process.env.PK}` as `0x${string}`);
+	const walletClient = createWalletClient({ account, transport: http() });
 	const chainId = parseInt(`${process.env.CHAIN_ID || Chain.AMOY}`) as Chain;
-	console.log(`Address: ${await wallet.getAddress()}, chainId: ${chainId}`);
+	console.log(`Address: ${account.address}, chainId: ${chainId}`);
 
 	const host = process.env.CLOB_API_URL || "http://localhost:8080";
 	const creds: ApiKeyCreds = {
@@ -19,14 +21,14 @@ async function main() {
 	};
 
 	// Client used with an EOA: Signature type 0
-	const clobClient = new ClobClient({ host, chain: chainId, signer: wallet, creds });
+	const clobClient = new ClobClient({ host, chain: chainId, signer: walletClient, creds });
 
 	// Client used with a Polymarket Proxy Wallet: Signature type 1
 	const proxyWalletAddress = "0x...";
 	const polyProxyClient = new ClobClient({
 		host,
 		chain: chainId,
-		signer: wallet,
+		signer: walletClient,
 		creds,
 		signatureType: SignatureTypeV2.POLY_PROXY,
 		funderAddress: proxyWalletAddress,
@@ -37,7 +39,7 @@ async function main() {
 	const polyGnosisSafeClient = new ClobClient({
 		host,
 		chain: chainId,
-		signer: wallet,
+		signer: walletClient,
 		creds,
 		signatureType: SignatureTypeV2.POLY_GNOSIS_SAFE,
 		funderAddress: gnosisSafeAddress,

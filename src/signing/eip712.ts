@@ -38,6 +38,12 @@ export const buildClobEip712Signature = async (
 		nonce,
 		message: MSG_TO_SIGN,
 	};
-	const sig = await signTypedDataWithSigner({ signer, domain, types, value, primaryType: "ClobAuth" });
+	const sig = await signTypedDataWithSigner({
+		signer,
+		domain,
+		types,
+		value,
+		primaryType: "ClobAuth",
+	});
 	return sig;
 };

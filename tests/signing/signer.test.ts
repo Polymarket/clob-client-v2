@@ -34,7 +34,13 @@ describe("signer adapter", () => {
 			const domain = { name: "Test", version: "1", chainId: 80002 };
 			const types = { Foo: [{ name: "bar", type: "string" }] };
 			const message = { bar: "hello" };
-			const sig = await signTypedDataWithSigner({ signer: wallet, domain, types, value: message, primaryType: "Foo" });
+			const sig = await signTypedDataWithSigner({
+				signer: wallet,
+				domain,
+				types,
+				value: message,
+				primaryType: "Foo",
+			});
 			expect(sig).toMatch(/^0x[0-9a-f]{130}$/i);
 		});
 	});
@@ -59,7 +65,13 @@ describe("signer adapter", () => {
 			const domain = { name: "Test", version: "1", chainId: 80002 };
 			const types = { Foo: [{ name: "bar", type: "string" }] };
 			const message = { bar: "hello" };
-			const sig = await signTypedDataWithSigner({ signer: walletClient, domain, types, value: message, primaryType: "Foo" });
+			const sig = await signTypedDataWithSigner({
+				signer: walletClient,
+				domain,
+				types,
+				value: message,
+				primaryType: "Foo",
+			});
 			expect(sig).toMatch(/^0x[0-9a-f]{130}$/i);
 		});
 

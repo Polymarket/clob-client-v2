@@ -1,6 +1,8 @@
 import { resolve } from "node:path";
 import { config as dotenvConfig } from "dotenv";
-import { type BigNumber, constants, ethers } from "ethers";
+import { createPublicClient, createWalletClient, http, maxUint256 } from "viem";
+import { privateKeyToAccount } from "viem/accounts";
+import { polygon, polygonAmoy } from "viem/chains";
 
 import { Chain } from "../../src";
 import { getContractConfig } from "../../src/config";
@@ -9,31 +11,17 @@ import { usdcAbi } from "../abi/usdcAbi";
 
 dotenvConfig({ path: resolve(__dirname, "../../.env") });
 
-export function getWallet(mainnetQ: boolean): ethers.Wallet {
-	const pk = process.env.PK as string;
-	const rpcToken: string = process.env.RPC_TOKEN as string;
-	let rpcUrl = "";
-	if (mainnetQ) {
-		rpcUrl = `https://polygon-mainnet.g.alchemy.com/v2/${rpcToken}`;
-	} else {
-		rpcUrl = `https://polygon-amoy.g.alchemy.com/v2/${rpcToken}`;
-	}
-	const provider = new ethers.providers.JsonRpcProvider(rpcUrl);
-	let wallet = new ethers.Wallet(pk);
-	wallet = wallet.connect(provider);
-	return wallet;
-}
-
-export function getUsdcContract(mainnetQ: boolean, wallet: ethers.Wallet): ethers.Contract {
-	const chainId = mainnetQ ? 137 : 80002;
-	const contractConfig = getContractConfig(chainId);
-	return new ethers.Contract(contractConfig.collateral, usdcAbi, wallet);
-}
-
-export function getCtfContract(mainnetQ: boolean, wallet: ethers.Wallet): ethers.Contract {
-	const chainId = mainnetQ ? 137 : 80002;
-	const contractConfig = getContractConfig(chainId);
-	return new ethers.Contract(contractConfig.conditionalTokens, ctfAbi, wallet);
+function getClients(mainnetQ: boolean) {
+	const pk = process.env.PK as `0x${string}`;
+	const rpcToken = process.env.RPC_TOKEN as string;
+	const rpcUrl = mainnetQ
+		? `https://polygon-mainnet.g.alchemy.com/v2/${rpcToken}`
+		: `https://polygon-amoy.g.alchemy.com/v2/${rpcToken}`;
+	const chain = mainnetQ ? polygon : polygonAmoy;
+	const account = privateKeyToAccount(pk);
+	const walletClient = createWalletClient({ account, chain, transport: http(rpcUrl) });
+	const publicClient = createPublicClient({ chain, transport: http(rpcUrl) });
+	return { account, walletClient, publicClient };
 }
 
 async function main() {
@@ -41,50 +29,69 @@ async function main() {
 	// SET MAINNET OR AMOY HERE
 	const isMainnet = false;
 	// --------------------------
-	const wallet = getWallet(isMainnet);
+	const { account, walletClient, publicClient } = getClients(isMainnet);
 	const chainId = parseInt(`${process.env.CHAIN_ID || Chain.AMOY}`) as Chain;
-	console.log(`Address: ${await wallet.getAddress()}, chainId: ${chainId}`);
+	console.log(`Address: ${account.address}, chainId: ${chainId}`);
 
 	const contractConfig = getContractConfig(chainId);
-	const usdc = getUsdcContract(isMainnet, wallet);
-	const ctf = getCtfContract(isMainnet, wallet);
 
-	console.log(`usdc: ${usdc.address}`);
-	console.log(`ctf: ${ctf.address}`);
+	console.log(`usdc: ${contractConfig.collateral}`);
+	console.log(`ctf: ${contractConfig.conditionalTokens}`);
 
-	const usdcAllowanceCtf = (await usdc.allowance(wallet.address, ctf.address)) as BigNumber;
+	const usdcAllowanceCtf = await publicClient.readContract({
+		address: contractConfig.collateral as `0x${string}`,
+		abi: usdcAbi,
+		functionName: "allowance",
+		args: [account.address, contractConfig.conditionalTokens as `0x${string}`],
+	});
 	console.log(`usdcAllowanceCtf: ${usdcAllowanceCtf}`);
-	const usdcAllowanceExchange = (await usdc.allowance(
-		wallet.address,
-		contractConfig.exchange,
-	)) as BigNumber;
-	const conditionalTokensAllowanceExchange = (await ctf.isApprovedForAll(
-		wallet.address,
-		contractConfig.exchange,
-	)) as BigNumber;
 
-	let txn: ethers.ContractTransaction | undefined;
+	const usdcAllowanceExchange = await publicClient.readContract({
+		address: contractConfig.collateral as `0x${string}`,
+		abi: usdcAbi,
+		functionName: "allowance",
+		args: [account.address, contractConfig.exchange as `0x${string}`],
+	});
 
-	if (!usdcAllowanceCtf.gt(constants.Zero)) {
-		txn = await usdc.approve(contractConfig.conditionalTokens, constants.MaxUint256, {
-			gasPrice: 100_000_000_000,
-			gasLimit: 200_000,
+	const conditionalTokensAllowanceExchange = await publicClient.readContract({
+		address: contractConfig.conditionalTokens as `0x${string}`,
+		abi: ctfAbi,
+		functionName: "isApprovedForAll",
+		args: [account.address, contractConfig.exchange as `0x${string}`],
+	});
+
+	if (!(usdcAllowanceCtf > 0n)) {
+		const hash = await walletClient.writeContract({
+			address: contractConfig.collateral as `0x${string}`,
+			abi: usdcAbi,
+			functionName: "approve",
+			args: [contractConfig.conditionalTokens as `0x${string}`, maxUint256],
+			gasPrice: BigInt(100_000_000_000),
+			gas: BigInt(200_000),
 		});
-		console.log(`Setting USDC allowance for CTF: ${txn.hash}`);
+		console.log(`Setting USDC allowance for CTF: ${hash}`);
 	}
-	if (!usdcAllowanceExchange.gt(constants.Zero)) {
-		txn = await usdc.approve(contractConfig.exchange, constants.MaxUint256, {
-			gasPrice: 100_000_000_000,
-			gasLimit: 200_000,
+	if (!(usdcAllowanceExchange > 0n)) {
+		const hash = await walletClient.writeContract({
+			address: contractConfig.collateral as `0x${string}`,
+			abi: usdcAbi,
+			functionName: "approve",
+			args: [contractConfig.exchange as `0x${string}`, maxUint256],
+			gasPrice: BigInt(100_000_000_000),
+			gas: BigInt(200_000),
 		});
-		console.log(`Setting USDC allowance for Exchange: ${txn.hash}`);
+		console.log(`Setting USDC allowance for Exchange: ${hash}`);
 	}
 	if (!conditionalTokensAllowanceExchange) {
-		txn = await ctf.setApprovalForAll(contractConfig.exchange, true, {
-			gasPrice: 100_000_000_000,
-			gasLimit: 200_000,
+		const hash = await walletClient.writeContract({
+			address: contractConfig.conditionalTokens as `0x${string}`,
+			abi: ctfAbi,
+			functionName: "setApprovalForAll",
+			args: [contractConfig.exchange as `0x${string}`, true],
+			gasPrice: BigInt(100_000_000_000),
+			gas: BigInt(200_000),
 		});
-		console.log(`Setting Conditional Tokens allowance for Exchange: ${txn.hash}`);
+		console.log(`Setting Conditional Tokens allowance for Exchange: ${hash}`);
 	}
 	console.log("Allowances set");
 }
