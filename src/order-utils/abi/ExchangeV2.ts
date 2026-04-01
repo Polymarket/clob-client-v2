@@ -23,6 +23,11 @@ const exchangeV2Abi = [
 						internalType: "address",
 					},
 					{
+						name: "ctfCollateral",
+						type: "address",
+						internalType: "address",
+					},
+					{
 						name: "outcomeTokenFactory",
 						type: "address",
 						internalType: "address",
@@ -49,10 +54,23 @@ const exchangeV2Abi = [
 	},
 	{
 		type: "function",
+		name: "PARENT_COLLECTION_ID",
+		inputs: [],
+		outputs: [
+			{
+				name: "",
+				type: "bytes32",
+				internalType: "bytes32",
+			},
+		],
+		stateMutability: "view",
+	},
+	{
+		type: "function",
 		name: "addAdmin",
 		inputs: [
 			{
-				name: "admin_",
+				name: "_admin",
 				type: "address",
 				internalType: "address",
 			},
@@ -65,7 +83,7 @@ const exchangeV2Abi = [
 		name: "addOperator",
 		inputs: [
 			{
-				name: "operator_",
+				name: "_operator",
 				type: "address",
 				internalType: "address",
 			},
@@ -132,6 +150,19 @@ const exchangeV2Abi = [
 	{
 		type: "function",
 		name: "getCtf",
+		inputs: [],
+		outputs: [
+			{
+				name: "",
+				type: "address",
+				internalType: "address",
+			},
+		],
+		stateMutability: "view",
+	},
+	{
+		type: "function",
+		name: "getCtfCollateral",
 		inputs: [],
 		outputs: [
 			{
@@ -214,38 +245,6 @@ const exchangeV2Abi = [
 	},
 	{
 		type: "function",
-		name: "getPolyProxyFactoryImplementation",
-		inputs: [],
-		outputs: [
-			{
-				name: "",
-				type: "address",
-				internalType: "address",
-			},
-		],
-		stateMutability: "view",
-	},
-	{
-		type: "function",
-		name: "getPolyProxyWalletAddress",
-		inputs: [
-			{
-				name: "_addr",
-				type: "address",
-				internalType: "address",
-			},
-		],
-		outputs: [
-			{
-				name: "",
-				type: "address",
-				internalType: "address",
-			},
-		],
-		stateMutability: "view",
-	},
-	{
-		type: "function",
 		name: "getProxyFactory",
 		inputs: [],
 		outputs: [
@@ -259,7 +258,20 @@ const exchangeV2Abi = [
 	},
 	{
 		type: "function",
-		name: "getSafeAddress",
+		name: "getProxyImplementation",
+		inputs: [],
+		outputs: [
+			{
+				name: "",
+				type: "address",
+				internalType: "address",
+			},
+		],
+		stateMutability: "view",
+	},
+	{
+		type: "function",
+		name: "getProxyWalletAddress",
 		inputs: [
 			{
 				name: "_addr",
@@ -291,8 +303,27 @@ const exchangeV2Abi = [
 	},
 	{
 		type: "function",
-		name: "getSafeFactoryImplementation",
+		name: "getSafeImplementation",
 		inputs: [],
+		outputs: [
+			{
+				name: "",
+				type: "address",
+				internalType: "address",
+			},
+		],
+		stateMutability: "view",
+	},
+	{
+		type: "function",
+		name: "getSafeWalletAddress",
+		inputs: [
+			{
+				name: "_addr",
+				type: "address",
+				internalType: "address",
+			},
+		],
 		outputs: [
 			{
 				name: "",
@@ -385,10 +416,23 @@ const exchangeV2Abi = [
 	},
 	{
 		type: "function",
+		name: "invalidatePreapprovedOrder",
+		inputs: [
+			{
+				name: "orderHash",
+				type: "bytes32",
+				internalType: "bytes32",
+			},
+		],
+		outputs: [],
+		stateMutability: "nonpayable",
+	},
+	{
+		type: "function",
 		name: "isAdmin",
 		inputs: [
 			{
-				name: "usr",
+				name: "_usr",
 				type: "address",
 				internalType: "address",
 			},
@@ -407,7 +451,7 @@ const exchangeV2Abi = [
 		name: "isOperator",
 		inputs: [
 			{
-				name: "usr",
+				name: "_usr",
 				type: "address",
 				internalType: "address",
 			},
@@ -711,19 +755,6 @@ const exchangeV2Abi = [
 	},
 	{
 		type: "function",
-		name: "parentCollectionId",
-		inputs: [],
-		outputs: [
-			{
-				name: "",
-				type: "bytes32",
-				internalType: "bytes32",
-			},
-		],
-		stateMutability: "view",
-	},
-	{
-		type: "function",
 		name: "pauseTrading",
 		inputs: [],
 		outputs: [],
@@ -751,10 +782,85 @@ const exchangeV2Abi = [
 	},
 	{
 		type: "function",
+		name: "preapproveOrder",
+		inputs: [
+			{
+				name: "order",
+				type: "tuple",
+				internalType: "struct Order",
+				components: [
+					{
+						name: "salt",
+						type: "uint256",
+						internalType: "uint256",
+					},
+					{
+						name: "maker",
+						type: "address",
+						internalType: "address",
+					},
+					{
+						name: "signer",
+						type: "address",
+						internalType: "address",
+					},
+					{
+						name: "tokenId",
+						type: "uint256",
+						internalType: "uint256",
+					},
+					{
+						name: "makerAmount",
+						type: "uint256",
+						internalType: "uint256",
+					},
+					{
+						name: "takerAmount",
+						type: "uint256",
+						internalType: "uint256",
+					},
+					{
+						name: "side",
+						type: "uint8",
+						internalType: "enum Side",
+					},
+					{
+						name: "signatureType",
+						type: "uint8",
+						internalType: "enum SignatureType",
+					},
+					{
+						name: "timestamp",
+						type: "uint256",
+						internalType: "uint256",
+					},
+					{
+						name: "metadata",
+						type: "bytes32",
+						internalType: "bytes32",
+					},
+					{
+						name: "builder",
+						type: "bytes32",
+						internalType: "bytes32",
+					},
+					{
+						name: "signature",
+						type: "bytes",
+						internalType: "bytes",
+					},
+				],
+			},
+		],
+		outputs: [],
+		stateMutability: "nonpayable",
+	},
+	{
+		type: "function",
 		name: "removeAdmin",
 		inputs: [
 			{
-				name: "admin",
+				name: "_admin",
 				type: "address",
 				internalType: "address",
 			},
@@ -767,18 +873,11 @@ const exchangeV2Abi = [
 		name: "removeOperator",
 		inputs: [
 			{
-				name: "operator",
+				name: "_operator",
 				type: "address",
 				internalType: "address",
 			},
 		],
-		outputs: [],
-		stateMutability: "nonpayable",
-	},
-	{
-		type: "function",
-		name: "renounceAdminRole",
-		inputs: [],
 		outputs: [],
 		stateMutability: "nonpayable",
 	},
@@ -827,6 +926,25 @@ const exchangeV2Abi = [
 		],
 		outputs: [],
 		stateMutability: "nonpayable",
+	},
+	{
+		type: "function",
+		name: "supportsInterface",
+		inputs: [
+			{
+				name: "interfaceId",
+				type: "bytes4",
+				internalType: "bytes4",
+			},
+		],
+		outputs: [
+			{
+				name: "",
+				type: "bool",
+				internalType: "bool",
+			},
+		],
+		stateMutability: "pure",
 	},
 	{
 		type: "function",
@@ -1199,6 +1317,32 @@ const exchangeV2Abi = [
 	},
 	{
 		type: "event",
+		name: "OrderPreapprovalInvalidated",
+		inputs: [
+			{
+				name: "orderHash",
+				type: "bytes32",
+				indexed: true,
+				internalType: "bytes32",
+			},
+		],
+		anonymous: false,
+	},
+	{
+		type: "event",
+		name: "OrderPreapproved",
+		inputs: [
+			{
+				name: "orderHash",
+				type: "bytes32",
+				indexed: true,
+				internalType: "bytes32",
+			},
+		],
+		anonymous: false,
+	},
+	{
+		type: "event",
 		name: "OrdersMatched",
 		inputs: [
 			{
@@ -1357,6 +1501,26 @@ const exchangeV2Abi = [
 	},
 	{
 		type: "error",
+		name: "AlreadyAdmin",
+		inputs: [],
+	},
+	{
+		type: "error",
+		name: "AlreadyOperator",
+		inputs: [],
+	},
+	{
+		type: "error",
+		name: "ComplementaryFillExceedsTakerFill",
+		inputs: [],
+	},
+	{
+		type: "error",
+		name: "ExceedsMaxPauseInterval",
+		inputs: [],
+	},
+	{
+		type: "error",
 		name: "FeeExceedsMaxRate",
 		inputs: [],
 	},
@@ -1372,6 +1536,11 @@ const exchangeV2Abi = [
 	},
 	{
 		type: "error",
+		name: "LastAdmin",
+		inputs: [],
+	},
+	{
+		type: "error",
 		name: "MakingGtRemaining",
 		inputs: [],
 	},
@@ -1382,7 +1551,17 @@ const exchangeV2Abi = [
 	},
 	{
 		type: "error",
+		name: "MismatchedArrayLengths",
+		inputs: [],
+	},
+	{
+		type: "error",
 		name: "MismatchedTokenIds",
+		inputs: [],
+	},
+	{
+		type: "error",
+		name: "NoMakerOrders",
 		inputs: [],
 	},
 	{
@@ -1407,11 +1586,6 @@ const exchangeV2Abi = [
 	},
 	{
 		type: "error",
-		name: "OrderExpired",
-		inputs: [],
-	},
-	{
-		type: "error",
 		name: "Paused",
 		inputs: [],
 	},
@@ -1422,7 +1596,17 @@ const exchangeV2Abi = [
 	},
 	{
 		type: "error",
+		name: "UserAlreadyPaused",
+		inputs: [],
+	},
+	{
+		type: "error",
 		name: "UserIsPaused",
+		inputs: [],
+	},
+	{
+		type: "error",
+		name: "ZeroMakerAmount",
 		inputs: [],
 	},
 ] as const;
