@@ -181,7 +181,7 @@ describe("fee calculations", () => {
 				);
 				// balance === totalCost triggers adjustment
 				const platformFeeRate = feeRate * (price * (1 - price)) ** feeExponent;
-				const expected = amount / (1 + platformFeeRate / price);
+				const expected = totalCost / (1 + platformFeeRate / price);
 				expect(result).toBeCloseTo(expected, 10);
 			});
 		});
