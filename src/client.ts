@@ -30,7 +30,6 @@ import {
 	GET_LIQUIDITY_REWARD_PERCENTAGES,
 	GET_MARKET,
 	GET_MARKET_BY_TOKEN,
-	GET_MARKET_TRADES_EVENTS,
 	GET_MARKETS,
 	GET_MIDPOINT,
 	GET_MIDPOINTS,
@@ -55,6 +54,7 @@ import {
 	GET_TOTAL_EARNINGS_FOR_USER_FOR_DAY,
 	GET_TRADES,
 	IS_ORDER_SCORING,
+	OK,
 	POST_ORDER,
 	POST_ORDERS,
 	TIME,
@@ -102,7 +102,6 @@ import type {
 	MarketDetails,
 	MarketPrice,
 	MarketReward,
-	MarketTradeEvent,
 	NegRisk,
 	NewOrderV1,
 	NewOrderV2,
@@ -149,7 +148,7 @@ export function adjustBuyAmountForFees(
 	const platformFee = (amount / price) * platformFeeRate;
 	const totalCost = amount + platformFee + amount * builderTakerFeeRate;
 	if (userUSDCBalance <= totalCost) {
-		return amount / (1 + platformFeeRate / price + builderTakerFeeRate);
+		return userUSDCBalance / (1 + platformFeeRate / price + builderTakerFeeRate);
 	}
 	return amount;
 }
@@ -240,7 +239,7 @@ export class ClobClient {
 
 	// Public endpoints
 	public async getOk(): Promise<any> {
-		return this.get(`${this.host}/`);
+		return this.get(`${this.host}${OK}`);
 	}
 
 	public async getVersion(): Promise<number> {
@@ -298,7 +297,7 @@ export class ClobClient {
 
 			this.tokenConditionMap[tokenId] = conditionID;
 			this.tickSizes[tokenId] = result.mts.toString() as TickSize;
-			this.negRisk[tokenId] = result.nr;
+			this.negRisk[tokenId] = result.nr ?? false;
 
 			this.feeInfos[tokenId] = {
 				rate: result.fd?.r ?? 0,
@@ -442,6 +441,9 @@ export class ClobClient {
 	}
 
 	public async getPricesHistory(params: PriceHistoryFilterParams): Promise<MarketPrice[]> {
+		if (!params.interval && (params.startTs === undefined || params.endTs === undefined)) {
+			throw new Error("getPricesHistory requires either interval or both startTs and endTs");
+		}
 		return this.get(`${this.host}${GET_PRICES_HISTORY}`, {
 			params,
 		});
@@ -1299,10 +1301,6 @@ export class ClobClient {
 			results = [...results, ...response.data];
 		}
 		return results;
-	}
-
-	public async getMarketTradesEvents(conditionID: string): Promise<MarketTradeEvent[]> {
-		return this.get(`${this.host}${GET_MARKET_TRADES_EVENTS}${conditionID}`);
 	}
 
 	public async calculateMarketPrice(
