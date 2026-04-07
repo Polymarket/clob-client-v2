@@ -84,6 +84,26 @@ export interface OpenOrder {
 
 export type OpenOrdersResponse = OpenOrder[];
 
+export type PreMigrationOrdersResponse = PreMigrationOrder[];
+
+export interface PreMigrationOrder {
+	id: string;
+	status: string;
+	owner: string;
+	maker_address: string;
+	market: string;
+	asset_id: string;
+	side: string;
+	original_size: string;
+	size_matched: string;
+	price: string;
+	outcome: string;
+	expiration: string;
+	order_type: string;
+	associate_trades: string[];
+	created_at: number;
+}
+
 export interface MakerOrder {
 	order_id: string;
 	owner: string;

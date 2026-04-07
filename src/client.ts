@@ -39,6 +39,7 @@ import {
 	GET_ORDER,
 	GET_ORDER_BOOK,
 	GET_ORDER_BOOKS,
+	GET_PRE_MIGRATION_ORDERS,
 	GET_PRICE,
 	GET_PRICES,
 	GET_PRICES_HISTORY,
@@ -118,6 +119,8 @@ import type {
 	OrdersScoringParams,
 	PaginationPayload,
 	PostOrdersArgs,
+	PreMigrationOrder,
+	PreMigrationOrdersResponse,
 	PriceHistoryFilterParams,
 	RewardsPercentages,
 	TickSize,
@@ -953,6 +956,38 @@ export class ClobClient {
 				...params,
 				next_cursor,
 			};
+			const response = await this.get(`${this.host}${endpoint}`, {
+				headers,
+				params: _params,
+			});
+			next_cursor = response.next_cursor;
+			results = [...results, ...response.data];
+		}
+		return results;
+	}
+
+	public async getPreMigrationOrders(
+		only_first_page = false,
+		next_cursor?: string,
+	): Promise<PreMigrationOrdersResponse> {
+		this.canL2Auth();
+		const endpoint = GET_PRE_MIGRATION_ORDERS;
+		const l2HeaderArgs = {
+			method: GET,
+			requestPath: endpoint,
+		};
+
+		const headers = await createL2Headers(
+			this.signer as ClobSigner,
+			this.creds as ApiKeyCreds,
+			l2HeaderArgs,
+			this.useServerTime ? await this.getServerTime() : undefined,
+		);
+
+		let results: PreMigrationOrder[] = [];
+		next_cursor = next_cursor || INITIAL_CURSOR;
+		while (next_cursor !== END_CURSOR && (next_cursor === INITIAL_CURSOR || !only_first_page)) {
+			const _params: any = { next_cursor };
 			const response = await this.get(`${this.host}${endpoint}`, {
 				headers,
 				params: _params,

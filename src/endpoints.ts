@@ -42,6 +42,7 @@ export const GET_ORDER = "/data/order/";
 export const CANCEL_ALL = "/cancel-all";
 export const CANCEL_MARKET_ORDERS = "/cancel-market-orders";
 export const GET_OPEN_ORDERS = "/data/orders";
+export const GET_PRE_MIGRATION_ORDERS = "/data/pre-migration-orders";
 export const GET_TRADES = "/data/trades";
 export const IS_ORDER_SCORING = "/order-scoring";
 export const ARE_ORDERS_SCORING = "/orders-scoring";
