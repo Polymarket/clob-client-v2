@@ -16,7 +16,7 @@ import { ApiKeyCreds, Chain, ClobClient, OrderType, Side } from "@polymarket/clo
 import { createWalletClient, http } from "viem";
 import { privateKeyToAccount } from "viem/accounts";
 
-const host = "https://clob-v2.polymarket.com";
+const host = "<polymarket-clob-host>";
 const chainId = Chain.POLYGON; // or Chain.AMOY for testnet
 
 const account = privateKeyToAccount("0x..."); // your private key
