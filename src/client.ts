@@ -1044,6 +1044,12 @@ export class ClobClient {
 		deferExec = false,
 	): Promise<any> {
 		this.canL2Auth();
+		if (
+			postOnly &&
+			args.some(({ orderType }) => orderType === OrderType.FOK || orderType === OrderType.FAK)
+		) {
+			throw new Error("postOnly is not supported for FOK/FAK orders");
+		}
 		const endpoint = POST_ORDERS;
 		const ordersPayload: (NewOrderV2<any> | NewOrderV1<any>)[] = [];
 		for (const arg of args) {
