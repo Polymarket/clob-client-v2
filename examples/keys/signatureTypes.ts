@@ -44,6 +44,17 @@ async function main() {
 		signatureType: SignatureTypeV2.POLY_GNOSIS_SAFE,
 		funderAddress: gnosisSafeAddress,
 	});
+
+	// Client used with a Polymarket Deposit Wallet: Signature type 3 (POLY_1271)
+	const depositWalletAddress = "0x...";
+	const depositWalletClient = new ClobClient({
+		host,
+		chain: chainId,
+		signer: walletClient,
+		creds,
+		signatureType: SignatureTypeV2.POLY_1271,
+		funderAddress: depositWalletAddress,
+	});
 }
 
 main();
