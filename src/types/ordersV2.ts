@@ -6,8 +6,8 @@ export function orderToJsonV2<T extends OrderType>(
 	order: SignedOrderV2,
 	owner: string,
 	orderType: T,
-	deferExec = false,
 	postOnly = false,
+	deferExec = false,
 ): NewOrderV2<T> {
 	return {
 		deferExec,

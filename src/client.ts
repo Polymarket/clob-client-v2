@@ -902,14 +902,14 @@ export class ClobClient {
 		userOrder: UserOrderV2,
 		options?: Partial<CreateOrderOptions>,
 		orderType: T = OrderType.GTC as T,
-		deferExec = false,
 		postOnly = false,
+		deferExec = false,
 	): Promise<any> {
 		let postOrderResponse: any;
 
 		await this._retryOnVersionUpdate(async () => {
 			const order = await this.createOrder(userOrder, options);
-			postOrderResponse = await this.postOrder(order, orderType, deferExec, postOnly);
+			postOrderResponse = await this.postOrder(order, orderType, postOnly, deferExec);
 		});
 
 		return postOrderResponse;
@@ -919,14 +919,14 @@ export class ClobClient {
 		userMarketOrder: UserMarketOrderV2,
 		options?: Partial<CreateOrderOptions>,
 		orderType: T = OrderType.FOK as T,
-		deferExec = false,
 		postOnly = false,
+		deferExec = false,
 	): Promise<any> {
 		let postOrderMarketResponse: any;
 
 		await this._retryOnVersionUpdate(async () => {
 			const order = await this.createMarketOrder(userMarketOrder, options);
-			postOrderMarketResponse = await this.postOrder(order, orderType, deferExec, postOnly);
+			postOrderMarketResponse = await this.postOrder(order, orderType, postOnly, deferExec);
 		});
 
 		return postOrderMarketResponse;
@@ -1003,15 +1003,15 @@ export class ClobClient {
 	public async postOrder<T extends OrderType = OrderType.GTC>(
 		order: SignedOrder,
 		orderType: T = OrderType.GTC as T,
-		deferExec = false,
 		postOnly = false,
+		deferExec = false,
 	): Promise<any> {
 		this.canL2Auth();
 		const endpoint = POST_ORDER;
 
 		const orderPayload = isV2Order(order)
-			? orderToJsonV2(order, this.creds?.key || "", orderType, deferExec, postOnly)
-			: orderToJsonV1(order, this.creds?.key || "", orderType, deferExec, postOnly);
+			? orderToJsonV2(order, this.creds?.key || "", orderType, postOnly, deferExec)
+			: orderToJsonV1(order, this.creds?.key || "", orderType, postOnly, deferExec);
 
 		const l2HeaderArgs = {
 			method: POST,
@@ -1038,8 +1038,8 @@ export class ClobClient {
 
 	public async postOrders(
 		args: PostOrdersArgs[],
-		deferExec = false,
 		postOnly = false,
+		deferExec = false,
 	): Promise<any> {
 		this.canL2Auth();
 		const endpoint = POST_ORDERS;
@@ -1048,8 +1048,8 @@ export class ClobClient {
 			const { order, orderType } = arg;
 			// Version-aware dispatch
 			const orderPayload = isV2Order(order)
-				? orderToJsonV2(order, this.creds?.key || "", orderType, deferExec, postOnly)
-				: orderToJsonV1(order, this.creds?.key || "", orderType, deferExec, postOnly);
+				? orderToJsonV2(order, this.creds?.key || "", orderType, postOnly, deferExec)
+				: orderToJsonV1(order, this.creds?.key || "", orderType, postOnly, deferExec);
 			ordersPayload.push(orderPayload);
 		}
 
