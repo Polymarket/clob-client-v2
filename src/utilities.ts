@@ -1,4 +1,5 @@
 import { createHash } from "node:crypto";
+import { Big } from "ts-big-lib";
 import type { OrderBookSummary, TickSize } from "./types/index.js";
 
 export const roundNormal = (num: number, decimals: number): number => {
@@ -48,9 +49,11 @@ export const generateOrderBookSummaryHash = (orderbook: OrderBookSummary): strin
 };
 
 export const isTickSizeSmaller = (a: TickSize, b: TickSize): boolean => {
-	return parseFloat(a) < parseFloat(b);
+	return Big(a).lt(Big(b));
 };
 
 export const priceValid = (price: number, tickSize: TickSize): boolean => {
-	return price >= parseFloat(tickSize) && price <= 1 - parseFloat(tickSize);
+	const p = Big(String(price));
+	const tick = Big(tickSize);
+	return p.gte(tick) && p.lte(Big("1").minus(tick));
 };
