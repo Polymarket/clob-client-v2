@@ -919,14 +919,13 @@ export class ClobClient {
 		userMarketOrder: UserMarketOrderV2,
 		options?: Partial<CreateOrderOptions>,
 		orderType: T = OrderType.FOK as T,
-		postOnly = false,
 		deferExec = false,
 	): Promise<any> {
 		let postOrderMarketResponse: any;
 
 		await this._retryOnVersionUpdate(async () => {
 			const order = await this.createMarketOrder(userMarketOrder, options);
-			postOrderMarketResponse = await this.postOrder(order, orderType, postOnly, deferExec);
+			postOrderMarketResponse = await this.postOrder(order, orderType, false, deferExec);
 		});
 
 		return postOrderMarketResponse;
@@ -1007,6 +1006,9 @@ export class ClobClient {
 		deferExec = false,
 	): Promise<any> {
 		this.canL2Auth();
+		if (postOnly && (orderType === OrderType.FOK || orderType === OrderType.FAK)) {
+			throw new Error("postOnly is not supported for FOK/FAK orders");
+		}
 		const endpoint = POST_ORDER;
 
 		const orderPayload = isV2Order(order)
