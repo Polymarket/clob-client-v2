@@ -903,12 +903,13 @@ export class ClobClient {
 		options?: Partial<CreateOrderOptions>,
 		orderType: T = OrderType.GTC as T,
 		deferExec = false,
+		postOnly = false,
 	): Promise<any> {
 		let postOrderResponse: any;
 
 		await this._retryOnVersionUpdate(async () => {
 			const order = await this.createOrder(userOrder, options);
-			postOrderResponse = await this.postOrder(order, orderType, deferExec);
+			postOrderResponse = await this.postOrder(order, orderType, deferExec, postOnly);
 		});
 
 		return postOrderResponse;
@@ -919,12 +920,13 @@ export class ClobClient {
 		options?: Partial<CreateOrderOptions>,
 		orderType: T = OrderType.FOK as T,
 		deferExec = false,
+		postOnly = false,
 	): Promise<any> {
 		let postOrderMarketResponse: any;
 
 		await this._retryOnVersionUpdate(async () => {
 			const order = await this.createMarketOrder(userMarketOrder, options);
-			postOrderMarketResponse = await this.postOrder(order, orderType, deferExec);
+			postOrderMarketResponse = await this.postOrder(order, orderType, deferExec, postOnly);
 		});
 
 		return postOrderMarketResponse;
@@ -1002,13 +1004,14 @@ export class ClobClient {
 		order: SignedOrder,
 		orderType: T = OrderType.GTC as T,
 		deferExec = false,
+		postOnly = false,
 	): Promise<any> {
 		this.canL2Auth();
 		const endpoint = POST_ORDER;
 
 		const orderPayload = isV2Order(order)
-			? orderToJsonV2(order, this.creds?.key || "", orderType, deferExec)
-			: orderToJsonV1(order, this.creds?.key || "", orderType, deferExec);
+			? orderToJsonV2(order, this.creds?.key || "", orderType, deferExec, postOnly)
+			: orderToJsonV1(order, this.creds?.key || "", orderType, deferExec, postOnly);
 
 		const l2HeaderArgs = {
 			method: POST,
@@ -1033,7 +1036,11 @@ export class ClobClient {
 		return res;
 	}
 
-	public async postOrders(args: PostOrdersArgs[], deferExec = false): Promise<any> {
+	public async postOrders(
+		args: PostOrdersArgs[],
+		deferExec = false,
+		postOnly = false,
+	): Promise<any> {
 		this.canL2Auth();
 		const endpoint = POST_ORDERS;
 		const ordersPayload: (NewOrderV2<any> | NewOrderV1<any>)[] = [];
@@ -1041,8 +1048,8 @@ export class ClobClient {
 			const { order, orderType } = arg;
 			// Version-aware dispatch
 			const orderPayload = isV2Order(order)
-				? orderToJsonV2(order, this.creds?.key || "", orderType, deferExec)
-				: orderToJsonV1(order, this.creds?.key || "", orderType, deferExec);
+				? orderToJsonV2(order, this.creds?.key || "", orderType, deferExec, postOnly)
+				: orderToJsonV1(order, this.creds?.key || "", orderType, deferExec, postOnly);
 			ordersPayload.push(orderPayload);
 		}
 
