@@ -415,7 +415,9 @@ export interface BuilderApiKeyResponse {
 }
 
 export type ClobErrorResponseBody = {
-	error: string;
+	error: unknown;
+	status?: number;
+	[key: string]: unknown;
 };
 
 export interface TradesPaginatedResponse {
