@@ -622,8 +622,10 @@ export class ClobClient {
 				headers,
 				params: _params,
 			});
+			const data = this.getPaginatedResponseData<Trade>(response);
+			if (!data) return response;
 			next_cursor = response.next_cursor;
-			results = [...results, ...response.data];
+			results = [...results, ...data];
 		}
 		return results;
 	}
@@ -960,8 +962,10 @@ export class ClobClient {
 				headers,
 				params: _params,
 			});
+			const data = this.getPaginatedResponseData<OpenOrder>(response);
+			if (!data) return response;
 			next_cursor = response.next_cursor;
-			results = [...results, ...response.data];
+			results = [...results, ...data];
 		}
 		return results;
 	}
@@ -992,8 +996,10 @@ export class ClobClient {
 				headers,
 				params: _params,
 			});
+			const data = this.getPaginatedResponseData<PreMigrationOrder>(response);
+			if (!data) return response;
 			next_cursor = response.next_cursor;
-			results = [...results, ...response.data];
+			results = [...results, ...data];
 		}
 		return results;
 	}
@@ -1213,8 +1219,10 @@ export class ClobClient {
 				headers,
 				params,
 			});
+			const data = this.getPaginatedResponseData<UserEarning>(response);
+			if (!data) return response;
 			next_cursor = response.next_cursor;
-			results = [...results, ...response.data];
+			results = [...results, ...data];
 		}
 		return results;
 	}
@@ -1283,8 +1291,10 @@ export class ClobClient {
 				headers,
 				params,
 			});
+			const data = this.getPaginatedResponseData<UserRewardsEarning>(response);
+			if (!data) return response;
 			next_cursor = response.next_cursor;
-			results = [...results, ...response.data];
+			results = [...results, ...data];
 		}
 		return results;
 	}
@@ -1319,8 +1329,10 @@ export class ClobClient {
 			const response = await this.get(`${this.host}${GET_REWARDS_MARKETS_CURRENT}`, {
 				params: { next_cursor },
 			});
+			const data = this.getPaginatedResponseData<MarketReward>(response);
+			if (!data) return response;
 			next_cursor = response.next_cursor;
-			results = [...results, ...response.data];
+			results = [...results, ...data];
 		}
 		return results;
 	}
@@ -1332,8 +1344,10 @@ export class ClobClient {
 			const response = await this.get(`${this.host}${GET_REWARDS_MARKETS}${conditionId}`, {
 				params: { next_cursor },
 			});
+			const data = this.getPaginatedResponseData<MarketReward>(response);
+			if (!data) return response;
 			next_cursor = response.next_cursor;
-			results = [...results, ...response.data];
+			results = [...results, ...data];
 		}
 		return results;
 	}
@@ -1417,6 +1431,10 @@ export class ClobClient {
 
 	private isBuilderOrder(builderCode?: string): boolean {
 		return builderCode !== undefined && builderCode !== bytes32Zero;
+	}
+
+	private getPaginatedResponseData<T>(response: any): T[] | undefined {
+		return Array.isArray(response?.data) ? [...response.data] : undefined;
 	}
 
 	private async _ensureMarketInfoCached(tokenID: string): Promise<void> {
