@@ -1,5 +1,6 @@
 // Health
 export const OK = "/ok";
+export const HEARTBEAT = "/v1/heartbeats";
 
 // Server Time
 export const TIME = "/time";

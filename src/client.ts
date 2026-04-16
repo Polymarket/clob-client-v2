@@ -54,6 +54,7 @@ import {
 	GET_TICK_SIZE,
 	GET_TOTAL_EARNINGS_FOR_USER_FOR_DAY,
 	GET_TRADES,
+	HEARTBEAT,
 	IS_ORDER_SCORING,
 	OK,
 	POST_ORDER,
@@ -243,6 +244,23 @@ export class ClobClient {
 	// Public endpoints
 	public async getOk(): Promise<any> {
 		return this.get(`${this.host}${OK}`);
+	}
+
+	public async postHeartbeat(
+		heartbeatId = "",
+	): Promise<{ heartbeat_id: string; error_msg?: string }> {
+		this.canL2Auth();
+		const body = JSON.stringify({ heartbeat_id: heartbeatId });
+		const headers = await createL2Headers(
+			this.signer as ClobSigner,
+			this.creds as ApiKeyCreds,
+			{ method: POST, requestPath: HEARTBEAT, body },
+			this.useServerTime ? await this.getServerTime() : undefined,
+		);
+		return this.post(`${this.host}${HEARTBEAT}`, {
+			headers,
+			data: { heartbeat_id: heartbeatId },
+		});
 	}
 
 	public async getVersion(): Promise<number> {
