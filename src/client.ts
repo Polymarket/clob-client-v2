@@ -14,7 +14,9 @@ import {
 	CLOSED_ONLY,
 	CREATE_API_KEY,
 	CREATE_BUILDER_API_KEY,
+	CREATE_READONLY_API_KEY,
 	DELETE_API_KEY,
+	DELETE_READONLY_API_KEY,
 	DERIVE_API_KEY,
 	DROP_NOTIFICATIONS,
 	GET_API_KEYS,
@@ -30,6 +32,7 @@ import {
 	GET_LIQUIDITY_REWARD_PERCENTAGES,
 	GET_MARKET,
 	GET_MARKET_BY_TOKEN,
+	GET_MARKET_TRADES_EVENTS,
 	GET_MARKETS,
 	GET_MIDPOINT,
 	GET_MIDPOINTS,
@@ -43,6 +46,7 @@ import {
 	GET_PRICE,
 	GET_PRICES,
 	GET_PRICES_HISTORY,
+	GET_READONLY_API_KEYS,
 	GET_REWARDS_EARNINGS_PERCENTAGES,
 	GET_REWARDS_MARKETS,
 	GET_REWARDS_MARKETS_CURRENT,
@@ -59,6 +63,7 @@ import {
 	OK,
 	POST_ORDER,
 	POST_ORDERS,
+	REVOKE_BUILDER_API_KEY,
 	TIME,
 	UPDATE_BALANCE_ALLOWANCE,
 } from "./endpoints.js";
@@ -104,6 +109,7 @@ import type {
 	MarketDetails,
 	MarketPrice,
 	MarketReward,
+	MarketTradeEvent,
 	NegRisk,
 	NewOrderV1,
 	NewOrderV2,
@@ -123,6 +129,7 @@ import type {
 	PreMigrationOrder,
 	PreMigrationOrdersResponse,
 	PriceHistoryFilterParams,
+	ReadonlyApiKeyResponse,
 	RewardsPercentages,
 	TickSize,
 	TickSizes,
@@ -588,6 +595,65 @@ export class ClobClient {
 		);
 
 		return this.del(`${this.host}${endpoint}`, { headers });
+	}
+
+	public async createReadonlyApiKey(): Promise<ReadonlyApiKeyResponse> {
+		this.canL2Auth();
+
+		const endpoint = CREATE_READONLY_API_KEY;
+		const headerArgs = {
+			method: POST,
+			requestPath: endpoint,
+		};
+
+		const headers = await createL2Headers(
+			this.signer as ClobSigner,
+			this.creds as ApiKeyCreds,
+			headerArgs,
+			this.useServerTime ? await this.getServerTime() : undefined,
+		);
+
+		return this.post(`${this.host}${endpoint}`, { headers });
+	}
+
+	public async getReadonlyApiKeys(): Promise<string[]> {
+		this.canL2Auth();
+
+		const endpoint = GET_READONLY_API_KEYS;
+		const headerArgs = {
+			method: GET,
+			requestPath: endpoint,
+		};
+
+		const headers = await createL2Headers(
+			this.signer as ClobSigner,
+			this.creds as ApiKeyCreds,
+			headerArgs,
+			this.useServerTime ? await this.getServerTime() : undefined,
+		);
+
+		return this.get(`${this.host}${endpoint}`, { headers });
+	}
+
+	public async deleteReadonlyApiKey(key: string): Promise<boolean> {
+		this.canL2Auth();
+
+		const endpoint = DELETE_READONLY_API_KEY;
+		const payload = { key };
+		const headerArgs = {
+			method: DELETE,
+			requestPath: endpoint,
+			body: JSON.stringify(payload),
+		};
+
+		const headers = await createL2Headers(
+			this.signer as ClobSigner,
+			this.creds as ApiKeyCreds,
+			headerArgs,
+			this.useServerTime ? await this.getServerTime() : undefined,
+		);
+
+		return this.del(`${this.host}${endpoint}`, { headers, data: payload });
 	}
 
 	public async getOrder(orderID: string): Promise<OpenOrder> {
@@ -1430,6 +1496,29 @@ export class ClobClient {
 		);
 
 		return this.get(`${this.host}${endpoint}`, { headers });
+	}
+
+	public async revokeBuilderApiKey(): Promise<any> {
+		this.canL2Auth();
+
+		const endpoint = REVOKE_BUILDER_API_KEY;
+		const headerArgs = {
+			method: DELETE,
+			requestPath: endpoint,
+		};
+
+		const headers = await createL2Headers(
+			this.signer as ClobSigner,
+			this.creds as ApiKeyCreds,
+			headerArgs,
+			this.useServerTime ? await this.getServerTime() : undefined,
+		);
+
+		return this.del(`${this.host}${endpoint}`, { headers });
+	}
+
+	public async getMarketTradesEvents(conditionID: string): Promise<MarketTradeEvent[]> {
+		return this.get(`${this.host}${GET_MARKET_TRADES_EVENTS}${conditionID}`);
 	}
 
 	private canL1Auth(): void {

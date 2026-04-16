@@ -402,6 +402,36 @@ export interface BuilderTrade {
 	updatedAt: string | null;
 }
 
+export interface ReadonlyApiKeyResponse {
+	apiKey: string;
+}
+
+export interface MarketTradeEvent {
+	event_type: string;
+	market: {
+		condition_id: string;
+		asset_id: string;
+		question: string;
+		icon: string;
+		slug: string;
+	};
+	user: {
+		address: string;
+		username: string;
+		profile_picture: string;
+		optimized_profile_picture: string;
+		pseudonym: string;
+	};
+	side: Side;
+	size: string;
+	fee_rate_bps: string;
+	price: string;
+	outcome: string;
+	outcome_index: number;
+	transaction_hash: string;
+	timestamp: string;
+}
+
 export interface BuilderApiKey {
 	key: string;
 	secret: string;
