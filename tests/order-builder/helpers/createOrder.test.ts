@@ -704,4 +704,61 @@ describe("createOrder", () => {
 			expect(signedOrder.expiration).toBe("1234567");
 		});
 	});
+
+	describe("version 1", () => {
+		it("includes feeRateBps on signed orders", async () => {
+			const signedOrder = await createOrder(
+				wallet,
+				Chain.AMOY,
+				SignatureTypeV2.EOA,
+				"0xf39Fd6e51aad88F6F4ce6aB8827279cffFb92266",
+				{
+					tokenID: "123",
+					price: 0.5,
+					size: 21.04,
+					side: Side.BUY,
+					feeRateBps: 1000,
+					nonce: 7,
+				},
+				{ tickSize: "0.01", negRisk: false },
+				1,
+			);
+
+			expect((signedOrder as any).feeRateBps).toBe("1000");
+			expect((signedOrder as any).nonce).toBe("7");
+			expect((signedOrder as any).taker).toBe("0x0000000000000000000000000000000000000000");
+			expect("builder" in signedOrder).toBe(false);
+		});
+	});
+
+	describe("version 2", () => {
+		it("keeps v2 fields and omits v1 fee fields", async () => {
+			const builderCode =
+				"0x1234567890abcdef1234567890abcdef1234567890abcdef1234567890abcdef";
+			const metadata = "0xabcdefabcdefabcdefabcdefabcdefabcdefabcdefabcdefabcdefabcdefabcd";
+			const signedOrder = await createOrder(
+				wallet,
+				Chain.AMOY,
+				SignatureTypeV2.EOA,
+				"0xf39Fd6e51aad88F6F4ce6aB8827279cffFb92266",
+				{
+					tokenID: "123",
+					price: 0.5,
+					size: 21.04,
+					side: Side.BUY,
+					builderCode,
+					metadata,
+					expiration: 1234567,
+				},
+				{ tickSize: "0.01", negRisk: false },
+				2,
+			);
+
+			expect(signedOrder.builder).toBe(builderCode);
+			expect(signedOrder.metadata).toBe(metadata);
+			expect(signedOrder.expiration).toBe("1234567");
+			expect("feeRateBps" in signedOrder).toBe(false);
+			expect("nonce" in signedOrder).toBe(false);
+		});
+	});
 });

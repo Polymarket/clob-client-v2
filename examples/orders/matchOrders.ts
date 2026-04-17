@@ -2,6 +2,7 @@ import { resolve } from "node:path";
 import { config as dotenvConfig } from "dotenv";
 import { createWalletClient, http } from "viem";
 import { privateKeyToAccount } from "viem/accounts";
+import { polygon, polygonAmoy } from "viem/chains";
 
 import { type ApiKeyCreds, Chain, ClobClient, Side } from "../../src";
 
@@ -15,10 +16,11 @@ const YES = "7132104567925221259462638553270691275033272857194253228963137931245
 
 async function main() {
 	const chainId = parseInt(`${process.env.CHAIN_ID || Chain.AMOY}`) as Chain;
+	const chain = chainId === Chain.POLYGON ? polygon : polygonAmoy;
 	const host = process.env.CLOB_API_URL || "http://localhost:8080";
 
 	const account1 = privateKeyToAccount(`${process.env.PK}` as `0x${string}`);
-	const walletClient1 = createWalletClient({ account: account1, transport: http() });
+	const walletClient1 = createWalletClient({ account: account1, chain, transport: http() });
 	const creds1: ApiKeyCreds = {
 		key: `${process.env.CLOB_API_KEY}`,
 		secret: `${process.env.CLOB_SECRET}`,
@@ -27,7 +29,7 @@ async function main() {
 	const client1 = new ClobClient({ host, chain: chainId, signer: walletClient1, creds: creds1 });
 
 	const account2 = privateKeyToAccount(`${process.env.PK2}` as `0x${string}`);
-	const walletClient2 = createWalletClient({ account: account2, transport: http() });
+	const walletClient2 = createWalletClient({ account: account2, chain, transport: http() });
 	const creds2: ApiKeyCreds = {
 		key: `${process.env.CLOB_API_KEY_2}`,
 		secret: `${process.env.CLOB_SECRET_2}`,
