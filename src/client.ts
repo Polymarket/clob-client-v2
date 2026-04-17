@@ -67,7 +67,7 @@ import {
 	TIME,
 	UPDATE_BALANCE_ALLOWANCE,
 } from "./endpoints.js";
-import { L1_AUTH_UNAVAILABLE_ERROR, L2_AUTH_NOT_AVAILABLE } from "./errors.js";
+import { ApiError, L1_AUTH_UNAVAILABLE_ERROR, L2_AUTH_NOT_AVAILABLE } from "./errors.js";
 import { createL1Headers, createL2Headers } from "./headers/index.js";
 import {
 	DELETE,
@@ -178,6 +178,7 @@ export interface ClobClientOptions {
 	builderConfig?: BuilderConfig;
 	getSigner?: () => Promise<ClobSigner> | ClobSigner;
 	retryOnError?: boolean;
+	throwOnError?: boolean;
 }
 
 export class ClobClient {
@@ -214,6 +215,8 @@ export class ClobClient {
 
 	readonly retryOnError?: boolean;
 
+	readonly throwOnError?: boolean;
+
 	constructor({
 		host,
 		chain,
@@ -225,6 +228,7 @@ export class ClobClient {
 		builderConfig,
 		getSigner,
 		retryOnError,
+		throwOnError,
 	}: ClobClientOptions) {
 		this.host = host.endsWith("/") ? host.slice(0, -1) : host;
 		this.chainId = chain;
@@ -249,6 +253,7 @@ export class ClobClient {
 		this.builderFeeRates = {};
 		this.tokenConditionMap = {};
 		this.retryOnError = retryOnError;
+		this.throwOnError = throwOnError;
 		this.useServerTime = useServerTime;
 		if (builderConfig !== undefined) {
 			this.builderConfig = builderConfig;
@@ -1644,16 +1649,25 @@ export class ClobClient {
 		return message.includes(ORDER_VERSION_MISMATCH_ERROR);
 	}
 
+	private throwIfError(result: any): any {
+		if (this.throwOnError && result && typeof result === "object" && "error" in result) {
+			const msg =
+				typeof result.error === "string" ? result.error : JSON.stringify(result.error);
+			throw new ApiError(msg, result.status, result);
+		}
+		return result;
+	}
+
 	// http methods
 	private async get(endpoint: string, options?: RequestOptions) {
-		return get(endpoint, options);
+		return this.throwIfError(await get(endpoint, options));
 	}
 
 	private async post(endpoint: string, options?: RequestOptions) {
-		return post(endpoint, options, this.retryOnError);
+		return this.throwIfError(await post(endpoint, options, this.retryOnError));
 	}
 
 	private async del(endpoint: string, options?: RequestOptions) {
-		return del(endpoint, options);
+		return this.throwIfError(await del(endpoint, options));
 	}
 }
