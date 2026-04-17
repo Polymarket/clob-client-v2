@@ -12,17 +12,38 @@ import type { RoundConfig, UserMarketOrderV1, UserMarketOrderV2 } from "../../ty
 
 import { getMarketOrderRawAmounts } from "./index.js";
 
-/**
- * Translate simple user market order to args used to generate Orders
- */
-export const buildMarketOrderCreationArgs = async (
+export async function buildMarketOrderCreationArgs(
+	signer: string,
+	maker: string,
+	signatureType: SignatureTypeV2,
+	userMarketOrder: UserMarketOrderV1 | UserMarketOrderV2,
+	roundConfig: RoundConfig,
+	version: 1,
+): Promise<OrderDataV1>;
+export async function buildMarketOrderCreationArgs(
+	signer: string,
+	maker: string,
+	signatureType: SignatureTypeV2,
+	userMarketOrder: UserMarketOrderV1 | UserMarketOrderV2,
+	roundConfig: RoundConfig,
+	version?: 2,
+): Promise<OrderDataV2>;
+export async function buildMarketOrderCreationArgs(
+	signer: string,
+	maker: string,
+	signatureType: SignatureTypeV2,
+	userMarketOrder: UserMarketOrderV1 | UserMarketOrderV2,
+	roundConfig: RoundConfig,
+	version: number,
+): Promise<OrderDataV1 | OrderDataV2>;
+export async function buildMarketOrderCreationArgs(
 	signer: string,
 	maker: string,
 	signatureType: SignatureTypeV2,
 	userMarketOrder: UserMarketOrderV1 | UserMarketOrderV2,
 	roundConfig: RoundConfig,
 	version: number = 2,
-): Promise<OrderDataV1 | OrderDataV2> => {
+): Promise<OrderDataV1 | OrderDataV2> {
 	const { side, rawMakerAmt, rawTakerAmt } = getMarketOrderRawAmounts(
 		userMarketOrder.side,
 		userMarketOrder.amount,
@@ -62,4 +83,4 @@ export const buildMarketOrderCreationArgs = async (
 			"metadata" in userMarketOrder ? (userMarketOrder.metadata ?? bytes32Zero) : bytes32Zero,
 		builder: userMarketOrder.builderCode ?? bytes32Zero,
 	};
-};
+}

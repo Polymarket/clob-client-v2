@@ -12,17 +12,38 @@ import type { RoundConfig, UserOrderV1, UserOrderV2 } from "../../types/index.js
 
 import { getOrderRawAmounts } from "./getOrderRawAmounts.js";
 
-/**
- * Translate simple user order to args used to generate Orders
- */
-export const buildOrderCreationArgs = async (
+export async function buildOrderCreationArgs(
+	signer: string,
+	maker: string,
+	signatureType: SignatureTypeV2,
+	userOrder: UserOrderV1 | UserOrderV2,
+	roundConfig: RoundConfig,
+	version: 1,
+): Promise<OrderDataV1>;
+export async function buildOrderCreationArgs(
+	signer: string,
+	maker: string,
+	signatureType: SignatureTypeV2,
+	userOrder: UserOrderV1 | UserOrderV2,
+	roundConfig: RoundConfig,
+	version?: 2,
+): Promise<OrderDataV2>;
+export async function buildOrderCreationArgs(
+	signer: string,
+	maker: string,
+	signatureType: SignatureTypeV2,
+	userOrder: UserOrderV1 | UserOrderV2,
+	roundConfig: RoundConfig,
+	version: number,
+): Promise<OrderDataV1 | OrderDataV2>;
+export async function buildOrderCreationArgs(
 	signer: string,
 	maker: string,
 	signatureType: SignatureTypeV2,
 	userOrder: UserOrderV1 | UserOrderV2,
 	roundConfig: RoundConfig,
 	version: number = 2,
-): Promise<OrderDataV1 | OrderDataV2> => {
+): Promise<OrderDataV1 | OrderDataV2> {
 	const { side, rawMakerAmt, rawTakerAmt } = getOrderRawAmounts(
 		userOrder.side,
 		userOrder.size,
@@ -63,4 +84,4 @@ export const buildOrderCreationArgs = async (
 		builder: userOrder.builderCode ?? bytes32Zero,
 		expiration: userOrder.expiration !== undefined ? userOrder.expiration.toString() : "0",
 	};
-};
+}
