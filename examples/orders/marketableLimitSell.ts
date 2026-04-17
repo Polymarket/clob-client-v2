@@ -6,7 +6,7 @@ import { polygon, polygonAmoy } from "viem/chains";
 
 import { type ApiKeyCreds, Chain, ClobClient, OrderType, Side } from "../../src";
 
-dotenvConfig({ path: resolve(__dirname, "../../.env") });
+dotenvConfig({ path: resolve(import.meta.dirname, "../../.env") });
 
 // A marketable limit sell crosses the spread and fills immediately against resting bids.
 // CLOB blocks self-trading, so a second wallet seeds the bid that wallet1 will fill against.

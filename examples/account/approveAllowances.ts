@@ -9,7 +9,7 @@ import { getContractConfig } from "../../src/config";
 import { ctfAbi } from "../abi/ctfAbi";
 import { usdcAbi } from "../abi/usdcAbi";
 
-dotenvConfig({ path: resolve(__dirname, "../../.env") });
+dotenvConfig({ path: resolve(import.meta.dirname, "../../.env") });
 
 function getClients(chainId: Chain) {
 	const pk = process.env.PK as `0x${string}`;

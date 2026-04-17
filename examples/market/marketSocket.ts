@@ -1,7 +1,7 @@
 import { resolve } from "node:path";
 import { config as dotenvConfig } from "dotenv";
 
-dotenvConfig({ path: resolve(__dirname, "../../.env") });
+dotenvConfig({ path: resolve(import.meta.dirname, "../../.env") });
 
 import { WebSocket } from "ws";
 

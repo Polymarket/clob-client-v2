@@ -268,3 +268,94 @@ describe("fee calculations", () => {
 		});
 	});
 });
+
+describe("production fee rates — v2 (rate + exponent)", () => {
+	const amount = 100;
+
+	describe("fee value at representative prices", () => {
+		describe("sports_fees_v2 (rate=0.03, exp=1)", () => {
+			it("price=0.5 → $1.50", () => {
+				expect(calculatePlatformFee(amount, 0.5, 0.03, 1)).toBeCloseTo(1.5, 6);
+			});
+			it("price=0.3 → $2.10", () => {
+				expect(calculatePlatformFee(amount, 0.3, 0.03, 1)).toBeCloseTo(2.1, 6);
+			});
+			it("price=0.7 → $0.90", () => {
+				expect(calculatePlatformFee(amount, 0.7, 0.03, 1)).toBeCloseTo(0.9, 6);
+			});
+		});
+
+		describe("politics_fees / tech_fees / finance_prices_fees / mentions_fees (rate=0.04, exp=1)", () => {
+			it("price=0.5 → $2.00", () => {
+				expect(calculatePlatformFee(amount, 0.5, 0.04, 1)).toBeCloseTo(2.0, 6);
+			});
+			it("price=0.3 → $2.80", () => {
+				expect(calculatePlatformFee(amount, 0.3, 0.04, 1)).toBeCloseTo(2.8, 6);
+			});
+			it("price=0.7 → $1.20", () => {
+				expect(calculatePlatformFee(amount, 0.7, 0.04, 1)).toBeCloseTo(1.2, 6);
+			});
+		});
+
+		describe("culture_fees / weather_fees / general_fees / economics_fees (rate=0.05, exp=1)", () => {
+			it("price=0.5 → $2.50", () => {
+				expect(calculatePlatformFee(amount, 0.5, 0.05, 1)).toBeCloseTo(2.5, 6);
+			});
+			it("price=0.3 → $3.50", () => {
+				expect(calculatePlatformFee(amount, 0.3, 0.05, 1)).toBeCloseTo(3.5, 6);
+			});
+			it("price=0.7 → $1.50", () => {
+				expect(calculatePlatformFee(amount, 0.7, 0.05, 1)).toBeCloseTo(1.5, 6);
+			});
+		});
+
+		describe("crypto_fees_v2 (rate=0.072, exp=1)", () => {
+			it("price=0.5 → $3.60", () => {
+				expect(calculatePlatformFee(amount, 0.5, 0.072, 1)).toBeCloseTo(3.6, 6);
+			});
+			it("price=0.3 → $5.04", () => {
+				expect(calculatePlatformFee(amount, 0.3, 0.072, 1)).toBeCloseTo(5.04, 6);
+			});
+			it("price=0.7 → $2.16", () => {
+				expect(calculatePlatformFee(amount, 0.7, 0.072, 1)).toBeCloseTo(2.16, 6);
+			});
+		});
+	});
+
+	describe("balance = amount: adjusted + fee = balance", () => {
+		const cases = [
+			{ name: "sports_fees_v2", rate: 0.03, exponent: 1 },
+			{
+				name: "politics_fees / tech_fees / finance_prices_fees / mentions_fees",
+				rate: 0.04,
+				exponent: 1,
+			},
+			{
+				name: "culture_fees / weather_fees / general_fees / economics_fees",
+				rate: 0.05,
+				exponent: 1,
+			},
+			{ name: "crypto_fees_v2", rate: 0.072, exponent: 1 },
+		];
+		const prices = [0.3, 0.5, 0.7];
+
+		for (const { name, rate, exponent } of cases) {
+			describe(name, () => {
+				for (const price of prices) {
+					it(`price=${price}`, () => {
+						const adjusted = adjustBuyAmountForFees(
+							amount,
+							price,
+							amount,
+							rate,
+							exponent,
+							0,
+						);
+						const fee = calculatePlatformFee(adjusted, price, rate, exponent);
+						expect(adjusted + fee).toBeCloseTo(amount, 10);
+					});
+				}
+			});
+		}
+	});
+});
