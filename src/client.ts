@@ -106,6 +106,7 @@ import type {
 	CreateOrderOptions,
 	DropNotificationParams,
 	FeeInfos,
+	FeeRates,
 	MarketDetails,
 	MarketPrice,
 	MarketReward,
@@ -139,7 +140,9 @@ import type {
 	TradeParams,
 	TradesPaginatedResponse,
 	UserEarning,
+	UserMarketOrderV1,
 	UserMarketOrderV2,
+	UserOrderV1,
 	UserOrderV2,
 	UserRewardsEarning,
 } from "./types/index.js";
@@ -196,6 +199,9 @@ export class ClobClient {
 
 	readonly feeInfos: FeeInfos;
 
+	// Fee rate bps data for CLOB V1
+	readonly feeRates: FeeRates;
+
 	readonly builderFeeRates: BuilderFeeRates;
 
 	private readonly tokenConditionMap: TokenConditionMap;
@@ -238,6 +244,7 @@ export class ClobClient {
 		);
 		this.tickSizes = {};
 		this.negRisk = {};
+		this.feeRates = {};
 		this.feeInfos = {};
 		this.builderFeeRates = {};
 		this.tokenConditionMap = {};
@@ -385,21 +392,16 @@ export class ClobClient {
 	}
 
 	public async getFeeRateBps(tokenID: string): Promise<number> {
-		if (tokenID in this.feeInfos) {
-			return this.feeInfos[tokenID].rate;
-		}
-
-		if (tokenID in this.tokenConditionMap) {
-			await this.getClobMarketInfo(this.tokenConditionMap[tokenID]);
-			return this.feeInfos[tokenID].rate;
+		if (tokenID in this.feeRates) {
+			return this.feeRates[tokenID];
 		}
 
 		const result = await this.get(`${this.host}${GET_FEE_RATE}`, {
 			params: { token_id: tokenID },
 		});
-		this.feeInfos[tokenID] = { rate: result.base_fee as number, exponent: 0 };
+		this.feeRates[tokenID] = result.base_fee as number;
 
-		return this.feeInfos[tokenID].rate;
+		return this.feeRates[tokenID];
 	}
 
 	public async getFeeExponent(tokenID: string): Promise<number> {
@@ -876,7 +878,7 @@ export class ClobClient {
 	}
 
 	public async createOrder(
-		userOrder: UserOrderV2,
+		userOrder: UserOrderV1 | UserOrderV2,
 		options?: Partial<CreateOrderOptions>,
 	): Promise<SignedOrder> {
 		this.canL1Auth();
@@ -889,11 +891,7 @@ export class ClobClient {
 
 		const { tokenID } = orderToSign;
 
-		// const tickSize = await this._resolveTickSize(tokenID, options?.tickSize);
-		if (!options?.tickSize) {
-			throw new Error("tickSize is required in options");
-		}
-		const tickSize = options.tickSize;
+		const tickSize = await this._resolveTickSize(tokenID, options?.tickSize);
 
 		if (!priceValid(orderToSign.price, tickSize)) {
 			throw new Error(
@@ -906,6 +904,13 @@ export class ClobClient {
 		const negRisk = options?.negRisk ?? (await this.getNegRisk(tokenID));
 		const version = await this.resolveVersion();
 
+		if (version === 1) {
+			const userFeeRateBps =
+				"feeRateBps" in orderToSign ? (orderToSign as UserOrderV1).feeRateBps : undefined;
+			const feeRateBps = await this._resolveFeeRateBps(tokenID, userFeeRateBps);
+			(orderToSign as UserOrderV1).feeRateBps = feeRateBps;
+		}
+
 		return this.orderBuilder.buildOrder(
 			orderToSign,
 			{
@@ -917,7 +922,7 @@ export class ClobClient {
 	}
 
 	public async createMarketOrder(
-		userMarketOrder: UserMarketOrderV2,
+		userMarketOrder: UserMarketOrderV1 | UserMarketOrderV2,
 		options?: Partial<CreateOrderOptions>,
 	): Promise<SignedOrder> {
 		this.canL1Auth();
@@ -953,16 +958,21 @@ export class ClobClient {
 
 		await this.ensureBuilderFeeRateCached(orderToSign.builderCode);
 
-		if (orderToSign.side === Side.BUY && orderToSign.userUSDCBalance !== undefined) {
+		if (
+			orderToSign.side === Side.BUY &&
+			"userUSDCBalance" in orderToSign &&
+			orderToSign.userUSDCBalance !== undefined
+		) {
 			// biome-ignore lint/style/noNonNullAssertion: price is validated above
 			const price = orderToSign.price!;
+			const { userUSDCBalance } = orderToSign;
 			const builderTakerFeeRate = this.isBuilderOrder(orderToSign.builderCode)
 				? (this.builderFeeRates[orderToSign.builderCode ?? ""]?.taker ?? 0)
 				: 0;
 			orderToSign.amount = adjustBuyAmountForFees(
 				orderToSign.amount,
 				price,
-				orderToSign.userUSDCBalance,
+				userUSDCBalance,
 				this.feeInfos[tokenID].rate,
 				this.feeInfos[tokenID].exponent,
 				builderTakerFeeRate,
@@ -971,6 +981,15 @@ export class ClobClient {
 
 		const negRisk = options?.negRisk ?? (await this.getNegRisk(tokenID));
 		const version = await this.resolveVersion();
+
+		if (version === 1) {
+			const userFeeRateBps =
+				"feeRateBps" in orderToSign
+					? (orderToSign as UserMarketOrderV1).feeRateBps
+					: undefined;
+			const feeRateBps = await this._resolveFeeRateBps(tokenID, userFeeRateBps);
+			(orderToSign as UserMarketOrderV1).feeRateBps = feeRateBps;
+		}
 
 		return this.orderBuilder.buildMarketOrder(
 			orderToSign,
@@ -983,7 +1002,7 @@ export class ClobClient {
 	}
 
 	public async createAndPostOrder<T extends OrderType.GTC | OrderType.GTD = OrderType.GTC>(
-		userOrder: UserOrderV2,
+		userOrder: UserOrderV1 | UserOrderV2,
 		options?: Partial<CreateOrderOptions>,
 		orderType: T = OrderType.GTC as T,
 		postOnly = false,
@@ -1000,7 +1019,7 @@ export class ClobClient {
 	}
 
 	public async createAndPostMarketOrder<T extends OrderType.FOK | OrderType.FAK = OrderType.FOK>(
-		userMarketOrder: UserMarketOrderV2,
+		userMarketOrder: UserMarketOrderV1 | UserMarketOrderV2,
 		options?: Partial<CreateOrderOptions>,
 		orderType: T = OrderType.FOK as T,
 		deferExec = false,
@@ -1578,6 +1597,20 @@ export class ClobClient {
 			tickSize = minTickSize;
 		}
 		return tickSize;
+	}
+
+	private async _resolveFeeRateBps(tokenID: string, userFeeRateBps?: number): Promise<number> {
+		const marketFeeRateBps = await this.getFeeRateBps(tokenID);
+		if (
+			marketFeeRateBps > 0 &&
+			userFeeRateBps !== undefined &&
+			userFeeRateBps !== marketFeeRateBps
+		) {
+			throw new Error(
+				`invalid user provided fee rate: ${userFeeRateBps}, fee rate for the market must be ${marketFeeRateBps}`,
+			);
+		}
+		return marketFeeRateBps;
 	}
 
 	private async resolveVersion(forceUpdate: boolean = false): Promise<number> {
