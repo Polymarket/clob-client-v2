@@ -6,7 +6,7 @@ import { polygon, polygonAmoy } from "viem/chains";
 
 import { type ApiKeyCreds, Chain, ClobClient, OrderType, Side } from "../../src";
 
-dotenvConfig({ path: resolve(__dirname, "../../.env") });
+dotenvConfig({ path: resolve(import.meta.dirname, "../../.env") });
 
 // Market buy — amount is in USDC. Requires resting asks in the book to fill against.
 // CLOB blocks self-trading, so a second wallet seeds the ask.

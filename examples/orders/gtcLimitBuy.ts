@@ -6,7 +6,7 @@ import { privateKeyToAccount } from "viem/accounts";
 import { type ApiKeyCreds, Chain, ClobClient, OrderType, Side } from "../../src";
 import { polygon, polygonAmoy } from "viem/chains";
 
-dotenvConfig({ path: resolve(__dirname, "../../.env") });
+dotenvConfig({ path: resolve(import.meta.dirname, "../../.env") });
 
 const YES = "71321045679252212594626385532706912750332728571942532289631379312455583992563";
 

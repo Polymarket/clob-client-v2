@@ -6,7 +6,7 @@ import { polygon, polygonAmoy } from "viem/chains";
 
 import { type ApiKeyCreds, Chain, ClobClient, Side } from "../../src";
 
-dotenvConfig({ path: resolve(__dirname, "../../.env") });
+dotenvConfig({ path: resolve(import.meta.dirname, "../../.env") });
 
 // CLOB blocks self-trading: a bid and ask from the same address will never match.
 // This example uses two separate wallets (PK and PK2) with their own API credentials

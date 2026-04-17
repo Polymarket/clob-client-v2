@@ -6,7 +6,7 @@ import { polygon, polygonAmoy } from "viem/chains";
 
 import { type ApiKeyCreds, Chain, ClobClient, Side } from "../../src";
 
-dotenvConfig({ path: resolve(__dirname, "../../.env") });
+dotenvConfig({ path: resolve(import.meta.dirname, "../../.env") });
 
 async function main() {
 	const account = privateKeyToAccount(`${process.env.PK}` as `0x${string}`);
