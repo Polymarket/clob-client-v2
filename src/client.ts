@@ -697,7 +697,7 @@ export class ClobClient {
 			this.useServerTime ? await this.getServerTime() : undefined,
 		);
 
-		let results: Trade[] = [];
+		const results: Trade[] = [];
 		next_cursor = next_cursor || INITIAL_CURSOR;
 		while (next_cursor !== END_CURSOR && (next_cursor === INITIAL_CURSOR || !only_first_page)) {
 			const _params: any = {
@@ -709,7 +709,9 @@ export class ClobClient {
 				params: _params,
 			});
 			next_cursor = response.next_cursor;
-			results = [...results, ...response.data];
+			if (response.data?.length) {
+				for (const trade of response.data) results.push(trade);
+			}
 		}
 		return results;
 	}
