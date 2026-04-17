@@ -256,7 +256,7 @@ export interface TickSizes {
 }
 
 export interface FeeRates {
-    [tokenId: string]: number;
+	[tokenId: string]: number;
 }
 
 export interface NegRisk {

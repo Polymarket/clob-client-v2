@@ -393,15 +393,15 @@ export class ClobClient {
 
 	public async getFeeRateBps(tokenID: string): Promise<number> {
 		if (tokenID in this.feeRates) {
-            return this.feeRates[tokenID];
-        }
+			return this.feeRates[tokenID];
+		}
 
-        const result = await this.get(`${this.host}${GET_FEE_RATE}`, {
-            params: { token_id: tokenID },
-        });
-        this.feeRates[tokenID] = result.base_fee as number;
+		const result = await this.get(`${this.host}${GET_FEE_RATE}`, {
+			params: { token_id: tokenID },
+		});
+		this.feeRates[tokenID] = result.base_fee as number;
 
-        return this.feeRates[tokenID];
+		return this.feeRates[tokenID];
 	}
 
 	public async getFeeExponent(tokenID: string): Promise<number> {
