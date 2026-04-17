@@ -1136,14 +1136,18 @@ export class ClobClient {
 			this.useServerTime ? await this.getServerTime() : undefined,
 		);
 
-		const res = await this.post(`${this.host}${endpoint}`, {
-			headers,
-			data: orderPayload,
-		});
+		const res = await this.post(
+			`${this.host}${endpoint}`,
+			{
+				headers,
+				data: orderPayload,
+			},
+			true,
+		);
 
 		if (this._isOrderVersionMismatch(res)) await this.resolveVersion(true);
 
-		return res;
+		return this.throwIfError(res);
 	}
 
 	public async postOrders(
@@ -1182,14 +1186,18 @@ export class ClobClient {
 			this.useServerTime ? await this.getServerTime() : undefined,
 		);
 
-		const res = await this.post(`${this.host}${endpoint}`, {
-			headers,
-			data: ordersPayload,
-		});
+		const res = await this.post(
+			`${this.host}${endpoint}`,
+			{
+				headers,
+				data: ordersPayload,
+			},
+			true,
+		);
 
 		if (this._isOrderVersionMismatch(res)) await this.resolveVersion(true);
 
-		return res;
+		return this.throwIfError(res);
 	}
 
 	public async cancelOrder(payload: OrderPayload): Promise<any> {
@@ -1659,15 +1667,18 @@ export class ClobClient {
 	}
 
 	// http methods
-	private async get(endpoint: string, options?: RequestOptions) {
-		return this.throwIfError(await get(endpoint, options));
+	private async get(endpoint: string, options?: RequestOptions, skipThrow = false) {
+		const result = await get(endpoint, options);
+		return skipThrow ? result : this.throwIfError(result);
 	}
 
-	private async post(endpoint: string, options?: RequestOptions) {
-		return this.throwIfError(await post(endpoint, options, this.retryOnError));
+	private async post(endpoint: string, options?: RequestOptions, skipThrow = false) {
+		const result = await post(endpoint, options, this.retryOnError);
+		return skipThrow ? result : this.throwIfError(result);
 	}
 
-	private async del(endpoint: string, options?: RequestOptions) {
-		return this.throwIfError(await del(endpoint, options));
+	private async del(endpoint: string, options?: RequestOptions, skipThrow = false) {
+		const result = await del(endpoint, options);
+		return skipThrow ? result : this.throwIfError(result);
 	}
 }
