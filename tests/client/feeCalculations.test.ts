@@ -269,25 +269,6 @@ describe("fee calculations", () => {
 	});
 });
 
-describe("production fee rates — v1 (feeRateBps)", () => {
-	const feeV1 = (notional: number, bps: number): number => (notional * bps) / 10000;
-
-	describe("fee value ($100 notional)", () => {
-		it("sports_fees_v2 (300 bps) → $3.00", () => {
-			expect(feeV1(100, 300)).toBeCloseTo(3.0, 6);
-		});
-		it("politics_fees / tech_fees / finance_prices_fees / mentions_fees (400 bps) → $4.00", () => {
-			expect(feeV1(100, 400)).toBeCloseTo(4.0, 6);
-		});
-		it("culture_fees / weather_fees / general_fees / economics_fees (500 bps) → $5.00", () => {
-			expect(feeV1(100, 500)).toBeCloseTo(5.0, 6);
-		});
-		it("crypto_fees_v2 (720 bps) → $7.20", () => {
-			expect(feeV1(100, 720)).toBeCloseTo(7.2, 6);
-		});
-	});
-});
-
 describe("production fee rates — v2 (rate + exponent)", () => {
 	const amount = 100;
 
