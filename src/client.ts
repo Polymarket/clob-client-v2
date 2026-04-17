@@ -106,6 +106,7 @@ import type {
 	CreateOrderOptions,
 	DropNotificationParams,
 	FeeInfos,
+	FeeRates,
 	MarketDetails,
 	MarketPrice,
 	MarketReward,
@@ -198,6 +199,9 @@ export class ClobClient {
 
 	readonly feeInfos: FeeInfos;
 
+	// Fee rate bps data for CLOB V1
+	readonly feeRates: FeeRates;
+
 	readonly builderFeeRates: BuilderFeeRates;
 
 	private readonly tokenConditionMap: TokenConditionMap;
@@ -240,6 +244,7 @@ export class ClobClient {
 		);
 		this.tickSizes = {};
 		this.negRisk = {};
+		this.feeRates = {};
 		this.feeInfos = {};
 		this.builderFeeRates = {};
 		this.tokenConditionMap = {};
@@ -387,12 +392,16 @@ export class ClobClient {
 	}
 
 	public async getFeeRateBps(tokenID: string): Promise<number> {
-		const result = await this.get(`${this.host}${GET_FEE_RATE}`, {
-			params: { token_id: tokenID },
-		});
-		this.feeInfos[tokenID] = { rate: result.base_fee as number, exponent: 0 };
+		if (tokenID in this.feeRates) {
+            return this.feeRates[tokenID];
+        }
 
-		return this.feeInfos[tokenID].rate;
+        const result = await this.get(`${this.host}${GET_FEE_RATE}`, {
+            params: { token_id: tokenID },
+        });
+        this.feeRates[tokenID] = result.base_fee as number;
+
+        return this.feeRates[tokenID];
 	}
 
 	public async getFeeExponent(tokenID: string): Promise<number> {

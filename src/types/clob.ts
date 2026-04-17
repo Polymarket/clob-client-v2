@@ -255,6 +255,10 @@ export interface TickSizes {
 	[tokenId: string]: TickSize;
 }
 
+export interface FeeRates {
+    [tokenId: string]: number;
+}
+
 export interface NegRisk {
 	[tokenId: string]: boolean;
 }
