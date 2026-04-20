@@ -1,1 +1,15 @@
-pnpm biome check --write ./src ./tests
+files=$(git diff --cached --name-only --diff-filter=ACMR | grep -E '^(src|tests)/.*\.(ts|tsx|js|jsx)$' || true)
+
+if [ -z "$files" ]; then
+	exit 0
+fi
+
+set --
+while IFS= read -r file; do
+	set -- "$@" "$file"
+done <<EOF
+$files
+EOF
+
+pnpm exec biome check --write "$@"
+git add -- "$@"
