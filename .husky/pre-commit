@@ -11,5 +11,20 @@ done <<EOF
 $files
 EOF
 
-pnpm exec biome check --write "$@"
+partially_staged_files=""
+for file in "$@"; do
+	if ! git diff --quiet -- "$file"; then
+		partially_staged_files="${partially_staged_files}${file}
+"
+	fi
+done
+
+if [ -n "$partially_staged_files" ]; then
+	echo "pre-commit: partially staged files are not supported by this hook:"
+	printf '%s' "$partially_staged_files"
+	echo "Stage or stash the remaining changes in those files and retry."
+	exit 1
+fi
+
+pnpm exec biome check --write "$@" || exit 1
 git add -- "$@"
