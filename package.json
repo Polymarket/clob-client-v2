@@ -3,12 +3,18 @@
 	"description": "TypeScript client for Polymarket's CLOB",
 	"version": "1.0.0",
 	"type": "module",
-	"main": "dist/index.js",
+	"main": "dist/cjs/index.js",
 	"types": "dist/index.d.ts",
 	"exports": {
 		".": {
-			"types": "./dist/index.d.ts",
-			"import": "./dist/index.js"
+			"import": {
+				"types": "./dist/index.d.ts",
+				"default": "./dist/index.js"
+			},
+			"require": {
+				"types": "./dist/index.d.ts",
+				"default": "./dist/cjs/index.js"
+			}
 		}
 	},
 	"sideEffects": false,
@@ -26,7 +32,7 @@
 		"url": "https://github.com/Polymarket/clob-client-v2"
 	},
 	"scripts": {
-		"build": "rm -rf dist && tsc",
+		"build": "rm -rf dist && tsc && tsc -p tsconfig.cjs.json && printf '{\"type\":\"commonjs\"}' > dist/cjs/package.json",
 		"lint": "biome check ./src ./tests",
 		"format": "biome check --write ./src ./tests",
 		"deploy": "pnpm build && npm publish",
