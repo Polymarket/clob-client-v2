@@ -3,7 +3,7 @@
 	"description": "TypeScript client for Polymarket's CLOB",
 	"version": "1.0.1",
 	"type": "module",
-	"main": "dist/cjs/index.js",
+	"main": "dist/index.cjs",
 	"types": "dist/index.d.ts",
 	"exports": {
 		".": {
@@ -13,7 +13,7 @@
 			},
 			"require": {
 				"types": "./dist/index.d.ts",
-				"default": "./dist/cjs/index.js"
+				"default": "./dist/index.cjs"
 			}
 		}
 	},
@@ -32,7 +32,7 @@
 		"url": "https://github.com/Polymarket/clob-client-v2"
 	},
 	"scripts": {
-		"build": "rm -rf dist && tsc && tsc -p tsconfig.cjs.json && printf '{\"type\":\"commonjs\"}' > dist/cjs/package.json",
+		"build": "tsup && tsc --emitDeclarationOnly",
 		"lint": "biome check ./src ./tests",
 		"format": "biome check --write ./src ./tests",
 		"deploy": "pnpm build && npm publish",
@@ -53,6 +53,7 @@
 		"dotenv": "^17.3.1",
 		"ethers": "^5.8.0",
 		"husky": "^9.1.7",
+		"tsup": "^8.5.1",
 		"typescript": "^6.0.2",
 		"vitest": "^4.0.15",
 		"ws": "^8.18.3"
