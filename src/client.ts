@@ -760,30 +760,14 @@ export class ClobClient {
 		if (!params.builder_code || params.builder_code === bytes32Zero) {
 			throw new Error("builderCode is required and cannot be zero");
 		}
-		this.canL2Auth();
 
-		const endpoint = GET_BUILDER_TRADES;
-		const headerArgs = {
-			method: GET,
-			requestPath: endpoint,
-		};
-
-		const headers = await createL2Headers(
-			this.signer as ClobSigner,
-			this.creds as ApiKeyCreds,
-			headerArgs,
-			this.useServerTime ? await this.getServerTime() : undefined,
-		);
-
-		next_cursor = next_cursor || INITIAL_CURSOR;
-
-		const _params: any = { ...params, next_cursor };
+		const _params: any = { ...params, next_cursor: next_cursor || INITIAL_CURSOR };
 
 		const {
 			data,
 			...rest
 		}: { data: BuilderTrade[]; next_cursor: string; limit: number; count: number } =
-			await this.get(`${this.host}${endpoint}`, { headers, params: _params });
+			await this.get(`${this.host}${GET_BUILDER_TRADES}`, { params: _params });
 
 		return { trades: Array.isArray(data) ? [...data] : [], ...rest };
 	}

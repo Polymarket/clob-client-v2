@@ -202,6 +202,7 @@ export interface OrderBookSummary {
 	tick_size: string;
 	neg_risk: boolean;
 	hash: string;
+	last_trade_price: string;
 }
 
 export interface OrderSummary {
