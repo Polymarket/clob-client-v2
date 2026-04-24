@@ -686,7 +686,7 @@ export class ClobClient {
 		params?: TradeParams,
 		only_first_page = false,
 		next_cursor?: string,
-	): Promise<Trade[]> {
+	): Promise<Trade[] | ClobErrorResponseBody> {
 		this.canL2Auth();
 
 		const endpoint = GET_TRADES;
@@ -713,8 +713,10 @@ export class ClobClient {
 				headers,
 				params: _params,
 			});
+			const data = this.getPaginatedResponseData<Trade>(response);
+			if (!data) return response;
 			next_cursor = response.next_cursor;
-			results = [...results, ...response.data];
+			results = [...results, ...data];
 		}
 		return results;
 	}
@@ -1027,7 +1029,7 @@ export class ClobClient {
 		params?: OpenOrderParams,
 		only_first_page = false,
 		next_cursor?: string,
-	): Promise<OpenOrdersResponse> {
+	): Promise<OpenOrdersResponse | ClobErrorResponseBody> {
 		this.canL2Auth();
 		const endpoint = GET_OPEN_ORDERS;
 		const l2HeaderArgs = {
@@ -1053,8 +1055,10 @@ export class ClobClient {
 				headers,
 				params: _params,
 			});
+			const data = this.getPaginatedResponseData<OpenOrder>(response);
+			if (!data) return response;
 			next_cursor = response.next_cursor;
-			results = [...results, ...response.data];
+			results = [...results, ...data];
 		}
 		return results;
 	}
@@ -1062,7 +1066,7 @@ export class ClobClient {
 	public async getPreMigrationOrders(
 		only_first_page = false,
 		next_cursor?: string,
-	): Promise<PreMigrationOrdersResponse> {
+	): Promise<PreMigrationOrdersResponse | ClobErrorResponseBody> {
 		this.canL2Auth();
 		const endpoint = GET_PRE_MIGRATION_ORDERS;
 		const l2HeaderArgs = {
@@ -1085,8 +1089,10 @@ export class ClobClient {
 				headers,
 				params: _params,
 			});
+			const data = this.getPaginatedResponseData<PreMigrationOrder>(response);
+			if (!data) return response;
 			next_cursor = response.next_cursor;
-			results = [...results, ...response.data];
+			results = [...results, ...data];
 		}
 		return results;
 	}
@@ -1299,7 +1305,9 @@ export class ClobClient {
 	}
 
 	// Rewards
-	public async getEarningsForUserForDay(date: string): Promise<UserEarning[]> {
+	public async getEarningsForUserForDay(
+		date: string,
+	): Promise<UserEarning[] | ClobErrorResponseBody> {
 		this.canL2Auth();
 
 		const endpoint = GET_EARNINGS_FOR_USER_FOR_DAY;
@@ -1328,8 +1336,10 @@ export class ClobClient {
 				headers,
 				params,
 			});
+			const data = this.getPaginatedResponseData<UserEarning>(response);
+			if (!data) return response;
 			next_cursor = response.next_cursor;
-			results = [...results, ...response.data];
+			results = [...results, ...data];
 		}
 		return results;
 	}
@@ -1366,7 +1376,7 @@ export class ClobClient {
 		order_by = "",
 		position = "",
 		no_competition = false,
-	): Promise<UserRewardsEarning[]> {
+	): Promise<UserRewardsEarning[] | ClobErrorResponseBody> {
 		this.canL2Auth();
 
 		const endpoint = GET_REWARDS_EARNINGS_PERCENTAGES;
@@ -1398,8 +1408,10 @@ export class ClobClient {
 				headers,
 				params,
 			});
+			const data = this.getPaginatedResponseData<UserRewardsEarning>(response);
+			if (!data) return response;
 			next_cursor = response.next_cursor;
-			results = [...results, ...response.data];
+			results = [...results, ...data];
 		}
 		return results;
 	}
@@ -1427,28 +1439,34 @@ export class ClobClient {
 		return this.get(`${this.host}${endpoint}`, { headers, params: _params });
 	}
 
-	public async getCurrentRewards(): Promise<MarketReward[]> {
+	public async getCurrentRewards(): Promise<MarketReward[] | ClobErrorResponseBody> {
 		let results: MarketReward[] = [];
 		let next_cursor = INITIAL_CURSOR;
 		while (next_cursor !== END_CURSOR) {
 			const response = await this.get(`${this.host}${GET_REWARDS_MARKETS_CURRENT}`, {
 				params: { next_cursor },
 			});
+			const data = this.getPaginatedResponseData<MarketReward>(response);
+			if (!data) return response;
 			next_cursor = response.next_cursor;
-			results = [...results, ...response.data];
+			results = [...results, ...data];
 		}
 		return results;
 	}
 
-	public async getRawRewardsForMarket(conditionId: string): Promise<MarketReward[]> {
+	public async getRawRewardsForMarket(
+		conditionId: string,
+	): Promise<MarketReward[] | ClobErrorResponseBody> {
 		let results: MarketReward[] = [];
 		let next_cursor = INITIAL_CURSOR;
 		while (next_cursor !== END_CURSOR) {
 			const response = await this.get(`${this.host}${GET_REWARDS_MARKETS}${conditionId}`, {
 				params: { next_cursor },
 			});
+			const data = this.getPaginatedResponseData<MarketReward>(response);
+			if (!data) return response;
 			next_cursor = response.next_cursor;
-			results = [...results, ...response.data];
+			results = [...results, ...data];
 		}
 		return results;
 	}
@@ -1555,6 +1573,10 @@ export class ClobClient {
 
 	private isBuilderOrder(builderCode?: string): boolean {
 		return builderCode !== undefined && builderCode !== bytes32Zero;
+	}
+
+	private getPaginatedResponseData<T>(response: { data?: unknown } | null | undefined): T[] | undefined {
+		return Array.isArray(response?.data) ? [...response.data] : undefined;
 	}
 
 	private async _ensureMarketInfoCached(tokenID: string): Promise<void> {
