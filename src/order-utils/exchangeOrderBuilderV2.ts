@@ -59,9 +59,13 @@ export class ExchangeOrderBuilderV2 {
 			signer = maker;
 		}
 
-		const signerAddress = await getSignerAddress(this.signer);
-		if (signer !== signerAddress) {
-			throw new Error("signer does not match");
+		// For POLY_1271 (deposit wallets), the order's signer field is the wallet
+		// contract address, while the actual ECDSA signing is done by the EOA owner
+		if (signatureType !== SignatureTypeV2.POLY_1271) {
+			const signerAddress = await getSignerAddress(this.signer);
+			if (signer !== signerAddress) {
+				throw new Error("signer does not match");
+			}
 		}
 
 		return {
