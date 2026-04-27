@@ -23,8 +23,7 @@ export const createMarketOrder = async (
 	const maker = funderAddress === undefined ? eoaSignerAddress : funderAddress;
 
 	// For POLY_1271, both maker and signer in the order are the wallet address
-	const signerForOrder =
-		signatureType === SignatureTypeV2.POLY_1271 ? maker : eoaSignerAddress;
+	const signerForOrder = signatureType === SignatureTypeV2.POLY_1271 ? maker : eoaSignerAddress;
 	const contractConfig = getContractConfig(chainId);
 
 	const orderData = await buildMarketOrderCreationArgs(
