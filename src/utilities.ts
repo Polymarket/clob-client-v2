@@ -34,6 +34,11 @@ export const decimalPlaces = (num: number): number => {
 	return arr[1].length;
 };
 
+/**
+ * Calculates the hash for the given orderbook
+ * @param orderbook
+ * @returns
+ */
 export const generateOrderBookSummaryHash = async (
 	orderbook: OrderBookSummary,
 ): Promise<string> => {

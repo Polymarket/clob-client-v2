@@ -1,3 +1,12 @@
+/**
+ * Builds the canonical Polymarket CLOB HMAC signature
+ * @param secret
+ * @param timestamp
+ * @param method
+ * @param requestPath
+ * @param body
+ * @returns string
+ */
 export const buildPolyHmacSignature = async (
 	secret: string,
 	timestamp: number,
@@ -35,6 +44,8 @@ export const buildPolyHmacSignature = async (
 	for (let i = 0; i < sigBytes.length; i++) {
 		binary += String.fromCharCode(sigBytes[i]);
 	}
-	// URL-safe base64: '+' → '-', '/' → '_'
+	// NOTE: Must be url safe base64 encoding, but keep base64 "=" suffix
+	// Convert '+' to '-'
+	// Convert '/' to '_'
 	return btoa(binary).replace(/\+/g, "-").replace(/\//g, "_");
 };
