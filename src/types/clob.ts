@@ -282,7 +282,15 @@ export type TokenConditionMap = Record<string, string>;
 export interface FeeDetails {
 	r?: number; // fee rate
 	e?: number; // fee exponent
-	to: boolean; // taker only
+	to?: boolean; // taker only (omitted when false)
+}
+
+export interface ClobRewards {
+	mi?: number; // min size
+	ma?: number; // max spread
+	e?: boolean; // enabled
+	smoa?: boolean; // skip min order age
+	moas?: number; // min order age seconds
 }
 
 export interface ClobToken {
@@ -292,12 +300,22 @@ export interface ClobToken {
 
 export interface MarketDetails {
 	c: string; // condition ID
-	t: [ClobToken | null, ClobToken | null]; // YES and NO tokens
+	t: [ClobToken, ClobToken]; // YES and NO tokens
 	mts: number; // min tick size
-	nr: boolean; // neg risk
+	nr?: boolean; // neg risk (omitted when false)
 	fd?: FeeDetails; // platform fee details
-	mbf?: number; // v1 maker base fee
-	tbf?: number; // v1 taker base fee
+	mbf?: number; // maker base fee
+	tbf?: number; // taker base fee
+	r: ClobRewards | null; // rewards config (always present, null if unset)
+	ao?: boolean; // accepting orders
+	mos?: number; // min order size
+	sd?: number; // seconds delay
+	gst?: string; // game start time (ISO 8601)
+	cbos?: boolean; // clear book on start
+	aot?: string; // accepting orders timestamp (ISO 8601)
+	rfqe?: boolean; // RFQ enabled
+	itode?: boolean; // taker order delay enabled
+	ibce?: boolean; // blockaid check enabled
 }
 
 export interface PaginationPayload {

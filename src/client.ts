@@ -423,7 +423,7 @@ export class ClobClient {
 	 * @param orderbook
 	 * @returns
 	 */
-	public getOrderBookHash(orderbook: OrderBookSummary): string {
+	public async getOrderBookHash(orderbook: OrderBookSummary): Promise<string> {
 		return generateOrderBookSummaryHash(orderbook);
 	}
 
