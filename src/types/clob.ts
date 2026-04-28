@@ -58,7 +58,8 @@ export interface OrderResponse {
 	success: boolean;
 	errorMsg: string;
 	orderID: string;
-	transactionsHashes: string[];
+	transactionsHashes?: string[];
+	tradeIDs?: string[];
 	status: string;
 	takingAmount: string;
 	makingAmount: string;
@@ -97,14 +98,14 @@ export interface MakerOrder {
 	fee_rate_bps: string;
 	asset_id: string;
 	outcome: string;
-	side: Side;
+	side?: Side;
+	builder_fee?: string;
+	builder_code?: string;
 }
 
 export interface Trade {
 	id: string;
-
 	taker_order_id: string;
-
 	market: string;
 	asset_id: string;
 	side: Side;
@@ -113,13 +114,15 @@ export interface Trade {
 	price: string;
 	status: string;
 	match_time: string;
+	match_time_nano?: string;
 	last_update: string;
 	outcome: string;
 	bucket_index: number;
 	owner: string;
 	maker_address: string;
 	maker_orders: MakerOrder[];
-	transaction_hash: string;
+	transaction_hash?: string;
+	err_msg?: string | null;
 	trader_side: "TAKER" | "MAKER";
 }
 
@@ -222,7 +225,7 @@ export interface BalanceAllowanceParams {
 
 export interface BalanceAllowanceResponse {
 	balance: string;
-	allowance: string;
+	allowances: Record<string, string>;
 }
 
 export interface OrderScoringParams {
@@ -282,7 +285,15 @@ export type TokenConditionMap = Record<string, string>;
 export interface FeeDetails {
 	r?: number; // fee rate
 	e?: number; // fee exponent
-	to: boolean; // taker only
+	to?: boolean; // taker only (omitted when false)
+}
+
+export interface ClobRewards {
+	mi?: number; // min size
+	ma?: number; // max spread
+	e?: boolean; // enabled
+	smoa?: boolean; // skip min order age
+	moas?: number; // min order age seconds
 }
 
 export interface ClobToken {
@@ -292,12 +303,22 @@ export interface ClobToken {
 
 export interface MarketDetails {
 	c: string; // condition ID
-	t: [ClobToken | null, ClobToken | null]; // YES and NO tokens
+	t: [ClobToken, ClobToken]; // YES and NO tokens
 	mts: number; // min tick size
-	nr: boolean; // neg risk
+	nr?: boolean; // neg risk (omitted when false)
 	fd?: FeeDetails; // platform fee details
-	mbf?: number; // v1 maker base fee
-	tbf?: number; // v1 taker base fee
+	mbf?: number; // maker base fee
+	tbf?: number; // taker base fee
+	r: ClobRewards | null; // rewards config (always present, null if unset)
+	ao?: boolean; // accepting orders
+	mos?: number; // min order size
+	sd?: number; // seconds delay
+	gst?: string; // game start time (ISO 8601)
+	cbos?: boolean; // clear book on start
+	aot?: string; // accepting orders timestamp (ISO 8601)
+	rfqe?: boolean; // RFQ enabled
+	itode?: boolean; // taker order delay enabled
+	ibce?: boolean; // blockaid check enabled
 }
 
 export interface PaginationPayload {
@@ -402,6 +423,8 @@ export interface BuilderTrade {
 	bucketIndex: number;
 	fee: string;
 	feeUsdc: string;
+	builderFee: string;
+	builderCode: string;
 	err_msg?: string | null;
 	createdAt: string | null;
 	updatedAt: string | null;
