@@ -34,12 +34,14 @@ export const decimalPlaces = (num: number): number => {
 	return arr[1].length;
 };
 
-export const generateOrderBookSummaryHash = async (orderbook: OrderBookSummary): Promise<string> => {
+export const generateOrderBookSummaryHash = async (
+	orderbook: OrderBookSummary,
+): Promise<string> => {
 	orderbook.hash = "";
 	const data = new TextEncoder().encode(JSON.stringify(orderbook));
 	const hashBuffer = await globalThis.crypto.subtle.digest("SHA-1", data);
 	const hashArray = Array.from(new Uint8Array(hashBuffer));
-	const hash = hashArray.map((b) => b.toString(16).padStart(2, "0")).join("");
+	const hash = hashArray.map(b => b.toString(16).padStart(2, "0")).join("");
 	orderbook.hash = hash;
 	return hash;
 };

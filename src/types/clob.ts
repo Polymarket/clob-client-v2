@@ -58,7 +58,8 @@ export interface OrderResponse {
 	success: boolean;
 	errorMsg: string;
 	orderID: string;
-	transactionsHashes: string[];
+	transactionsHashes?: string[];
+	tradeIDs?: string[];
 	status: string;
 	takingAmount: string;
 	makingAmount: string;
@@ -97,14 +98,14 @@ export interface MakerOrder {
 	fee_rate_bps: string;
 	asset_id: string;
 	outcome: string;
-	side: Side;
+	side?: Side;
+	builder_fee?: string;
+	builder_code?: string;
 }
 
 export interface Trade {
 	id: string;
-
 	taker_order_id: string;
-
 	market: string;
 	asset_id: string;
 	side: Side;
@@ -113,13 +114,15 @@ export interface Trade {
 	price: string;
 	status: string;
 	match_time: string;
+	match_time_nano?: string;
 	last_update: string;
 	outcome: string;
 	bucket_index: number;
 	owner: string;
 	maker_address: string;
 	maker_orders: MakerOrder[];
-	transaction_hash: string;
+	transaction_hash?: string;
+	err_msg?: string | null;
 	trader_side: "TAKER" | "MAKER";
 }
 
@@ -222,7 +225,7 @@ export interface BalanceAllowanceParams {
 
 export interface BalanceAllowanceResponse {
 	balance: string;
-	allowance: string;
+	allowances: Record<string, string>;
 }
 
 export interface OrderScoringParams {
@@ -420,6 +423,8 @@ export interface BuilderTrade {
 	bucketIndex: number;
 	fee: string;
 	feeUsdc: string;
+	builderFee: string;
+	builderCode: string;
 	err_msg?: string | null;
 	createdAt: string | null;
 	updatedAt: string | null;
