@@ -6,10 +6,12 @@ export function orderToJsonV1<T extends OrderType>(
 	order: SignedOrderV1,
 	owner: string,
 	orderType: T,
+	postOnly = false,
 	deferExec = false,
 ): NewOrderV1<T> {
 	return {
 		deferExec,
+		postOnly,
 		order: {
 			salt: parseInt(order.salt, 10),
 			maker: order.maker,
@@ -54,6 +56,7 @@ export interface NewOrderV1<T extends OrderType> {
 	readonly owner: string;
 	readonly orderType: T;
 	readonly deferExec: boolean;
+	readonly postOnly: boolean;
 }
 
 // Simplified order for users

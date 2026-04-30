@@ -202,6 +202,7 @@ export interface OrderBookSummary {
 	tick_size: string;
 	neg_risk: boolean;
 	hash: string;
+	last_trade_price: string;
 }
 
 export interface OrderSummary {
@@ -253,6 +254,10 @@ export interface RoundConfig {
 
 export interface TickSizes {
 	[tokenId: string]: TickSize;
+}
+
+export interface FeeRates {
+	[tokenId: string]: number;
 }
 
 export interface NegRisk {
@@ -400,6 +405,36 @@ export interface BuilderTrade {
 	err_msg?: string | null;
 	createdAt: string | null;
 	updatedAt: string | null;
+}
+
+export interface ReadonlyApiKeyResponse {
+	apiKey: string;
+}
+
+export interface MarketTradeEvent {
+	event_type: string;
+	market: {
+		condition_id: string;
+		asset_id: string;
+		question: string;
+		icon: string;
+		slug: string;
+	};
+	user: {
+		address: string;
+		username: string;
+		profile_picture: string;
+		optimized_profile_picture: string;
+		pseudonym: string;
+	};
+	side: Side;
+	size: string;
+	fee_rate_bps: string;
+	price: string;
+	outcome: string;
+	outcome_index: number;
+	transaction_hash: string;
+	timestamp: string;
 }
 
 export interface BuilderApiKey {

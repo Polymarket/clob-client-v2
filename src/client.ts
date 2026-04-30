@@ -14,7 +14,9 @@ import {
 	CLOSED_ONLY,
 	CREATE_API_KEY,
 	CREATE_BUILDER_API_KEY,
+	CREATE_READONLY_API_KEY,
 	DELETE_API_KEY,
+	DELETE_READONLY_API_KEY,
 	DERIVE_API_KEY,
 	DROP_NOTIFICATIONS,
 	GET_API_KEYS,
@@ -30,6 +32,7 @@ import {
 	GET_LIQUIDITY_REWARD_PERCENTAGES,
 	GET_MARKET,
 	GET_MARKET_BY_TOKEN,
+	GET_MARKET_TRADES_EVENTS,
 	GET_MARKETS,
 	GET_MIDPOINT,
 	GET_MIDPOINTS,
@@ -43,6 +46,7 @@ import {
 	GET_PRICE,
 	GET_PRICES,
 	GET_PRICES_HISTORY,
+	GET_READONLY_API_KEYS,
 	GET_REWARDS_EARNINGS_PERCENTAGES,
 	GET_REWARDS_MARKETS,
 	GET_REWARDS_MARKETS_CURRENT,
@@ -54,14 +58,16 @@ import {
 	GET_TICK_SIZE,
 	GET_TOTAL_EARNINGS_FOR_USER_FOR_DAY,
 	GET_TRADES,
+	HEARTBEAT,
 	IS_ORDER_SCORING,
 	OK,
 	POST_ORDER,
 	POST_ORDERS,
+	REVOKE_BUILDER_API_KEY,
 	TIME,
 	UPDATE_BALANCE_ALLOWANCE,
 } from "./endpoints.js";
-import { L1_AUTH_UNAVAILABLE_ERROR, L2_AUTH_NOT_AVAILABLE } from "./errors.js";
+import { ApiError, L1_AUTH_UNAVAILABLE_ERROR, L2_AUTH_NOT_AVAILABLE } from "./errors.js";
 import { createL1Headers, createL2Headers } from "./headers/index.js";
 import {
 	DELETE,
@@ -100,9 +106,11 @@ import type {
 	CreateOrderOptions,
 	DropNotificationParams,
 	FeeInfos,
+	FeeRates,
 	MarketDetails,
 	MarketPrice,
 	MarketReward,
+	MarketTradeEvent,
 	NegRisk,
 	NewOrderV1,
 	NewOrderV2,
@@ -122,6 +130,7 @@ import type {
 	PreMigrationOrder,
 	PreMigrationOrdersResponse,
 	PriceHistoryFilterParams,
+	ReadonlyApiKeyResponse,
 	RewardsPercentages,
 	TickSize,
 	TickSizes,
@@ -131,7 +140,9 @@ import type {
 	TradeParams,
 	TradesPaginatedResponse,
 	UserEarning,
+	UserMarketOrderV1,
 	UserMarketOrderV2,
+	UserOrderV1,
 	UserOrderV2,
 	UserRewardsEarning,
 } from "./types/index.js";
@@ -167,6 +178,7 @@ export interface ClobClientOptions {
 	builderConfig?: BuilderConfig;
 	getSigner?: () => Promise<ClobSigner> | ClobSigner;
 	retryOnError?: boolean;
+	throwOnError?: boolean;
 }
 
 export class ClobClient {
@@ -188,6 +200,9 @@ export class ClobClient {
 
 	readonly feeInfos: FeeInfos;
 
+	// Fee rate bps data for CLOB V1
+	readonly feeRates: FeeRates;
+
 	readonly builderFeeRates: BuilderFeeRates;
 
 	private readonly tokenConditionMap: TokenConditionMap;
@@ -204,6 +219,8 @@ export class ClobClient {
 
 	readonly retryOnError?: boolean;
 
+	readonly throwOnError?: boolean;
+
 	constructor({
 		host,
 		chain,
@@ -215,6 +232,7 @@ export class ClobClient {
 		builderConfig,
 		getSigner,
 		retryOnError,
+		throwOnError,
 	}: ClobClientOptions) {
 		this.host = host.endsWith("/") ? host.slice(0, -1) : host;
 		this.chainId = chain;
@@ -236,10 +254,12 @@ export class ClobClient {
 		this.funderAddress = funderAddress;
 		this.tickSizes = {};
 		this.negRisk = {};
+		this.feeRates = {};
 		this.feeInfos = {};
 		this.builderFeeRates = {};
 		this.tokenConditionMap = {};
 		this.retryOnError = retryOnError;
+		this.throwOnError = throwOnError;
 		this.useServerTime = useServerTime;
 		if (builderConfig !== undefined) {
 			this.builderConfig = builderConfig;
@@ -249,6 +269,23 @@ export class ClobClient {
 	// Public endpoints
 	public async getOk(): Promise<any> {
 		return this.get(`${this.host}${OK}`);
+	}
+
+	public async postHeartbeat(
+		heartbeatId = "",
+	): Promise<{ heartbeat_id: string; error_msg?: string }> {
+		this.canL2Auth();
+		const body = JSON.stringify({ heartbeat_id: heartbeatId });
+		const headers = await createL2Headers(
+			this.signer as ClobSigner,
+			this.creds as ApiKeyCreds,
+			{ method: POST, requestPath: HEARTBEAT, body },
+			this.useServerTime ? await this.getServerTime() : undefined,
+		);
+		return this.post(`${this.host}${HEARTBEAT}`, {
+			headers,
+			data: { heartbeat_id: heartbeatId },
+		});
 	}
 
 	public async getVersion(): Promise<number> {
@@ -366,21 +403,16 @@ export class ClobClient {
 	}
 
 	public async getFeeRateBps(tokenID: string): Promise<number> {
-		if (tokenID in this.feeInfos) {
-			return this.feeInfos[tokenID].rate;
-		}
-
-		if (tokenID in this.tokenConditionMap) {
-			await this.getClobMarketInfo(this.tokenConditionMap[tokenID]);
-			return this.feeInfos[tokenID].rate;
+		if (tokenID in this.feeRates) {
+			return this.feeRates[tokenID];
 		}
 
 		const result = await this.get(`${this.host}${GET_FEE_RATE}`, {
 			params: { token_id: tokenID },
 		});
-		this.feeInfos[tokenID] = { rate: result.base_fee as number, exponent: 0 };
+		this.feeRates[tokenID] = result.base_fee as number;
 
-		return this.feeInfos[tokenID].rate;
+		return this.feeRates[tokenID];
 	}
 
 	public async getFeeExponent(tokenID: string): Promise<number> {
@@ -578,6 +610,65 @@ export class ClobClient {
 		return this.del(`${this.host}${endpoint}`, { headers });
 	}
 
+	public async createReadonlyApiKey(): Promise<ReadonlyApiKeyResponse> {
+		this.canL2Auth();
+
+		const endpoint = CREATE_READONLY_API_KEY;
+		const headerArgs = {
+			method: POST,
+			requestPath: endpoint,
+		};
+
+		const headers = await createL2Headers(
+			this.signer as ClobSigner,
+			this.creds as ApiKeyCreds,
+			headerArgs,
+			this.useServerTime ? await this.getServerTime() : undefined,
+		);
+
+		return this.post(`${this.host}${endpoint}`, { headers });
+	}
+
+	public async getReadonlyApiKeys(): Promise<string[]> {
+		this.canL2Auth();
+
+		const endpoint = GET_READONLY_API_KEYS;
+		const headerArgs = {
+			method: GET,
+			requestPath: endpoint,
+		};
+
+		const headers = await createL2Headers(
+			this.signer as ClobSigner,
+			this.creds as ApiKeyCreds,
+			headerArgs,
+			this.useServerTime ? await this.getServerTime() : undefined,
+		);
+
+		return this.get(`${this.host}${endpoint}`, { headers });
+	}
+
+	public async deleteReadonlyApiKey(key: string): Promise<boolean> {
+		this.canL2Auth();
+
+		const endpoint = DELETE_READONLY_API_KEY;
+		const payload = { key };
+		const headerArgs = {
+			method: DELETE,
+			requestPath: endpoint,
+			body: JSON.stringify(payload),
+		};
+
+		const headers = await createL2Headers(
+			this.signer as ClobSigner,
+			this.creds as ApiKeyCreds,
+			headerArgs,
+			this.useServerTime ? await this.getServerTime() : undefined,
+		);
+
+		return this.del(`${this.host}${endpoint}`, { headers, data: payload });
+	}
+
 	public async getOrder(orderID: string): Promise<OpenOrder> {
 		this.canL2Auth();
 
@@ -675,30 +766,14 @@ export class ClobClient {
 		if (!params.builder_code || params.builder_code === bytes32Zero) {
 			throw new Error("builderCode is required and cannot be zero");
 		}
-		this.canL2Auth();
 
-		const endpoint = GET_BUILDER_TRADES;
-		const headerArgs = {
-			method: GET,
-			requestPath: endpoint,
-		};
-
-		const headers = await createL2Headers(
-			this.signer as ClobSigner,
-			this.creds as ApiKeyCreds,
-			headerArgs,
-			this.useServerTime ? await this.getServerTime() : undefined,
-		);
-
-		next_cursor = next_cursor || INITIAL_CURSOR;
-
-		const _params: any = { ...params, next_cursor };
+		const _params: any = { ...params, next_cursor: next_cursor || INITIAL_CURSOR };
 
 		const {
 			data,
 			...rest
 		}: { data: BuilderTrade[]; next_cursor: string; limit: number; count: number } =
-			await this.get(`${this.host}${endpoint}`, { headers, params: _params });
+			await this.get(`${this.host}${GET_BUILDER_TRADES}`, { params: _params });
 
 		return { trades: Array.isArray(data) ? [...data] : [], ...rest };
 	}
@@ -798,7 +873,7 @@ export class ClobClient {
 	}
 
 	public async createOrder(
-		userOrder: UserOrderV2,
+		userOrder: UserOrderV1 | UserOrderV2,
 		options?: Partial<CreateOrderOptions>,
 	): Promise<SignedOrder> {
 		this.canL1Auth();
@@ -811,11 +886,7 @@ export class ClobClient {
 
 		const { tokenID } = orderToSign;
 
-		// const tickSize = await this._resolveTickSize(tokenID, options?.tickSize);
-		if (!options?.tickSize) {
-			throw new Error("tickSize is required in options");
-		}
-		const tickSize = options.tickSize;
+		const tickSize = await this._resolveTickSize(tokenID, options?.tickSize);
 
 		if (!priceValid(orderToSign.price, tickSize)) {
 			throw new Error(
@@ -828,6 +899,13 @@ export class ClobClient {
 		const negRisk = options?.negRisk ?? (await this.getNegRisk(tokenID));
 		const version = await this.resolveVersion();
 
+		if (version === 1) {
+			const userFeeRateBps =
+				"feeRateBps" in orderToSign ? (orderToSign as UserOrderV1).feeRateBps : undefined;
+			const feeRateBps = await this._resolveFeeRateBps(tokenID, userFeeRateBps);
+			(orderToSign as UserOrderV1).feeRateBps = feeRateBps;
+		}
+
 		return this.orderBuilder.buildOrder(
 			orderToSign,
 			{
@@ -839,7 +917,7 @@ export class ClobClient {
 	}
 
 	public async createMarketOrder(
-		userMarketOrder: UserMarketOrderV2,
+		userMarketOrder: UserMarketOrderV1 | UserMarketOrderV2,
 		options?: Partial<CreateOrderOptions>,
 	): Promise<SignedOrder> {
 		this.canL1Auth();
@@ -875,16 +953,21 @@ export class ClobClient {
 
 		await this.ensureBuilderFeeRateCached(orderToSign.builderCode);
 
-		if (orderToSign.side === Side.BUY && orderToSign.userUSDCBalance !== undefined) {
+		if (
+			orderToSign.side === Side.BUY &&
+			"userUSDCBalance" in orderToSign &&
+			orderToSign.userUSDCBalance !== undefined
+		) {
 			// biome-ignore lint/style/noNonNullAssertion: price is validated above
 			const price = orderToSign.price!;
+			const { userUSDCBalance } = orderToSign;
 			const builderTakerFeeRate = this.isBuilderOrder(orderToSign.builderCode)
 				? (this.builderFeeRates[orderToSign.builderCode ?? ""]?.taker ?? 0)
 				: 0;
 			orderToSign.amount = adjustBuyAmountForFees(
 				orderToSign.amount,
 				price,
-				orderToSign.userUSDCBalance,
+				userUSDCBalance,
 				this.feeInfos[tokenID].rate,
 				this.feeInfos[tokenID].exponent,
 				builderTakerFeeRate,
@@ -893,6 +976,15 @@ export class ClobClient {
 
 		const negRisk = options?.negRisk ?? (await this.getNegRisk(tokenID));
 		const version = await this.resolveVersion();
+
+		if (version === 1) {
+			const userFeeRateBps =
+				"feeRateBps" in orderToSign
+					? (orderToSign as UserMarketOrderV1).feeRateBps
+					: undefined;
+			const feeRateBps = await this._resolveFeeRateBps(tokenID, userFeeRateBps);
+			(orderToSign as UserMarketOrderV1).feeRateBps = feeRateBps;
+		}
 
 		return this.orderBuilder.buildMarketOrder(
 			orderToSign,
@@ -905,23 +997,24 @@ export class ClobClient {
 	}
 
 	public async createAndPostOrder<T extends OrderType.GTC | OrderType.GTD = OrderType.GTC>(
-		userOrder: UserOrderV2,
+		userOrder: UserOrderV1 | UserOrderV2,
 		options?: Partial<CreateOrderOptions>,
 		orderType: T = OrderType.GTC as T,
+		postOnly = false,
 		deferExec = false,
 	): Promise<any> {
 		let postOrderResponse: any;
 
 		await this._retryOnVersionUpdate(async () => {
 			const order = await this.createOrder(userOrder, options);
-			postOrderResponse = await this.postOrder(order, orderType, deferExec);
+			postOrderResponse = await this.postOrder(order, orderType, postOnly, deferExec);
 		});
 
 		return postOrderResponse;
 	}
 
 	public async createAndPostMarketOrder<T extends OrderType.FOK | OrderType.FAK = OrderType.FOK>(
-		userMarketOrder: UserMarketOrderV2,
+		userMarketOrder: UserMarketOrderV1 | UserMarketOrderV2,
 		options?: Partial<CreateOrderOptions>,
 		orderType: T = OrderType.FOK as T,
 		deferExec = false,
@@ -930,7 +1023,7 @@ export class ClobClient {
 
 		await this._retryOnVersionUpdate(async () => {
 			const order = await this.createMarketOrder(userMarketOrder, options);
-			postOrderMarketResponse = await this.postOrder(order, orderType, deferExec);
+			postOrderMarketResponse = await this.postOrder(order, orderType, false, deferExec);
 		});
 
 		return postOrderMarketResponse;
@@ -1007,14 +1100,18 @@ export class ClobClient {
 	public async postOrder<T extends OrderType = OrderType.GTC>(
 		order: SignedOrder,
 		orderType: T = OrderType.GTC as T,
+		postOnly = false,
 		deferExec = false,
 	): Promise<any> {
 		this.canL2Auth();
+		if (postOnly && (orderType === OrderType.FOK || orderType === OrderType.FAK)) {
+			throw new Error("postOnly is not supported for FOK/FAK orders");
+		}
 		const endpoint = POST_ORDER;
 
 		const orderPayload = isV2Order(order)
-			? orderToJsonV2(order, this.creds?.key || "", orderType, deferExec)
-			: orderToJsonV1(order, this.creds?.key || "", orderType, deferExec);
+			? orderToJsonV2(order, this.creds?.key || "", orderType, postOnly, deferExec)
+			: orderToJsonV1(order, this.creds?.key || "", orderType, postOnly, deferExec);
 
 		const l2HeaderArgs = {
 			method: POST,
@@ -1029,26 +1126,40 @@ export class ClobClient {
 			this.useServerTime ? await this.getServerTime() : undefined,
 		);
 
-		const res = await this.post(`${this.host}${endpoint}`, {
-			headers,
-			data: orderPayload,
-		});
+		const res = await this.post(
+			`${this.host}${endpoint}`,
+			{
+				headers,
+				data: orderPayload,
+			},
+			true,
+		);
 
 		if (this._isOrderVersionMismatch(res)) await this.resolveVersion(true);
 
-		return res;
+		return this.throwIfError(res);
 	}
 
-	public async postOrders(args: PostOrdersArgs[], deferExec = false): Promise<any> {
+	public async postOrders(
+		args: PostOrdersArgs[],
+		postOnly = false,
+		deferExec = false,
+	): Promise<any> {
 		this.canL2Auth();
+		if (
+			postOnly &&
+			args.some(({ orderType }) => orderType === OrderType.FOK || orderType === OrderType.FAK)
+		) {
+			throw new Error("postOnly is not supported for FOK/FAK orders");
+		}
 		const endpoint = POST_ORDERS;
 		const ordersPayload: (NewOrderV2<any> | NewOrderV1<any>)[] = [];
 		for (const arg of args) {
 			const { order, orderType } = arg;
 			// Version-aware dispatch
 			const orderPayload = isV2Order(order)
-				? orderToJsonV2(order, this.creds?.key || "", orderType, deferExec)
-				: orderToJsonV1(order, this.creds?.key || "", orderType, deferExec);
+				? orderToJsonV2(order, this.creds?.key || "", orderType, postOnly, deferExec)
+				: orderToJsonV1(order, this.creds?.key || "", orderType, postOnly, deferExec);
 			ordersPayload.push(orderPayload);
 		}
 
@@ -1065,14 +1176,18 @@ export class ClobClient {
 			this.useServerTime ? await this.getServerTime() : undefined,
 		);
 
-		const res = await this.post(`${this.host}${endpoint}`, {
-			headers,
-			data: ordersPayload,
-		});
+		const res = await this.post(
+			`${this.host}${endpoint}`,
+			{
+				headers,
+				data: ordersPayload,
+			},
+			true,
+		);
 
 		if (this._isOrderVersionMismatch(res)) await this.resolveVersion(true);
 
-		return res;
+		return this.throwIfError(res);
 	}
 
 	public async cancelOrder(payload: OrderPayload): Promise<any> {
@@ -1405,6 +1520,29 @@ export class ClobClient {
 		return this.get(`${this.host}${endpoint}`, { headers });
 	}
 
+	public async revokeBuilderApiKey(): Promise<any> {
+		this.canL2Auth();
+
+		const endpoint = REVOKE_BUILDER_API_KEY;
+		const headerArgs = {
+			method: DELETE,
+			requestPath: endpoint,
+		};
+
+		const headers = await createL2Headers(
+			this.signer as ClobSigner,
+			this.creds as ApiKeyCreds,
+			headerArgs,
+			this.useServerTime ? await this.getServerTime() : undefined,
+		);
+
+		return this.del(`${this.host}${endpoint}`, { headers });
+	}
+
+	public async getMarketTradesEvents(conditionID: string): Promise<MarketTradeEvent[]> {
+		return this.get(`${this.host}${GET_MARKET_TRADES_EVENTS}${conditionID}`);
+	}
+
 	private canL1Auth(): void {
 		if (this.signer === undefined) {
 			throw L1_AUTH_UNAVAILABLE_ERROR;
@@ -1464,6 +1602,20 @@ export class ClobClient {
 		return tickSize;
 	}
 
+	private async _resolveFeeRateBps(tokenID: string, userFeeRateBps?: number): Promise<number> {
+		const marketFeeRateBps = await this.getFeeRateBps(tokenID);
+		if (
+			marketFeeRateBps > 0 &&
+			userFeeRateBps !== undefined &&
+			userFeeRateBps !== marketFeeRateBps
+		) {
+			throw new Error(
+				`invalid user provided fee rate: ${userFeeRateBps}, fee rate for the market must be ${marketFeeRateBps}`,
+			);
+		}
+		return marketFeeRateBps;
+	}
+
 	private async resolveVersion(forceUpdate: boolean = false): Promise<number> {
 		// Use cached version if given
 		if (!forceUpdate && this.cachedVersion !== undefined) {
@@ -1495,16 +1647,28 @@ export class ClobClient {
 		return message.includes(ORDER_VERSION_MISMATCH_ERROR);
 	}
 
+	private throwIfError(result: any): any {
+		if (this.throwOnError && result && typeof result === "object" && "error" in result) {
+			const msg =
+				typeof result.error === "string" ? result.error : JSON.stringify(result.error);
+			throw new ApiError(msg, result.status, result);
+		}
+		return result;
+	}
+
 	// http methods
-	private async get(endpoint: string, options?: RequestOptions) {
-		return get(endpoint, options);
+	private async get(endpoint: string, options?: RequestOptions, skipThrow = false) {
+		const result = await get(endpoint, options);
+		return skipThrow ? result : this.throwIfError(result);
 	}
 
-	private async post(endpoint: string, options?: RequestOptions) {
-		return post(endpoint, options, this.retryOnError);
+	private async post(endpoint: string, options?: RequestOptions, skipThrow = false) {
+		const result = await post(endpoint, options, this.retryOnError);
+		return skipThrow ? result : this.throwIfError(result);
 	}
 
-	private async del(endpoint: string, options?: RequestOptions) {
-		return del(endpoint, options);
+	private async del(endpoint: string, options?: RequestOptions, skipThrow = false) {
+		const result = await del(endpoint, options);
+		return skipThrow ? result : this.throwIfError(result);
 	}
 }

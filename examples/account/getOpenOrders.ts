@@ -2,10 +2,11 @@ import { resolve } from "node:path";
 import { config as dotenvConfig } from "dotenv";
 import { createWalletClient, http } from "viem";
 import { privateKeyToAccount } from "viem/accounts";
+import { polygon, polygonAmoy } from "viem/chains";
 
 import { type ApiKeyCreds, Chain, ClobClient } from "../../src";
 
-dotenvConfig({ path: resolve(__dirname, "../../.env") });
+dotenvConfig({ path: resolve(import.meta.dirname, "../../.env") });
 
 const YES = "71321045679252212594626385532706912750332728571942532289631379312455583992563";
 const NO = "52114319501245915516055106046884209969926127482827954674443846427813813222426";
@@ -13,8 +14,9 @@ const CONDITION_ID = "0x5f65177b394277fd294cd75650044e32ba009a95022d88a0c1d56589
 
 async function main() {
 	const account = privateKeyToAccount(`${process.env.PK}` as `0x${string}`);
-	const walletClient = createWalletClient({ account, transport: http() });
 	const chainId = parseInt(`${process.env.CHAIN_ID || Chain.AMOY}`) as Chain;
+	const chain = chainId === Chain.POLYGON ? polygon : polygonAmoy;
+	const walletClient = createWalletClient({ account, chain, transport: http() });
 	console.log(`Address: ${account.address}, chainId: ${chainId}`);
 
 	const host = process.env.CLOB_API_URL || "http://localhost:8080";

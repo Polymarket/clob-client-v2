@@ -2,10 +2,11 @@ import { config as dotenvConfig } from "dotenv";
 import { resolve } from "path";
 import { createWalletClient, http } from "viem";
 import { privateKeyToAccount } from "viem/accounts";
+import { polygon, polygonAmoy } from "viem/chains";
 
 import { type ApiKeyCreds, Chain, ClobClient, OrderType, Side } from "../../src";
 
-dotenvConfig({ path: resolve(__dirname, "../../.env") });
+dotenvConfig({ path: resolve(import.meta.dirname, "../../.env") });
 
 // A marketable limit sell crosses the spread and fills immediately against resting bids.
 // CLOB blocks self-trading, so a second wallet seeds the bid that wallet1 will fill against.
@@ -16,10 +17,11 @@ const SIZE = 100;
 
 async function main() {
 	const chainId = parseInt(`${process.env.CHAIN_ID || Chain.AMOY}`) as Chain;
+	const chain = chainId === Chain.POLYGON ? polygon : polygonAmoy;
 	const host = process.env.CLOB_API_URL || "http://localhost:8080";
 
 	const account1 = privateKeyToAccount(`${process.env.PK}` as `0x${string}`);
-	const walletClient1 = createWalletClient({ account: account1, transport: http() });
+	const walletClient1 = createWalletClient({ account: account1, chain, transport: http() });
 	const creds1: ApiKeyCreds = {
 		key: `${process.env.CLOB_API_KEY}`,
 		secret: `${process.env.CLOB_SECRET}`,
@@ -28,7 +30,7 @@ async function main() {
 	const client1 = new ClobClient({ host, chain: chainId, signer: walletClient1, creds: creds1 });
 
 	const account2 = privateKeyToAccount(`${process.env.PK2}` as `0x${string}`);
-	const walletClient2 = createWalletClient({ account: account2, transport: http() });
+	const walletClient2 = createWalletClient({ account: account2, chain, transport: http() });
 	const creds2: ApiKeyCreds = {
 		key: `${process.env.CLOB_API_KEY_2}`,
 		secret: `${process.env.CLOB_SECRET_2}`,

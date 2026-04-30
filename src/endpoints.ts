@@ -1,5 +1,6 @@
 // Health
 export const OK = "/ok";
+export const HEARTBEAT = "/v1/heartbeats";
 
 // Server Time
 export const TIME = "/time";
@@ -66,9 +67,18 @@ export const GET_REWARDS_MARKETS_CURRENT = "/rewards/markets/current";
 export const GET_REWARDS_MARKETS = "/rewards/markets/";
 export const GET_REWARDS_EARNINGS_PERCENTAGES = "/rewards/user/markets";
 
+// Readonly API Key endpoints
+export const CREATE_READONLY_API_KEY = "/auth/readonly-api-key";
+export const GET_READONLY_API_KEYS = "/auth/readonly-api-keys";
+export const DELETE_READONLY_API_KEY = "/auth/readonly-api-key";
+
 // Builder API Key endpoints
 export const CREATE_BUILDER_API_KEY = "/auth/builder-api-key";
 export const GET_BUILDER_API_KEYS = "/auth/builder-api-key";
+export const REVOKE_BUILDER_API_KEY = "/auth/builder-api-key";
+
+// Live activity
+export const GET_MARKET_TRADES_EVENTS = "/markets/live-activity/";
 
 // Builder endpoints
 export const GET_BUILDER_TRADES = "/builder/trades";

@@ -1,9 +1,13 @@
-import { zeroAddress } from "viem";
 import { getContractConfig } from "../../config.js";
-import type { OrderDataV1, SignedOrderV1, SignedOrderV2 } from "../../order-utils/index.js";
+import type { SignedOrderV1, SignedOrderV2 } from "../../order-utils/index.js";
 import { SignatureTypeV2 } from "../../order-utils/index.js";
 import { type ClobSigner, getSignerAddress } from "../../signing/signer.js";
-import type { Chain, CreateOrderOptions, UserMarketOrderV2 } from "../../types/index.js";
+import type {
+	Chain,
+	CreateOrderOptions,
+	UserMarketOrderV1,
+	UserMarketOrderV2,
+} from "../../types/index.js";
 import { buildMarketOrderCreationArgs } from "./buildMarketOrderCreationArgs.js";
 import { buildOrder } from "./buildOrder.js";
 import { ROUNDING_CONFIG } from "./roundingConfig.js";
@@ -13,7 +17,7 @@ export const createMarketOrder = async (
 	chainId: Chain,
 	signatureType: SignatureTypeV2,
 	funderAddress: string | undefined,
-	userMarketOrder: UserMarketOrderV2,
+	userMarketOrder: UserMarketOrderV1 | UserMarketOrderV2,
 	options: CreateOrderOptions,
 	version: number,
 ): Promise<SignedOrderV1 | SignedOrderV2> => {
@@ -32,6 +36,7 @@ export const createMarketOrder = async (
 		signatureType,
 		userMarketOrder,
 		ROUNDING_CONFIG[options.tickSize],
+		version,
 	);
 
 	let exchangeContract: string;
@@ -43,8 +48,6 @@ export const createMarketOrder = async (
 			exchangeContract = options.negRisk
 				? contractConfig.negRiskExchange
 				: contractConfig.exchange;
-			// Add taker field for V1 orders (V1 requires it, V2 does not)
-			(orderData as OrderDataV1).taker = zeroAddress;
 			break;
 		case 2:
 			exchangeContract = options.negRisk

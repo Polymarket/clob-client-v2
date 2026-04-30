@@ -3,7 +3,7 @@ import { config as dotenvConfig } from "dotenv";
 
 import { Chain, ClobClient, type PriceHistoryFilterParams, PriceHistoryInterval } from "../../src";
 
-dotenvConfig({ path: resolve(__dirname, "../../.env") });
+dotenvConfig({ path: resolve(import.meta.dirname, "../../.env") });
 
 const YES = "71321045679252212594626385532706912750332728571942532289631379312455583992563";
 const NO = "52114319501245915516055106046884209969926127482827954674443846427813813222426";

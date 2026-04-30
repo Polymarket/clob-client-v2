@@ -9,20 +9,20 @@ import { getContractConfig } from "../../src/config";
 import { ctfAbi } from "../abi/ctfAbi";
 import { usdcAbi } from "../abi/usdcAbi";
 
-dotenvConfig({ path: resolve(__dirname, "../../.env") });
+dotenvConfig({ path: resolve(import.meta.dirname, "../../.env") });
 
 /**
  * NegRisk markets require separate allowances
  * for the NegRiskCtfExchange and the NegRiskAdapter.
  */
 
-function getClients(mainnetQ: boolean) {
+function getClients(chainId: Chain) {
 	const pk = process.env.PK as `0x${string}`;
 	const rpcToken = process.env.RPC_TOKEN as string;
-	const rpcUrl = mainnetQ
+	const rpcUrl = chainId === Chain.POLYGON
 		? `https://polygon-mainnet.g.alchemy.com/v2/${rpcToken}`
 		: `https://polygon-amoy.g.alchemy.com/v2/${rpcToken}`;
-	const chain = mainnetQ ? polygon : polygonAmoy;
+	const chain = chainId === Chain.POLYGON ? polygon : polygonAmoy;
 	const account = privateKeyToAccount(pk);
 	const walletClient = createWalletClient({ account, chain, transport: http(rpcUrl) });
 	const publicClient = createPublicClient({ chain, transport: http(rpcUrl) });
@@ -30,12 +30,8 @@ function getClients(mainnetQ: boolean) {
 }
 
 async function main() {
-	// --------------------------
-	// SET MAINNET OR AMOY HERE
-	const isMainnet = false;
-	// --------------------------
-	const { account, walletClient, publicClient } = getClients(isMainnet);
 	const chainId = parseInt(`${process.env.CHAIN_ID || Chain.AMOY}`) as Chain;
+	const { account, walletClient, publicClient } = getClients(chainId);
 	console.log(`Address: ${account.address}, chainId: ${chainId}`);
 
 	const contractConfig = getContractConfig(chainId);
