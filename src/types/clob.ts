@@ -199,7 +199,7 @@ export interface OrderBookSummary {
 	bids: OrderSummary[];
 	asks: OrderSummary[];
 	min_order_size: string;
-	tick_size: string;
+	tick_size: TickSize;
 	neg_risk: boolean;
 	hash: string;
 	last_trade_price: string;
