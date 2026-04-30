@@ -3,8 +3,8 @@ import {
 	encodeAbiParameters,
 	hashTypedData,
 	keccak256,
-	toHex,
 	type LocalAccount,
+	toHex,
 	type WalletClient,
 } from "viem";
 
