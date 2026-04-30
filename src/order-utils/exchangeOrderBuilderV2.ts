@@ -1,4 +1,12 @@
-import { hashTypedData } from "viem";
+import {
+	type Address,
+	encodeAbiParameters,
+	hashTypedData,
+	keccak256,
+	toHex,
+	type LocalAccount,
+	type WalletClient,
+} from "viem";
 
 import { bytes32Zero } from "../constants.js";
 import { type ClobSigner, getSignerAddress, signTypedDataWithSigner } from "../signing/signer.js";
@@ -13,19 +21,55 @@ import type { OrderDataV2, OrderV2, SignedOrderV2 } from "./model/orderDataV2.js
 import { SignatureTypeV2 } from "./model/signatureTypeV2.js";
 import { generateOrderSalt } from "./utils.js";
 
+const ORDER_TYPE_STRING =
+	"Order(uint256 salt,address maker,address signer,uint256 tokenId,uint256 makerAmount,uint256 takerAmount,uint8 side,uint8 signatureType,uint256 timestamp,bytes32 metadata,bytes32 builder)";
+
+const ORDER_TYPE_HASH = keccak256(toHex(ORDER_TYPE_STRING));
+
+const DOMAIN_TYPE_HASH = keccak256(
+	toHex("EIP712Domain(string name,string version,uint256 chainId,address verifyingContract)"),
+);
+
+const SOLADY_TYPE_HASH = keccak256(
+	toHex(
+		`TypedDataSign(Order contents,string name,string version,uint256 chainId,address verifyingContract,bytes32 salt)${ORDER_TYPE_STRING}`,
+	),
+);
+
+const DEPOSIT_WALLET_NAME_HASH = keccak256(toHex("DepositWallet"));
+const DEPOSIT_WALLET_VERSION_HASH = keccak256(toHex("1"));
+const CTF_EXCHANGE_NAME_HASH = keccak256(toHex(CTF_EXCHANGE_V2_DOMAIN_NAME));
+const CTF_EXCHANGE_VERSION_HASH = keccak256(toHex(CTF_EXCHANGE_V2_DOMAIN_VERSION));
+
 export class ExchangeOrderBuilderV2 {
+	private readonly appDomainSep: `0x${string}`;
+
 	constructor(
 		private readonly contractAddress: string,
 		private readonly chainId: number,
 		private readonly signer: ClobSigner,
 		private readonly generateSalt = generateOrderSalt,
-	) {}
+	) {
+		this.appDomainSep = keccak256(
+			encodeAbiParameters(
+				[
+					{ type: "bytes32" },
+					{ type: "bytes32" },
+					{ type: "bytes32" },
+					{ type: "uint256" },
+					{ type: "address" },
+				],
+				[
+					DOMAIN_TYPE_HASH,
+					CTF_EXCHANGE_NAME_HASH,
+					CTF_EXCHANGE_VERSION_HASH,
+					BigInt(chainId),
+					contractAddress as Address,
+				],
+			),
+		);
+	}
 
-	/**
-	 * build an order object including the signature.
-	 * @param orderData
-	 * @returns a SignedOrder object (order + signature)
-	 */
 	async buildSignedOrder(orderData: OrderDataV2): Promise<SignedOrderV2> {
 		const order = await this.buildOrder(orderData);
 		const orderTypedData = this.buildOrderTypedData(order);
@@ -37,11 +81,6 @@ export class ExchangeOrderBuilderV2 {
 		} as SignedOrderV2;
 	}
 
-	/**
-	 * Creates an Order object from order data.
-	 * @param OrderData
-	 * @returns a Order object (not signed)
-	 */
 	async buildOrder({
 		maker,
 		tokenId,
@@ -59,8 +98,7 @@ export class ExchangeOrderBuilderV2 {
 			signer = maker;
 		}
 
-		// For POLY_1271 (deposit wallets), the order's signer field is the wallet
-		// contract address, while the actual ECDSA signing is done by the EOA owner
+		// For POLY_1271 (deposit wallets), signer is the wallet contract — skip EOA address check
 		if (signatureType !== SignatureTypeV2.POLY_1271) {
 			const signerAddress = await getSignerAddress(this.signer);
 			if (signer !== signerAddress) {
@@ -84,11 +122,6 @@ export class ExchangeOrderBuilderV2 {
 		};
 	}
 
-	/**
-	 * Parses an Order object to EIP712 typed data
-	 * @param order
-	 * @returns a EIP712TypedData object
-	 */
 	buildOrderTypedData(order: OrderV2): EIP712TypedData {
 		return {
 			primaryType: "Order",
@@ -118,29 +151,96 @@ export class ExchangeOrderBuilderV2 {
 		};
 	}
 
-	/**
-	 * Generates order's signature from a EIP712TypedData object + the signer address
-	 * @param typedData
-	 * @returns a OrderSignature that is an string
-	 */
-	buildOrderSignature(typedData: EIP712TypedData): Promise<OrderSignature> {
+	async buildOrderSignature(typedData: EIP712TypedData): Promise<OrderSignature> {
 		delete typedData.types.EIP712Domain;
-		return signTypedDataWithSigner({
-			signer: this.signer,
-			domain: typedData.domain,
-			types: typedData.types,
-			value: typedData.message,
-			primaryType: typedData.primaryType,
-		});
+
+		const msg = typedData.message;
+
+		if ((msg.signatureType as number) !== SignatureTypeV2.POLY_1271) {
+			return signTypedDataWithSigner({
+				signer: this.signer,
+				domain: typedData.domain,
+				types: typedData.types,
+				value: typedData.message,
+				primaryType: typedData.primaryType,
+			});
+		}
+
+		const localAccount = (this.signer as WalletClient).account as LocalAccount | undefined;
+		if (!localAccount?.sign) {
+			throw new Error("POLY_1271 requires a viem WalletClient with a local account");
+		}
+
+		const contentsHash = keccak256(
+			encodeAbiParameters(
+				[
+					{ type: "bytes32" },
+					{ type: "uint256" },
+					{ type: "address" },
+					{ type: "address" },
+					{ type: "uint256" },
+					{ type: "uint256" },
+					{ type: "uint256" },
+					{ type: "uint8" },
+					{ type: "uint8" },
+					{ type: "uint256" },
+					{ type: "bytes32" },
+					{ type: "bytes32" },
+				],
+				[
+					ORDER_TYPE_HASH,
+					BigInt(msg.salt as string),
+					msg.maker as Address,
+					msg.signer as Address,
+					BigInt(msg.tokenId as string),
+					BigInt(msg.makerAmount as string),
+					BigInt(msg.takerAmount as string),
+					msg.side as number,
+					msg.signatureType as number,
+					BigInt(msg.timestamp as string),
+					msg.metadata as `0x${string}`,
+					msg.builder as `0x${string}`,
+				],
+			),
+		);
+
+		const typedDataSignStructHash = keccak256(
+			encodeAbiParameters(
+				[
+					{ type: "bytes32" },
+					{ type: "bytes32" },
+					{ type: "bytes32" },
+					{ type: "bytes32" },
+					{ type: "uint256" },
+					{ type: "address" },
+					{ type: "bytes32" },
+				],
+				[
+					SOLADY_TYPE_HASH,
+					contentsHash,
+					DEPOSIT_WALLET_NAME_HASH,
+					DEPOSIT_WALLET_VERSION_HASH,
+					BigInt(this.chainId),
+					msg.signer as Address,
+					bytes32Zero as `0x${string}`,
+				],
+			),
+		);
+
+		// digest = keccak256(0x1901 || appDomainSep || structHash)
+		const digest = keccak256(
+			`0x1901${this.appDomainSep.slice(2)}${typedDataSignStructHash.slice(2)}` as `0x${string}`,
+		);
+
+		const innerSig = await localAccount.sign({ hash: digest });
+
+		// Encode: innerSig (65) || appDomainSep (32) || contentsHash (32) || contentsType || uint16_BE(len)
+		const ctLen = ORDER_TYPE_STRING.length;
+		const lenHex = ctLen.toString(16).padStart(4, "0");
+		return `0x${innerSig.slice(2)}${this.appDomainSep.slice(2)}${contentsHash.slice(2)}${toHex(ORDER_TYPE_STRING).slice(2)}${lenHex}`;
 	}
 
-	/**
-	 * Generates the hash of the order from a EIP712TypedData object.
-	 * @param orderTypedData
-	 * @returns a OrderHash that is an string
-	 */
 	buildOrderHash(orderTypedData: EIP712TypedData): OrderHash {
-		const digest = hashTypedData(orderTypedData);
-		return digest;
+		return hashTypedData(orderTypedData);
 	}
 }
