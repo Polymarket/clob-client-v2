@@ -1,3 +1,5 @@
+import type { LocalAccount } from "viem";
+
 import {
 	ExchangeOrderBuilderV1,
 	ExchangeOrderBuilderV2,
@@ -23,12 +25,13 @@ export const buildOrder = async (
 	chainId: number,
 	orderData: OrderDataV1 | OrderDataV2,
 	version: number = 2,
+	sessionSigner?: LocalAccount,
 ): Promise<SignedOrderV1 | SignedOrderV2> => {
 	switch (version) {
 		case 1:
 			return buildOrderV1(signer, exchangeAddress, chainId, orderData as OrderDataV1);
 		case 2:
-			return buildOrderV2(signer, exchangeAddress, chainId, orderData as OrderDataV2);
+			return buildOrderV2(signer, exchangeAddress, chainId, orderData as OrderDataV2, sessionSigner);
 		default:
 			throw new Error(`unsupported order version ${version}`);
 	}
@@ -49,7 +52,8 @@ export const buildOrderV2 = async (
 	exchangeAddress: string,
 	chainId: number,
 	orderData: OrderDataV2,
+	sessionSigner?: LocalAccount,
 ): Promise<SignedOrderV2> => {
-	const ctfExchangeOrderBuilder = new ExchangeOrderBuilderV2(exchangeAddress, chainId, signer);
+	const ctfExchangeOrderBuilder = new ExchangeOrderBuilderV2(exchangeAddress, chainId, signer, undefined, sessionSigner);
 	return ctfExchangeOrderBuilder.buildSignedOrder(orderData);
 };

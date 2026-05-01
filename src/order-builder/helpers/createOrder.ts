@@ -1,3 +1,5 @@
+import type { LocalAccount } from "viem";
+
 import { getContractConfig } from "../../config.js";
 import type { SignedOrderV1, SignedOrderV2 } from "../../order-utils/index.js";
 import { SignatureTypeV2 } from "../../order-utils/index.js";
@@ -15,6 +17,7 @@ export const createOrder = async (
 	userOrder: UserOrderV1 | UserOrderV2,
 	options: CreateOrderOptions,
 	version: number,
+	sessionSigner?: LocalAccount,
 ): Promise<SignedOrderV1 | SignedOrderV2> => {
 	const eoaSignerAddress = await getSignerAddress(eoaSigner);
 
@@ -51,5 +54,5 @@ export const createOrder = async (
 		default:
 			throw new Error(`unsupported order version ${version}`);
 	}
-	return buildOrder(eoaSigner, exchangeContract, chainId, orderData, version);
+	return buildOrder(eoaSigner, exchangeContract, chainId, orderData, version, sessionSigner);
 };

@@ -1,3 +1,5 @@
+import type { LocalAccount } from "viem";
+
 import {
 	BUILDER_FEES_BPS,
 	bytes32Zero,
@@ -179,6 +181,7 @@ export interface ClobClientOptions {
 	getSigner?: () => Promise<ClobSigner> | ClobSigner;
 	retryOnError?: boolean;
 	throwOnError?: boolean;
+	sessionSigner?: LocalAccount;
 }
 
 export class ClobClient {
@@ -233,6 +236,7 @@ export class ClobClient {
 		getSigner,
 		retryOnError,
 		throwOnError,
+		sessionSigner,
 	}: ClobClientOptions) {
 		this.host = host.endsWith("/") ? host.slice(0, -1) : host;
 		this.chainId = chain;
@@ -249,6 +253,7 @@ export class ClobClient {
 			signatureType,
 			funderAddress,
 			getSigner,
+			sessionSigner,
 		);
 		this.signatureType = signatureType ?? SignatureTypeV2.EOA;
 		this.funderAddress = funderAddress;
