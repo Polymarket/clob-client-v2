@@ -1,3 +1,5 @@
+import type { LocalAccount } from "viem";
+
 import { SignatureTypeV2, type SignedOrderV1, type SignedOrderV2 } from "../order-utils/index.js";
 import type { ClobSigner } from "../signing/signer.js";
 import type {
@@ -24,6 +26,8 @@ export class OrderBuilder {
 	// If not provided, funderAddress is the signer address
 	readonly funderAddress?: string;
 
+	readonly sessionSigner?: LocalAccount;
+
 	/**
 	 * Optional function to dynamically resolve the signer.
 	 * If provided, this function will be called to obtain a fresh signer instance
@@ -39,12 +43,14 @@ export class OrderBuilder {
 		signatureType?: SignatureTypeV2,
 		funderAddress?: string,
 		getSigner?: () => Promise<ClobSigner> | ClobSigner,
+		sessionSigner?: LocalAccount,
 	) {
 		this.signer = signer;
 		this.chainId = chainId;
 		this.signatureType = signatureType === undefined ? SignatureTypeV2.EOA : signatureType;
 		this.funderAddress = funderAddress;
 		this.getSigner = getSigner;
+		this.sessionSigner = sessionSigner;
 	}
 
 	/**
@@ -64,6 +70,7 @@ export class OrderBuilder {
 			userOrder,
 			options,
 			version,
+			this.sessionSigner,
 		);
 	}
 
@@ -84,6 +91,7 @@ export class OrderBuilder {
 			userMarketOrder,
 			options,
 			version,
+			this.sessionSigner,
 		);
 	}
 
