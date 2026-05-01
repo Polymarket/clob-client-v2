@@ -31,7 +31,13 @@ export const buildOrder = async (
 		case 1:
 			return buildOrderV1(signer, exchangeAddress, chainId, orderData as OrderDataV1);
 		case 2:
-			return buildOrderV2(signer, exchangeAddress, chainId, orderData as OrderDataV2, sessionSigner);
+			return buildOrderV2(
+				signer,
+				exchangeAddress,
+				chainId,
+				orderData as OrderDataV2,
+				sessionSigner,
+			);
 		default:
 			throw new Error(`unsupported order version ${version}`);
 	}
@@ -54,6 +60,12 @@ export const buildOrderV2 = async (
 	orderData: OrderDataV2,
 	sessionSigner?: LocalAccount,
 ): Promise<SignedOrderV2> => {
-	const ctfExchangeOrderBuilder = new ExchangeOrderBuilderV2(exchangeAddress, chainId, signer, undefined, sessionSigner);
+	const ctfExchangeOrderBuilder = new ExchangeOrderBuilderV2(
+		exchangeAddress,
+		chainId,
+		signer,
+		undefined,
+		sessionSigner,
+	);
 	return ctfExchangeOrderBuilder.buildSignedOrder(orderData);
 };

@@ -249,7 +249,9 @@ export class ExchangeOrderBuilderV2 {
 
 		const localAccount = (this.signer as WalletClient).account as LocalAccount | undefined;
 		if (!localAccount?.sign) {
-			throw new Error("POLY_1271 requires either a sessionSigner or a WalletClient with a local account");
+			throw new Error(
+				"POLY_1271 requires either a sessionSigner or a WalletClient with a local account",
+			);
 		}
 		const innerSig = await localAccount.sign({ hash: digest });
 		return this.buildNestedSig(innerSig, contentsHash);
