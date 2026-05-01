@@ -3,9 +3,7 @@ import {
 	encodeAbiParameters,
 	hashTypedData,
 	keccak256,
-	type LocalAccount,
 	toHex,
-	type WalletClient,
 } from "viem";
 
 import { bytes32Zero } from "../constants.js";
@@ -30,14 +28,15 @@ const DOMAIN_TYPE_HASH = keccak256(
 	toHex("EIP712Domain(string name,string version,uint256 chainId,address verifyingContract)"),
 );
 
-const SOLADY_TYPE_HASH = keccak256(
-	toHex(
-		`TypedDataSign(Order contents,string name,string version,uint256 chainId,address verifyingContract,bytes32 salt)${ORDER_TYPE_STRING}`,
-	),
-);
+const TYPED_DATA_SIGN_STRUCT = [
+	{ name: "contents", type: "Order" },
+	{ name: "name", type: "string" },
+	{ name: "version", type: "string" },
+	{ name: "chainId", type: "uint256" },
+	{ name: "verifyingContract", type: "address" },
+	{ name: "salt", type: "bytes32" },
+];
 
-const DEPOSIT_WALLET_NAME_HASH = keccak256(toHex("DepositWallet"));
-const DEPOSIT_WALLET_VERSION_HASH = keccak256(toHex("1"));
 const CTF_EXCHANGE_NAME_HASH = keccak256(toHex(CTF_EXCHANGE_V2_DOMAIN_NAME));
 const CTF_EXCHANGE_VERSION_HASH = keccak256(toHex(CTF_EXCHANGE_V2_DOMAIN_VERSION));
 
@@ -166,11 +165,6 @@ export class ExchangeOrderBuilderV2 {
 			});
 		}
 
-		const localAccount = (this.signer as WalletClient).account as LocalAccount | undefined;
-		if (!localAccount?.sign) {
-			throw new Error("POLY_1271 requires a viem WalletClient with a local account");
-		}
-
 		const contentsHash = keccak256(
 			encodeAbiParameters(
 				[
@@ -204,37 +198,30 @@ export class ExchangeOrderBuilderV2 {
 			),
 		);
 
-		const typedDataSignStructHash = keccak256(
-			encodeAbiParameters(
-				[
-					{ type: "bytes32" },
-					{ type: "bytes32" },
-					{ type: "bytes32" },
-					{ type: "bytes32" },
-					{ type: "uint256" },
-					{ type: "address" },
-					{ type: "bytes32" },
-				],
-				[
-					SOLADY_TYPE_HASH,
-					contentsHash,
-					DEPOSIT_WALLET_NAME_HASH,
-					DEPOSIT_WALLET_VERSION_HASH,
-					BigInt(this.chainId),
-					msg.signer as Address,
-					bytes32Zero as `0x${string}`,
-				],
-			),
-		);
+		const innerSig = await signTypedDataWithSigner({
+			signer: this.signer,
+			domain: {
+				name: CTF_EXCHANGE_V2_DOMAIN_NAME,
+				version: CTF_EXCHANGE_V2_DOMAIN_VERSION,
+				chainId: this.chainId,
+				verifyingContract: this.contractAddress,
+			},
+			types: {
+				TypedDataSign: TYPED_DATA_SIGN_STRUCT,
+				Order: CTF_EXCHANGE_V2_ORDER_STRUCT,
+			},
+			primaryType: "TypedDataSign",
+			value: {
+				contents: typedData.message,
+				name: "DepositWallet",
+				version: "1",
+				chainId: this.chainId,
+				verifyingContract: msg.signer,
+				salt: bytes32Zero,
+			},
+		});
 
-		// digest = keccak256(0x1901 || appDomainSep || structHash)
-		const digest = keccak256(
-			`0x1901${this.appDomainSep.slice(2)}${typedDataSignStructHash.slice(2)}` as `0x${string}`,
-		);
-
-		const innerSig = await localAccount.sign({ hash: digest });
-
-		// Encode: innerSig (65) || appDomainSep (32) || contentsHash (32) || contentsType || uint16_BE(len)
+		// innerSig (65) || appDomainSep (32) || contentsHash (32) || contentsType || uint16_BE(len)
 		const ctLen = ORDER_TYPE_STRING.length;
 		const lenHex = ctLen.toString(16).padStart(4, "0");
 		return `0x${innerSig.slice(2)}${this.appDomainSep.slice(2)}${contentsHash.slice(2)}${toHex(ORDER_TYPE_STRING).slice(2)}${lenHex}`;
