@@ -1,10 +1,4 @@
-import {
-	type Address,
-	encodeAbiParameters,
-	hashTypedData,
-	keccak256,
-	toHex,
-} from "viem";
+import { type Address, encodeAbiParameters, hashTypedData, keccak256, toHex } from "viem";
 
 import { bytes32Zero } from "../constants.js";
 import { type ClobSigner, getSignerAddress, signTypedDataWithSigner } from "../signing/signer.js";
