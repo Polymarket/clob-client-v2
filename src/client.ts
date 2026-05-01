@@ -84,7 +84,7 @@ import {
 	calculateSellMarketPrice,
 } from "./order-builder/helpers/index.js";
 import { OrderBuilder } from "./order-builder/index.js";
-import type { SignatureTypeV2 } from "./order-utils/model/signatureTypeV2.js";
+import { SignatureTypeV2 } from "./order-utils/model/signatureTypeV2.js";
 import type { ClobSigner } from "./signing/signer.js";
 import type {
 	ApiKeyCreds,
@@ -211,6 +211,10 @@ export class ClobClient {
 
 	readonly builderConfig?: BuilderConfig;
 
+	readonly signatureType: SignatureTypeV2;
+
+	readonly funderAddress?: string;
+
 	private cachedVersion?: number;
 
 	readonly retryOnError?: boolean;
@@ -246,6 +250,8 @@ export class ClobClient {
 			funderAddress,
 			getSigner,
 		);
+		this.signatureType = signatureType ?? SignatureTypeV2.EOA;
+		this.funderAddress = funderAddress;
 		this.tickSizes = {};
 		this.negRisk = {};
 		this.feeRates = {};
