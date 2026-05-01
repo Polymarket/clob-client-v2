@@ -1657,17 +1657,17 @@ export class ClobClient {
 	}
 
 	// http methods
-	private async get(endpoint: string, options?: RequestOptions, skipThrow = false) {
+	protected async get(endpoint: string, options?: RequestOptions, skipThrow = false) {
 		const result = await get(endpoint, options);
 		return skipThrow ? result : this.throwIfError(result);
 	}
 
-	private async post(endpoint: string, options?: RequestOptions, skipThrow = false) {
+	protected async post(endpoint: string, options?: RequestOptions, skipThrow = false) {
 		const result = await post(endpoint, options, this.retryOnError);
 		return skipThrow ? result : this.throwIfError(result);
 	}
 
-	private async del(endpoint: string, options?: RequestOptions, skipThrow = false) {
+	protected async del(endpoint: string, options?: RequestOptions, skipThrow = false) {
 		const result = await del(endpoint, options);
 		return skipThrow ? result : this.throwIfError(result);
 	}
