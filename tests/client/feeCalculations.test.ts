@@ -367,7 +367,9 @@ describe("fee calculations", () => {
 
 	describe("ClobClient feeSlippage", () => {
 		// publicly known private key
-		const wallet = new Wallet("0xac0974bec39a17e36ba4a6b4d238ff944bacb478cbed5efcae784d7bf4f2ff80");
+		const wallet = new Wallet(
+			"0xac0974bec39a17e36ba4a6b4d238ff944bacb478cbed5efcae784d7bf4f2ff80",
+		);
 
 		it("defaults to zero", () => {
 			const client = new ClobClient({
@@ -414,7 +416,9 @@ describe("fee calculations", () => {
 	describe("client order fee adjustment", () => {
 		const tokenID = "123";
 		// publicly known private key
-		const wallet = new Wallet("0xac0974bec39a17e36ba4a6b4d238ff944bacb478cbed5efcae784d7bf4f2ff80");
+		const wallet = new Wallet(
+			"0xac0974bec39a17e36ba4a6b4d238ff944bacb478cbed5efcae784d7bf4f2ff80",
+		);
 
 		const createCachedClient = (feeSlippage = 0): ClobClient => {
 			const client = new ClobClient({

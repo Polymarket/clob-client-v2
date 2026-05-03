@@ -23,7 +23,7 @@ export function adjustBuyAmountForFees(
 ): number {
 	validateFeeSlippage(feeSlippage);
 	const platformFeeRate = feeRate * (price * (1 - price)) ** feeExponent;
-	const effectivePlatformFeeRate = platformFeeRate * (1 + (feeSlippage / 100));
+	const effectivePlatformFeeRate = platformFeeRate * (1 + feeSlippage / 100);
 	const platformFee = (amount / price) * effectivePlatformFeeRate;
 	const totalCost = amount + platformFee + amount * builderTakerFeeRate;
 
