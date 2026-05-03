@@ -83,6 +83,7 @@ import {
 import {
 	calculateBuyMarketPrice,
 	calculateSellMarketPrice,
+	ROUNDING_CONFIG,
 } from "./order-builder/helpers/index.js";
 import { OrderBuilder } from "./order-builder/index.js";
 import { SignatureTypeV2 } from "./order-utils/model/signatureTypeV2.js";
@@ -149,7 +150,12 @@ import type {
 } from "./types/index.js";
 import { OrderType, orderToJsonV1, orderToJsonV2, Side } from "./types/index.js";
 import { isV2Order, type SignedOrder } from "./types/unifiedOrder.js";
-import { generateOrderBookSummaryHash, isTickSizeSmaller, priceValid } from "./utilities.js";
+import {
+	generateOrderBookSummaryHash,
+	isTickSizeSmaller,
+	priceValid,
+	roundNormal,
+} from "./utilities.js";
 
 export { adjustBuyAmountForFees } from "./fees/index.js";
 
@@ -887,6 +893,7 @@ export class ClobClient {
 				}`,
 			);
 		}
+		orderToSign.price = roundNormal(orderToSign.price, ROUNDING_CONFIG[tickSize].price);
 
 		const version = await this.resolveVersion();
 

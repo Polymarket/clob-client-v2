@@ -450,10 +450,37 @@ describe("fee calculations", () => {
 			};
 
 			const signedOrder = await client.createOrder(order, { tickSize: "0.01" });
-
 			expect(signedOrder.makerAmount).toBe("48190000");
 			expect(signedOrder.takerAmount).toBe("96380000");
 			expect(order.size).toBe(100);
+		});
+
+		it("keeps adjusted V2 BUY limit within balance when price rounds up to tick", async () => {
+			const client = createCachedClient(20);
+			const balance = 50;
+			const order: UserOrderV2 = {
+				tokenID,
+				price: 0.505,
+				size: 100,
+				side: Side.BUY,
+				userUSDCBalance: balance,
+			};
+
+			const signedOrder = await client.createOrder(order, { tickSize: "0.01" });
+			const signedNotional = Number(signedOrder.makerAmount) / 1_000_000;
+			const signedShares = Number(signedOrder.takerAmount) / 1_000_000;
+			const signedPrice = signedNotional / signedShares;
+			const platformFee = calculatePlatformFee(
+				signedNotional,
+				signedPrice,
+				feeRate,
+				feeExponent,
+				20,
+			);
+
+			expect(signedPrice).toBeCloseTo(0.51, 10);
+			expect(signedNotional + platformFee).toBeLessThanOrEqual(balance);
+			expect(order.price).toBe(0.505);
 		});
 
 		it("adjusts V2 BUY market amount when userUSDCBalance is provided", async () => {
