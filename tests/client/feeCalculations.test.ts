@@ -1,5 +1,7 @@
+import { Wallet } from "@ethersproject/wallet";
 import { describe, expect, it } from "vitest";
-import { adjustBuyAmountForFees } from "../../src/client.js";
+import { adjustBuyAmountForFees, ClobClient } from "../../src/client.js";
+import { Chain, Side, type UserMarketOrderV2, type UserOrderV2 } from "../../src/types/index.js";
 
 // platform_fee = C * rate * (p*(1-p))^exp, where C = amountUSD / price
 const calculatePlatformFee = (
@@ -7,9 +9,10 @@ const calculatePlatformFee = (
 	price: number,
 	feeRate: number,
 	feeExponent: number,
+	feeSlippage = 0,
 ): number => {
 	const platformFeeRate = feeRate * (price * (1 - price)) ** feeExponent;
-	return (amountUSD / price) * platformFeeRate;
+	return (amountUSD / price) * platformFeeRate * (1 + feeSlippage / 100);
 };
 
 // builder_fee = amountUSD * builderTakerFeeRate (flat % on notional)
@@ -18,6 +21,9 @@ const calculateBuilderFee = (amountUSD: number, builderTakerFeeRate: number): nu
 };
 
 describe("fee calculations", () => {
+	const feeRate = 0.25;
+	const feeExponent = 2;
+
 	// rate=0.25, exp=2, C=100 contracts
 	describe("platform fee (builder fee = 0)", () => {
 		const feeRate = 0.25;
@@ -136,9 +142,6 @@ describe("fee calculations", () => {
 	});
 
 	describe("adjustBuyAmountForFees", () => {
-		const feeRate = 0.25;
-		const feeExponent = 2;
-
 		describe("no adjustment when balance covers amount + fees", () => {
 			it("exact balance equal to amount (no fees) → no adjustment", () => {
 				// feeRate=0, builderRate=0: totalCost = amount, balance = amount → no adjustment
@@ -265,6 +268,236 @@ describe("fee calculations", () => {
 				const builderFee = calculateBuilderFee(adjusted, builderTakerFeeRate);
 				expect(adjusted + platformFee + builderFee).toBeCloseTo(amount, 10);
 			});
+		});
+
+		describe("fee slippage", () => {
+			it("pads only the platform fee by the configured percentage", () => {
+				const amount = 50;
+				const price = 0.5;
+				const builderTakerFeeRate = 0.01;
+				const feeSlippage = 20;
+
+				const adjusted = adjustBuyAmountForFees(
+					amount,
+					price,
+					amount,
+					feeRate,
+					feeExponent,
+					builderTakerFeeRate,
+					feeSlippage,
+				);
+				const platformFee = calculatePlatformFee(
+					adjusted,
+					price,
+					feeRate,
+					feeExponent,
+					feeSlippage,
+				);
+				const builderFee = calculateBuilderFee(adjusted, builderTakerFeeRate);
+
+				expect(platformFee).toBeCloseTo(
+					calculatePlatformFee(adjusted, price, feeRate, feeExponent) * 1.2,
+					10,
+				);
+				expect(builderFee).toBeCloseTo(adjusted * builderTakerFeeRate, 10);
+				expect(adjusted + platformFee + builderFee).toBeCloseTo(amount, 10);
+			});
+
+			it("adjusts when balance covers unpadded fees but not padded fees", () => {
+				const amount = 50;
+				const price = 0.5;
+				const platformFee = calculatePlatformFee(amount, price, feeRate, feeExponent);
+				const paddedPlatformFee = calculatePlatformFee(
+					amount,
+					price,
+					feeRate,
+					feeExponent,
+					20,
+				);
+				const balance = amount + platformFee + (paddedPlatformFee - platformFee) / 2;
+
+				const adjusted = adjustBuyAmountForFees(
+					amount,
+					price,
+					balance,
+					feeRate,
+					feeExponent,
+					0,
+					20,
+				);
+
+				expect(balance).toBeGreaterThan(amount + platformFee);
+				expect(balance).toBeLessThan(amount + paddedPlatformFee);
+				expect(adjusted).toBeLessThan(amount);
+			});
+
+			it("accepts percentage floats between 1 and 100", () => {
+				const amount = 50;
+				const price = 0.5;
+				const adjusted = adjustBuyAmountForFees(
+					amount,
+					price,
+					amount,
+					feeRate,
+					feeExponent,
+					0,
+					1.5,
+				);
+				const platformFee = calculatePlatformFee(
+					adjusted,
+					price,
+					feeRate,
+					feeExponent,
+					1.5,
+				);
+
+				expect(adjusted + platformFee).toBeCloseTo(amount, 10);
+			});
+
+			it("rejects fractional percentages below 1 and values over 100", () => {
+				expect(() =>
+					adjustBuyAmountForFees(50, 0.5, 50, feeRate, feeExponent, 0, 0.5),
+				).toThrow("feeSlippage must be 0 or a percentage between 1 and 100");
+				expect(() =>
+					adjustBuyAmountForFees(50, 0.5, 50, feeRate, feeExponent, 0, 101),
+				).toThrow("feeSlippage must be 0 or a percentage between 1 and 100");
+			});
+		});
+	});
+
+	describe("ClobClient feeSlippage", () => {
+		// publicly known private key
+		const wallet = new Wallet("0xac0974bec39a17e36ba4a6b4d238ff944bacb478cbed5efcae784d7bf4f2ff80");
+
+		it("defaults to zero", () => {
+			const client = new ClobClient({
+				host: "https://clob.polymarket.com",
+				chain: Chain.AMOY,
+				signer: wallet,
+			});
+
+			expect(client.feeSlippage).toBe(0);
+		});
+
+		it("accepts percentage floats between 1 and 100", () => {
+			const client = new ClobClient({
+				host: "https://clob.polymarket.com",
+				chain: Chain.AMOY,
+				signer: wallet,
+				feeSlippage: 12.5,
+			});
+
+			expect(client.feeSlippage).toBe(12.5);
+		});
+
+		it("rejects invalid percentage values during initialization", () => {
+			const createClient = (feeSlippage: number) =>
+				new ClobClient({
+					host: "https://clob.polymarket.com",
+					chain: Chain.AMOY,
+					signer: wallet,
+					feeSlippage,
+				});
+
+			expect(() => createClient(0.5)).toThrow(
+				"feeSlippage must be 0 or a percentage between 1 and 100",
+			);
+			expect(() => createClient(101)).toThrow(
+				"feeSlippage must be 0 or a percentage between 1 and 100",
+			);
+			expect(() => createClient(Number.NaN)).toThrow(
+				"feeSlippage must be 0 or a percentage between 1 and 100",
+			);
+		});
+	});
+
+	describe("client order fee adjustment", () => {
+		const tokenID = "123";
+		// publicly known private key
+		const wallet = new Wallet("0xac0974bec39a17e36ba4a6b4d238ff944bacb478cbed5efcae784d7bf4f2ff80");
+
+		const createCachedClient = (feeSlippage = 0): ClobClient => {
+			const client = new ClobClient({
+				host: "https://clob.polymarket.com",
+				chain: Chain.AMOY,
+				signer: wallet,
+				feeSlippage,
+			});
+
+			client.tickSizes[tokenID] = "0.01";
+			client.negRisk[tokenID] = false;
+			client.feeInfos[tokenID] = {
+				rate: feeRate,
+				exponent: feeExponent,
+			};
+			(client as any).cachedVersion = 2;
+
+			return client;
+		};
+
+		it("adjusts V2 BUY limit size when userUSDCBalance is provided", async () => {
+			const client = createCachedClient(20);
+			const order: UserOrderV2 = {
+				tokenID,
+				price: 0.5,
+				size: 100,
+				side: Side.BUY,
+				userUSDCBalance: 50,
+			};
+
+			const signedOrder = await client.createOrder(order, { tickSize: "0.01" });
+
+			expect(signedOrder.makerAmount).toBe("48190000");
+			expect(signedOrder.takerAmount).toBe("96380000");
+			expect(order.size).toBe(100);
+		});
+
+		it("adjusts V2 BUY market amount when userUSDCBalance is provided", async () => {
+			const client = createCachedClient(20);
+			const order: UserMarketOrderV2 = {
+				tokenID,
+				price: 0.5,
+				amount: 50,
+				side: Side.BUY,
+				userUSDCBalance: 50,
+			};
+
+			const signedOrder = await client.createMarketOrder(order, { tickSize: "0.01" });
+
+			expect(signedOrder.makerAmount).toBe("48190000");
+			expect(signedOrder.takerAmount).toBe("96380000");
+			expect(order.amount).toBe(50);
+		});
+
+		it("leaves V2 BUY limit size unchanged without userUSDCBalance", async () => {
+			const client = createCachedClient(20);
+			const order: UserOrderV2 = {
+				tokenID,
+				price: 0.5,
+				size: 100,
+				side: Side.BUY,
+			};
+
+			const signedOrder = await client.createOrder(order, { tickSize: "0.01" });
+
+			expect(signedOrder.makerAmount).toBe("50000000");
+			expect(signedOrder.takerAmount).toBe("100000000");
+		});
+
+		it("leaves V2 SELL limit size unchanged with userUSDCBalance", async () => {
+			const client = createCachedClient(20);
+			const order: UserOrderV2 = {
+				tokenID,
+				price: 0.5,
+				size: 100,
+				side: Side.SELL,
+				userUSDCBalance: 50,
+			};
+
+			const signedOrder = await client.createOrder(order, { tickSize: "0.01" });
+
+			expect(signedOrder.makerAmount).toBe("100000000");
+			expect(signedOrder.takerAmount).toBe("50000000");
 		});
 	});
 });

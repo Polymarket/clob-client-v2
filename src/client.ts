@@ -68,6 +68,7 @@ import {
 	UPDATE_BALANCE_ALLOWANCE,
 } from "./endpoints.js";
 import { ApiError, L1_AUTH_UNAVAILABLE_ERROR, L2_AUTH_NOT_AVAILABLE } from "./errors.js";
+import { adjustBuyAmountForFees, validateFeeSlippage } from "./fees/index.js";
 import { createL1Headers, createL2Headers } from "./headers/index.js";
 import {
 	DELETE,
@@ -150,22 +151,7 @@ import { OrderType, orderToJsonV1, orderToJsonV2, Side } from "./types/index.js"
 import { isV2Order, type SignedOrder } from "./types/unifiedOrder.js";
 import { generateOrderBookSummaryHash, isTickSizeSmaller, priceValid } from "./utilities.js";
 
-export function adjustBuyAmountForFees(
-	amount: number,
-	price: number,
-	userUSDCBalance: number,
-	feeRate: number,
-	feeExponent: number,
-	builderTakerFeeRate: number,
-): number {
-	const platformFeeRate = feeRate * (price * (1 - price)) ** feeExponent;
-	const platformFee = (amount / price) * platformFeeRate;
-	const totalCost = amount + platformFee + amount * builderTakerFeeRate;
-	if (userUSDCBalance <= totalCost) {
-		return userUSDCBalance / (1 + platformFeeRate / price + builderTakerFeeRate);
-	}
-	return amount;
-}
+export { adjustBuyAmountForFees } from "./fees/index.js";
 
 export interface ClobClientOptions {
 	host: string;
@@ -179,6 +165,7 @@ export interface ClobClientOptions {
 	getSigner?: () => Promise<ClobSigner> | ClobSigner;
 	retryOnError?: boolean;
 	throwOnError?: boolean;
+	feeSlippage?: number;
 }
 
 export class ClobClient {
@@ -221,6 +208,8 @@ export class ClobClient {
 
 	readonly throwOnError?: boolean;
 
+	readonly feeSlippage: number;
+
 	constructor({
 		host,
 		chain,
@@ -233,6 +222,7 @@ export class ClobClient {
 		getSigner,
 		retryOnError,
 		throwOnError,
+		feeSlippage,
 	}: ClobClientOptions) {
 		this.host = host.endsWith("/") ? host.slice(0, -1) : host;
 		this.chainId = chain;
@@ -260,6 +250,8 @@ export class ClobClient {
 		this.tokenConditionMap = {};
 		this.retryOnError = retryOnError;
 		this.throwOnError = throwOnError;
+		this.feeSlippage = feeSlippage ?? 0;
+		validateFeeSlippage(this.feeSlippage);
 		this.useServerTime = useServerTime;
 		if (builderConfig !== undefined) {
 			this.builderConfig = builderConfig;
@@ -896,8 +888,25 @@ export class ClobClient {
 			);
 		}
 
-		const negRisk = options?.negRisk ?? (await this.getNegRisk(tokenID));
 		const version = await this.resolveVersion();
+
+		if (
+			version === 2 &&
+			orderToSign.side === Side.BUY &&
+			"userUSDCBalance" in orderToSign &&
+			orderToSign.userUSDCBalance !== undefined
+		) {
+			const adjustedAmount = await this.adjustBuyAmountForBalance(
+				tokenID,
+				orderToSign.size * orderToSign.price,
+				orderToSign.price,
+				orderToSign.userUSDCBalance,
+				orderToSign.builderCode,
+			);
+			orderToSign.size = adjustedAmount / orderToSign.price;
+		}
+
+		const negRisk = options?.negRisk ?? (await this.getNegRisk(tokenID));
 
 		if (version === 1) {
 			const userFeeRateBps =
@@ -960,17 +969,12 @@ export class ClobClient {
 		) {
 			// biome-ignore lint/style/noNonNullAssertion: price is validated above
 			const price = orderToSign.price!;
-			const { userUSDCBalance } = orderToSign;
-			const builderTakerFeeRate = this.isBuilderOrder(orderToSign.builderCode)
-				? (this.builderFeeRates[orderToSign.builderCode ?? ""]?.taker ?? 0)
-				: 0;
-			orderToSign.amount = adjustBuyAmountForFees(
+			orderToSign.amount = await this.adjustBuyAmountForBalance(
+				tokenID,
 				orderToSign.amount,
 				price,
-				userUSDCBalance,
-				this.feeInfos[tokenID].rate,
-				this.feeInfos[tokenID].exponent,
-				builderTakerFeeRate,
+				orderToSign.userUSDCBalance,
+				orderToSign.builderCode,
 			);
 		}
 
@@ -1561,6 +1565,34 @@ export class ClobClient {
 
 	private isBuilderOrder(builderCode?: string): boolean {
 		return builderCode !== undefined && builderCode !== bytes32Zero;
+	}
+
+	private async getBuilderTakerFeeRate(builderCode?: string): Promise<number> {
+		if (!this.isBuilderOrder(builderCode)) return 0;
+
+		await this.ensureBuilderFeeRateCached(builderCode);
+		return this.builderFeeRates[builderCode ?? ""]?.taker ?? 0;
+	}
+
+	private async adjustBuyAmountForBalance(
+		tokenID: string,
+		amount: number,
+		price: number,
+		userUSDCBalance: number,
+		builderCode?: string,
+	): Promise<number> {
+		await this._ensureMarketInfoCached(tokenID);
+		const builderTakerFeeRate = await this.getBuilderTakerFeeRate(builderCode);
+
+		return adjustBuyAmountForFees(
+			amount,
+			price,
+			userUSDCBalance,
+			this.feeInfos[tokenID].rate,
+			this.feeInfos[tokenID].exponent,
+			builderTakerFeeRate,
+			this.feeSlippage,
+		);
 	}
 
 	private async _ensureMarketInfoCached(tokenID: string): Promise<void> {
