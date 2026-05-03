@@ -24,11 +24,13 @@ export function adjustBuyAmountForFees(
 	validateFeeSlippage(feeSlippage);
 	const platformFeeRate = feeRate * (price * (1 - price)) ** feeExponent;
 	const effectivePlatformFeeRate = platformFeeRate * (1 + feeSlippage / 100);
-	const platformFee = (amount / price) * effectivePlatformFeeRate;
-	const totalCost = amount + platformFee + amount * builderTakerFeeRate;
+	const feeBaseAmount = Math.min(amount, userUSDCBalance);
+	const platformFee = (feeBaseAmount / price) * effectivePlatformFeeRate;
+	const builderFee = feeBaseAmount * builderTakerFeeRate;
+	const totalCost = amount + platformFee + builderFee;
 
 	if (userUSDCBalance <= totalCost) {
-		return userUSDCBalance / (1 + effectivePlatformFeeRate / price + builderTakerFeeRate);
+		return Math.max(userUSDCBalance - platformFee - builderFee, 0);
 	}
 
 	return amount;
