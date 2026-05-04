@@ -168,8 +168,11 @@ export interface PriceHistoryFilterParams {
 	interval?: PriceHistoryInterval;
 }
 
+// https://docs.polymarket.com/api-reference/markets/get-prices-history#parameter-interval
 export enum PriceHistoryInterval {
 	MAX = "max",
+	ALL = "all",
+	ONE_MONTH = "1m",
 	ONE_WEEK = "1w",
 	ONE_DAY = "1d",
 	SIX_HOURS = "6h",
