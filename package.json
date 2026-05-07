@@ -1,7 +1,7 @@
 {
 	"name": "@polymarket/clob-client-v2",
 	"description": "TypeScript client for Polymarket's CLOB",
-	"version": "1.0.3",
+	"version": "1.0.4",
 	"type": "module",
 	"main": "dist/index.cjs",
 	"types": "dist/index.d.ts",
@@ -25,6 +25,9 @@
 		"blockchain",
 		"ethereum"
 	],
+	"engines": {
+		"node": ">=20.10"
+	},
 	"packageManager": "pnpm@10.30.3",
 	"license": "MIT",
 	"repository": {
