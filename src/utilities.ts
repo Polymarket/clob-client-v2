@@ -42,6 +42,11 @@ export const decimalPlaces = (num: number): number => {
 export const generateOrderBookSummaryHash = async (
 	orderbook: OrderBookSummary,
 ): Promise<string> => {
+	if (!globalThis.crypto?.subtle) {
+		throw new Error(
+			"generateOrderBookSummaryHash: globalThis.crypto.subtle is unavailable. Requires Node >=20 or a secure browser context (HTTPS or localhost).",
+		);
+	}
 	orderbook.hash = "";
 	const data = new TextEncoder().encode(JSON.stringify(orderbook));
 	const hashBuffer = await globalThis.crypto.subtle.digest("SHA-1", data);

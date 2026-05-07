@@ -1,3 +1,15 @@
+const decodeBase64Secret = (secret: string): Uint8Array<ArrayBuffer> => {
+	const normalized = secret.replace(/-/g, "+").replace(/_/g, "/");
+	const padded = normalized + "=".repeat((4 - (normalized.length % 4)) % 4);
+	const binary = atob(padded);
+	const buffer = new ArrayBuffer(binary.length);
+	const bytes = new Uint8Array(buffer);
+	for (let i = 0; i < binary.length; i++) {
+		bytes[i] = binary.charCodeAt(i);
+	}
+	return bytes;
+};
+
 /**
  * Builds the canonical Polymarket CLOB HMAC signature
  * @param secret
@@ -14,16 +26,21 @@ export const buildPolyHmacSignature = async (
 	requestPath: string,
 	body?: string,
 ): Promise<string> => {
+	if (!secret) {
+		throw new Error("buildPolyHmacSignature: secret is empty");
+	}
+	if (!globalThis.crypto?.subtle) {
+		throw new Error(
+			"buildPolyHmacSignature: globalThis.crypto.subtle is unavailable. Requires Node >=20 or a secure browser context (HTTPS or localhost).",
+		);
+	}
+
 	let message = timestamp + method + requestPath;
 	if (body !== undefined) {
 		message += body;
 	}
 
-	const binarySecret = atob(secret);
-	const keyBytes = new Uint8Array(binarySecret.length);
-	for (let i = 0; i < binarySecret.length; i++) {
-		keyBytes[i] = binarySecret.charCodeAt(i);
-	}
+	const keyBytes = decodeBase64Secret(secret);
 
 	const key = await globalThis.crypto.subtle.importKey(
 		"raw",
