@@ -14,7 +14,7 @@ async function main() {
 	const orderbook = await clobClient.getOrderBook(YES);
 	console.log("orderbook", orderbook);
 
-	const hash = clobClient.getOrderBookHash(orderbook);
+	const hash = await clobClient.getOrderBookHash(orderbook);
 	console.log("orderbook hash", hash);
 }
 
