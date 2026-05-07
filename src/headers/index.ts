@@ -17,6 +17,7 @@ export const createL1Headers = async (
 	chainId: Chain,
 	nonce?: number,
 	timestamp?: number,
+	address?: string,
 ): Promise<L1PolyHeader> => {
 	let ts = Math.floor(Date.now() / 1000);
 	if (timestamp !== undefined) {
@@ -27,11 +28,11 @@ export const createL1Headers = async (
 		n = nonce;
 	}
 
-	const sig = await buildClobEip712Signature(signer, chainId, ts, n);
-	const address = await getSignerAddress(signer);
+	const sig = await buildClobEip712Signature(signer, chainId, ts, n, address);
+	const resolvedAddress = address ?? (await getSignerAddress(signer));
 
 	const headers = {
-		POLY_ADDRESS: address,
+		POLY_ADDRESS: resolvedAddress,
 		POLY_SIGNATURE: sig,
 		POLY_TIMESTAMP: `${ts}`,
 		POLY_NONCE: `${n}`,
