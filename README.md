@@ -18,12 +18,13 @@ TypeScript client for the Polymarket CLOB (v2)
 import { ApiKeyCreds, Chain, ClobClient, OrderType, Side } from "@polymarket/clob-client-v2";
 import { createWalletClient, http } from "viem";
 import { privateKeyToAccount } from "viem/accounts";
+import { polygon } from "viem/chains"; // or polygonAmoy for testnet
 
 const host = "<polymarket-clob-host>";
 const chainId = Chain.POLYGON; // or Chain.AMOY for testnet
 
 const account = privateKeyToAccount("0x..."); // your private key
-const walletClient = createWalletClient({ account, transport: http() });
+const walletClient = createWalletClient({ account, chain: polygon, transport: http() });
 
 // Step 1: obtain API credentials using your wallet (L1 auth)
 const clobClient = new ClobClient({ host, chain: chainId, signer: walletClient });
