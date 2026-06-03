@@ -5,7 +5,7 @@ import { type OrderDataV2, SignatureTypeV2 } from "../../../src/order-utils";
 import { Side, type UserOrderV1, type UserOrderV2 } from "../../../src/types";
 
 describe("buildOrderCreationArgs", () => {
-	it("uses Date.now milliseconds as the V2/V3 order timestamp", async () => {
+	it("uses Unix seconds as the V2/V3 order timestamp", async () => {
 		const nowMS = 1780452718728;
 		const dateNow = vi.spyOn(Date, "now").mockReturnValue(nowMS);
 
@@ -25,8 +25,8 @@ describe("buildOrderCreationArgs", () => {
 				3,
 			);
 
-			expect(orderData.timestamp).toBe(nowMS.toString());
-			expect(orderData.timestamp).toHaveLength(13);
+			expect(orderData.timestamp).toBe(Math.floor(nowMS / 1000).toString());
+			expect(orderData.timestamp).toHaveLength(10);
 		} finally {
 			dateNow.mockRestore();
 		}
