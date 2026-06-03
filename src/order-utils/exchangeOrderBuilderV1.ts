@@ -39,7 +39,7 @@ export class ExchangeOrderBuilderV1 {
 	/**
 	 * Creates an Order object from order data.
 	 * @param OrderData
-	 * @returns a Order object (not signed)
+	 * @returns an Order object (not signed)
 	 */
 	async buildOrder({
 		maker,
@@ -112,7 +112,7 @@ export class ExchangeOrderBuilderV1 {
 	/**
 	 * Parses an Order object to EIP712 typed data
 	 * @param order
-	 * @returns a EIP712TypedData object
+	 * @returns an EIP712TypedData object
 	 */
 	buildOrderTypedData(order: OrderV1): EIP712TypedData {
 		return {
@@ -145,9 +145,9 @@ export class ExchangeOrderBuilderV1 {
 	}
 
 	/**
-	 * Generates order's signature from a EIP712TypedData object + the signer address
+	 * Generates order's signature from an EIP712TypedData object + the signer address
 	 * @param typedData
-	 * @returns a OrderSignature that is an string
+	 * @returns an OrderSignature that is a string
 	 */
 	buildOrderSignature(typedData: EIP712TypedData): Promise<OrderSignature> {
 		delete typedData.types.EIP712Domain;
@@ -161,9 +161,9 @@ export class ExchangeOrderBuilderV1 {
 	}
 
 	/**
-	 * Generates the hash of the order from a EIP712TypedData object.
+	 * Generates the hash of the order from an EIP712TypedData object.
 	 * @param orderTypedData
-	 * @returns a OrderHash that is an string
+	 * @returns an OrderHash that is a string
 	 */
 	buildOrderHash(orderTypedData: EIP712TypedData): OrderHash {
 		const digest = hashTypedData(orderTypedData);

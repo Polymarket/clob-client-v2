@@ -16,7 +16,7 @@ export class OrderBuilder {
 
 	readonly chainId: Chain;
 
-	// Signature type used sign orders, defaults to EOA type
+	// Signature type used to sign orders, defaults to EOA type
 	readonly signatureType: SignatureTypeV2;
 
 	// Address which holds funds to be used.
@@ -48,7 +48,7 @@ export class OrderBuilder {
 	}
 
 	/**
-	 * Generate and sign a order
+	 * Generate and sign an order
 	 */
 	public async buildOrder(
 		userOrder: UserOrderV1 | UserOrderV2,
