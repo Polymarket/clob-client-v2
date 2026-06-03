@@ -87,7 +87,7 @@ export async function buildOrderCreationArgs(
 		side,
 		signer,
 		signatureType,
-		timestamp: Math.floor(Date.now() / 1000).toString(),
+		timestamp: Date.now().toString(),
 		metadata: "metadata" in userOrder ? (userOrder.metadata ?? bytes32Zero) : bytes32Zero,
 		builder: userOrder.builderCode ?? bytes32Zero,
 		expiration: userOrder.expiration !== undefined ? userOrder.expiration.toString() : "0",

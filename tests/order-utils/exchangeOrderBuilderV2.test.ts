@@ -23,7 +23,7 @@ describe("exchangeOrderBuilderV2", () => {
 			takerAmount: "50000000",
 			side: Side.BUY,
 			signatureType: SignatureTypeV2.EOA,
-			timestamp: "1780449126",
+			timestamp: "1780449126930",
 			metadata: bytes32Zero,
 			builder: bytes32Zero,
 		};

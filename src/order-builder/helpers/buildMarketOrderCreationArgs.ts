@@ -86,7 +86,7 @@ export async function buildMarketOrderCreationArgs(
 		side,
 		signer,
 		signatureType,
-		timestamp: Math.floor(Date.now() / 1000).toString(),
+		timestamp: Date.now().toString(),
 		metadata:
 			"metadata" in userMarketOrder ? (userMarketOrder.metadata ?? bytes32Zero) : bytes32Zero,
 		builder: userMarketOrder.builderCode ?? bytes32Zero,
