@@ -9,7 +9,7 @@ import {
 import type { ClobSigner } from "../../signing/signer.js";
 
 /**
- * Generate and sign a order
+ * Generate and sign an order
  *
  * @param signer
  * @param exchangeAddress ctf exchange contract address
