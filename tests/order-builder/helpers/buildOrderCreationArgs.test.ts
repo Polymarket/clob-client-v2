@@ -1,10 +1,37 @@
-import { describe, expect, it } from "vitest";
+import { describe, expect, it, vi } from "vitest";
 import { bytes32Zero } from "../../../src/constants";
 import { buildOrderCreationArgs, ROUNDING_CONFIG } from "../../../src/order-builder/helpers";
 import { type OrderDataV2, SignatureTypeV2 } from "../../../src/order-utils";
 import { Side, type UserOrderV1, type UserOrderV2 } from "../../../src/types";
 
 describe("buildOrderCreationArgs", () => {
+	it("uses Date.now milliseconds as the V2/V3 order timestamp", async () => {
+		const nowMS = 1780452718728;
+		const dateNow = vi.spyOn(Date, "now").mockReturnValue(nowMS);
+
+		try {
+			const order: UserOrderV2 = {
+				tokenID: "123",
+				price: 0.5,
+				size: 1,
+				side: Side.BUY,
+			};
+			const orderData: OrderDataV2 = await buildOrderCreationArgs(
+				"0x0000000000000000000000000000000000000001",
+				"0x0000000000000000000000000000000000000002",
+				SignatureTypeV2.EOA,
+				order,
+				ROUNDING_CONFIG["0.01"],
+				3,
+			);
+
+			expect(orderData.timestamp).toBe(nowMS.toString());
+			expect(orderData.timestamp).toHaveLength(13);
+		} finally {
+			dateNow.mockRestore();
+		}
+	});
+
 	describe("buy order", () => {
 		it("0.1", async () => {
 			const order: UserOrderV1 = {
