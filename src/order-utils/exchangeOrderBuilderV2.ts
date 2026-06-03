@@ -12,7 +12,7 @@ import { EIP712_DOMAIN, type EIP712TypedData } from "./model/eip712.js";
 import type { OrderHash, OrderSignature } from "./model/order.js";
 import type { OrderDataV2, OrderV2, SignedOrderV2 } from "./model/orderDataV2.js";
 import { SignatureTypeV2 } from "./model/signatureTypeV2.js";
-import { currentUnixTimestampSeconds, generateOrderSalt } from "./utils.js";
+import { generateOrderSalt } from "./utils.js";
 
 const ORDER_TYPE_STRING =
 	"Order(uint256 salt,address maker,address signer,uint256 tokenId,uint256 makerAmount,uint256 takerAmount,uint8 side,uint8 signatureType,uint256 timestamp,bytes32 metadata,bytes32 builder)";
@@ -112,7 +112,7 @@ export class ExchangeOrderBuilderV2 {
 			signatureType: signatureType ?? SignatureTypeV2.EOA,
 			metadata: metadata ?? bytes32Zero,
 			builder: builder ?? bytes32Zero,
-			timestamp: timestamp ?? currentUnixTimestampSeconds(),
+			timestamp: timestamp ?? Math.floor(Date.now() / 1000).toString(),
 			expiration: expiration ?? "0",
 		};
 	}

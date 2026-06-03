@@ -8,7 +8,6 @@ import type {
 	SignatureTypeV1,
 	SignatureTypeV2,
 } from "../../order-utils/index.js";
-import { currentUnixTimestampSeconds } from "../../order-utils/utils.js";
 import type { RoundConfig, UserMarketOrderV1, UserMarketOrderV2 } from "../../types/index.js";
 
 import { getMarketOrderRawAmounts } from "./index.js";
@@ -87,7 +86,7 @@ export async function buildMarketOrderCreationArgs(
 		side,
 		signer,
 		signatureType,
-		timestamp: currentUnixTimestampSeconds(),
+		timestamp: Math.floor(Date.now() / 1000).toString(),
 		metadata:
 			"metadata" in userMarketOrder ? (userMarketOrder.metadata ?? bytes32Zero) : bytes32Zero,
 		builder: userMarketOrder.builderCode ?? bytes32Zero,

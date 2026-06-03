@@ -8,7 +8,6 @@ import type {
 	SignatureTypeV1,
 	SignatureTypeV2,
 } from "../../order-utils/index.js";
-import { currentUnixTimestampSeconds } from "../../order-utils/utils.js";
 import type { RoundConfig, UserOrderV1, UserOrderV2 } from "../../types/index.js";
 
 import { getOrderRawAmounts } from "./getOrderRawAmounts.js";
@@ -88,7 +87,7 @@ export async function buildOrderCreationArgs(
 		side,
 		signer,
 		signatureType,
-		timestamp: currentUnixTimestampSeconds(),
+		timestamp: Math.floor(Date.now() / 1000).toString(),
 		metadata: "metadata" in userOrder ? (userOrder.metadata ?? bytes32Zero) : bytes32Zero,
 		builder: userOrder.builderCode ?? bytes32Zero,
 		expiration: userOrder.expiration !== undefined ? userOrder.expiration.toString() : "0",
