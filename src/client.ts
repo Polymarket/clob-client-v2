@@ -895,10 +895,10 @@ export class ClobClient {
 		}
 		orderToSign.price = roundNormal(orderToSign.price, ROUNDING_CONFIG[tickSize].price);
 
-		const version = await this.resolveVersion();
+		const version = options?.version ?? (await this.resolveVersion());
 
 		if (
-			version === 2 &&
+			version !== 1 &&
 			orderToSign.side === Side.BUY &&
 			"userUSDCBalance" in orderToSign &&
 			orderToSign.userUSDCBalance !== undefined
@@ -986,7 +986,7 @@ export class ClobClient {
 		}
 
 		const negRisk = options?.negRisk ?? (await this.getNegRisk(tokenID));
-		const version = await this.resolveVersion();
+		const version = options?.version ?? (await this.resolveVersion());
 
 		if (version === 1) {
 			const userFeeRateBps =

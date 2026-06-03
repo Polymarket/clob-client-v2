@@ -48,6 +48,9 @@ export const createOrder = async (
 				? contractConfig.negRiskExchangeV2
 				: contractConfig.exchangeV2;
 			break;
+		case 3:
+			exchangeContract = contractConfig.exchangeV3;
+			break;
 		default:
 			throw new Error(`unsupported order version ${version}`);
 	}
