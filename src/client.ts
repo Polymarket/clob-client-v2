@@ -107,6 +107,7 @@ import type {
 	ClobErrorResponseBody,
 	CreateOrderOptions,
 	DropNotificationParams,
+	ExchangeV3OrderAmounts,
 	FeeInfos,
 	FeeRates,
 	MarketDetails,
@@ -1005,6 +1006,19 @@ export class ClobClient {
 			},
 			version,
 		);
+	}
+
+	public async createExchangeV3OrderFromAmounts(
+		userOrder: ExchangeV3OrderAmounts,
+	): Promise<SignedOrder> {
+		this.canL1Auth();
+
+		const orderToSign = { ...userOrder };
+		if (this.builderConfig?.builderCode && !orderToSign.builderCode) {
+			orderToSign.builderCode = this.builderConfig.builderCode;
+		}
+
+		return this.orderBuilder.buildExchangeV3OrderFromAmounts(orderToSign);
 	}
 
 	public async createAndPostOrder<T extends OrderType.GTC | OrderType.GTD = OrderType.GTC>(
