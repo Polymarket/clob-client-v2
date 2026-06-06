@@ -6,6 +6,7 @@ import {
 	CTF_EXCHANGE_V2_DOMAIN_NAME,
 	CTF_EXCHANGE_V2_DOMAIN_VERSION,
 	CTF_EXCHANGE_V2_ORDER_STRUCT,
+	CTF_EXCHANGE_V3_DOMAIN_VERSION,
 } from "./model/ctfExchangeV2TypedData.js";
 import { EIP712_DOMAIN, type EIP712TypedData } from "./model/eip712.js";
 import type { OrderHash, OrderSignature } from "./model/order.js";
@@ -32,7 +33,6 @@ const TYPED_DATA_SIGN_STRUCT = [
 ];
 
 const CTF_EXCHANGE_NAME_HASH = keccak256(toHex(CTF_EXCHANGE_V2_DOMAIN_NAME));
-const CTF_EXCHANGE_VERSION_HASH = keccak256(toHex(CTF_EXCHANGE_V2_DOMAIN_VERSION));
 
 export class ExchangeOrderBuilderV2 {
 	private readonly appDomainSep: `0x${string}`;
@@ -42,7 +42,9 @@ export class ExchangeOrderBuilderV2 {
 		private readonly chainId: number,
 		private readonly signer: ClobSigner,
 		private readonly generateSalt = generateOrderSalt,
+		private readonly domainVersion = CTF_EXCHANGE_V2_DOMAIN_VERSION,
 	) {
+		const exchangeVersionHash = keccak256(toHex(domainVersion));
 		this.appDomainSep = keccak256(
 			encodeAbiParameters(
 				[
@@ -55,7 +57,7 @@ export class ExchangeOrderBuilderV2 {
 				[
 					DOMAIN_TYPE_HASH,
 					CTF_EXCHANGE_NAME_HASH,
-					CTF_EXCHANGE_VERSION_HASH,
+					exchangeVersionHash,
 					BigInt(chainId),
 					contractAddress as Address,
 				],
@@ -124,7 +126,7 @@ export class ExchangeOrderBuilderV2 {
 			},
 			domain: {
 				name: CTF_EXCHANGE_V2_DOMAIN_NAME,
-				version: CTF_EXCHANGE_V2_DOMAIN_VERSION,
+				version: this.domainVersion,
 				chainId: this.chainId,
 				verifyingContract: this.contractAddress,
 			},
@@ -196,7 +198,7 @@ export class ExchangeOrderBuilderV2 {
 			signer: this.signer,
 			domain: {
 				name: CTF_EXCHANGE_V2_DOMAIN_NAME,
-				version: CTF_EXCHANGE_V2_DOMAIN_VERSION,
+				version: this.domainVersion,
 				chainId: this.chainId,
 				verifyingContract: this.contractAddress,
 			},
@@ -223,5 +225,16 @@ export class ExchangeOrderBuilderV2 {
 
 	buildOrderHash(orderTypedData: EIP712TypedData): OrderHash {
 		return hashTypedData(orderTypedData);
+	}
+}
+
+export class ExchangeOrderBuilderV3 extends ExchangeOrderBuilderV2 {
+	constructor(
+		contractAddress: string,
+		chainId: number,
+		signer: ClobSigner,
+		generateSalt = generateOrderSalt,
+	) {
+		super(contractAddress, chainId, signer, generateSalt, CTF_EXCHANGE_V3_DOMAIN_VERSION);
 	}
 }

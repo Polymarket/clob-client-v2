@@ -107,6 +107,7 @@ import type {
 	ClobErrorResponseBody,
 	CreateOrderOptions,
 	DropNotificationParams,
+	ExchangeV3OrderAmounts,
 	FeeInfos,
 	FeeRates,
 	MarketDetails,
@@ -895,10 +896,10 @@ export class ClobClient {
 		}
 		orderToSign.price = roundNormal(orderToSign.price, ROUNDING_CONFIG[tickSize].price);
 
-		const version = await this.resolveVersion();
+		const version = options?.version ?? (await this.resolveVersion());
 
 		if (
-			version === 2 &&
+			version !== 1 &&
 			orderToSign.side === Side.BUY &&
 			"userUSDCBalance" in orderToSign &&
 			orderToSign.userUSDCBalance !== undefined
@@ -986,7 +987,7 @@ export class ClobClient {
 		}
 
 		const negRisk = options?.negRisk ?? (await this.getNegRisk(tokenID));
-		const version = await this.resolveVersion();
+		const version = options?.version ?? (await this.resolveVersion());
 
 		if (version === 1) {
 			const userFeeRateBps =
@@ -1005,6 +1006,19 @@ export class ClobClient {
 			},
 			version,
 		);
+	}
+
+	public async createExchangeV3OrderFromAmounts(
+		userOrder: ExchangeV3OrderAmounts,
+	): Promise<SignedOrder> {
+		this.canL1Auth();
+
+		const orderToSign = { ...userOrder };
+		if (this.builderConfig?.builderCode && !orderToSign.builderCode) {
+			orderToSign.builderCode = this.builderConfig.builderCode;
+		}
+
+		return this.orderBuilder.buildExchangeV3OrderFromAmounts(orderToSign);
 	}
 
 	public async createAndPostOrder<T extends OrderType.GTC | OrderType.GTD = OrderType.GTC>(
