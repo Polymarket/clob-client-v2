@@ -1,7 +1,7 @@
 {
 	"name": "@polymarket/clob-client-v2",
 	"description": "TypeScript client for Polymarket's CLOB",
-	"version": "1.0.6",
+	"version": "1.0.7-canary.0",
 	"type": "module",
 	"main": "dist/index.cjs",
 	"types": "dist/index.d.ts",
