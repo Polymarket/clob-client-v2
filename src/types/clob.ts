@@ -250,7 +250,7 @@ export type CreateOrderOptions = {
 	version?: OrderVersion;
 };
 
-export type TickSize = "0.1" | "0.01" | "0.001" | "0.0001";
+export type TickSize = "0.1" | "0.01" | "0.005" | "0.0025" | "0.001" | "0.0001";
 
 export interface RoundConfig {
 	readonly price: number;

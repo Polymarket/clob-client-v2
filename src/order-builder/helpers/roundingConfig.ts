@@ -11,6 +11,16 @@ export const ROUNDING_CONFIG: Record<TickSize, RoundConfig> = {
 		size: 2,
 		amount: 4,
 	},
+	"0.005": {
+		price: 3,
+		size: 2,
+		amount: 5,
+	},
+	"0.0025": {
+		price: 4,
+		size: 2,
+		amount: 6,
+	},
 	"0.001": {
 		price: 3,
 		size: 2,
