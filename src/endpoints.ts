@@ -9,6 +9,8 @@ export const TIME = "/time";
 export const CREATE_API_KEY = "/auth/api-key";
 export const GET_API_KEYS = "/auth/api-keys";
 export const DELETE_API_KEY = "/auth/api-key";
+export const API_KEY_NONCE_ZERO = "/auth/api-key-nonce-zero";
+export const MIGRATE_ORDERS = "/migrate-orders";
 export const DERIVE_API_KEY = "/auth/derive-api-key";
 export const CLOSED_ONLY = "/auth/ban-status/closed-only";
 

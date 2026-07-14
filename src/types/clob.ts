@@ -18,6 +18,16 @@ export interface ApiKeyRaw {
 	passphrase: string;
 }
 
+export interface ApiKeyNonceZeroResponse {
+	is_nonce_zero: boolean;
+}
+
+export interface MigrateOrdersResponse {
+	to_api_key: string;
+	migrated_in_book: number;
+	migrated_in_db: number;
+}
+
 export interface L2HeaderArgs {
 	method: string;
 	requestPath: string;

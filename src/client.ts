@@ -11,6 +11,7 @@ import {
 	CANCEL_MARKET_ORDERS,
 	CANCEL_ORDER,
 	CANCEL_ORDERS,
+	API_KEY_NONCE_ZERO,
 	CLOSED_ONLY,
 	CREATE_API_KEY,
 	CREATE_BUILDER_API_KEY,
@@ -60,6 +61,7 @@ import {
 	GET_TRADES,
 	HEARTBEAT,
 	IS_ORDER_SCORING,
+	MIGRATE_ORDERS,
 	OK,
 	POST_ORDER,
 	POST_ORDERS,
@@ -90,6 +92,7 @@ import { SignatureTypeV2 } from "./order-utils/model/signatureTypeV2.js";
 import type { ClobSigner } from "./signing/signer.js";
 import type {
 	ApiKeyCreds,
+	ApiKeyNonceZeroResponse,
 	ApiKeyRaw,
 	ApiKeysResponse,
 	BalanceAllowanceParams,
@@ -114,6 +117,7 @@ import type {
 	MarketPrice,
 	MarketReward,
 	MarketTradeEvent,
+	MigrateOrdersResponse,
 	NegRisk,
 	NewOrderV1,
 	NewOrderV2,
@@ -543,6 +547,28 @@ export class ClobClient {
 		});
 	}
 
+	/**
+	 * Migrates every live order owned by fromApiKey to the caller's nonce-0 API key.
+	 * L1 authed (works even when fromApiKey is no longer valid server-side); the destination
+	 * is always the server-derived nonce-0 key, so the nonce is pinned to 0 here.
+	 * @param fromApiKey
+	 * @returns MigrateOrdersResponse
+	 */
+	public async migrateOrders(fromApiKey: string): Promise<MigrateOrdersResponse> {
+		this.canL1Auth();
+
+		const endpoint = `${this.host}${MIGRATE_ORDERS}`;
+		const headers = await createL1Headers(
+			this.signer as ClobSigner,
+			this.chainId,
+			0,
+			this.useServerTime ? await this.getServerTime() : undefined,
+			this.funderAddress,
+		);
+
+		return this.post(endpoint, { headers, data: { from_api_key: fromApiKey } });
+	}
+
 	public async createOrDeriveApiKey(nonce?: number): Promise<ApiKeyCreds> {
 		return this.createApiKey(nonce).then(response => {
 			if (!response.key) {
@@ -588,6 +614,32 @@ export class ClobClient {
 		);
 
 		return this.get(`${this.host}${endpoint}`, { headers });
+	}
+
+	/**
+	 * Reports whether the client's API key is the deterministic nonce-0 key for its address.
+	 * L2 authed: answerable from stored credentials alone, with no wallet signature prompt.
+	 * @returns boolean
+	 */
+	public async isApiKeyNonceZero(): Promise<boolean> {
+		this.canL2Auth();
+
+		const endpoint = API_KEY_NONCE_ZERO;
+		const headerArgs = {
+			method: GET,
+			requestPath: endpoint,
+		};
+
+		const headers = await createL2Headers(
+			this.signer as ClobSigner,
+			this.creds as ApiKeyCreds,
+			headerArgs,
+			this.useServerTime ? await this.getServerTime() : undefined,
+		);
+
+		return this.get(`${this.host}${endpoint}`, { headers }).then(
+			(response: ApiKeyNonceZeroResponse) => response.is_nonce_zero === true,
+		);
 	}
 
 	public async deleteApiKey(): Promise<any> {
