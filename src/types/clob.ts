@@ -58,7 +58,21 @@ export interface OrderResponse {
 	success: boolean;
 	errorMsg: string;
 	orderID: string;
+	/**
+	 * Settlement transaction hashes for the order's trades.
+	 *
+	 * Only present when the server dispatches trade execution synchronously
+	 * before responding. When execution is asynchronous (orders posted with
+	 * `deferExec`, or servers running the async commit pipeline) this field
+	 * is omitted and hashes must be resolved from the trades instead.
+	 * Do not depend on this field — use `ClobClient.resolveOrderTransactions`.
+	 */
 	transactionsHashes?: string[];
+	/**
+	 * IDs of the trades created when the order matched. Use these to follow
+	 * execution status and transaction hashes when `transactionsHashes` is
+	 * absent (see `ClobClient.waitForTrades`).
+	 */
 	tradeIDs?: string[];
 	status: string;
 	takingAmount: string;
@@ -145,6 +159,30 @@ export interface TradeParams {
 
 export interface BuilderTradeParams extends TradeParams {
 	builder_code: string;
+}
+
+export interface WaitForTradesOptions {
+	/** Maximum total time to wait for trades to resolve, in ms. Default: 30000. */
+	timeoutMs?: number;
+	/** Delay between trade status polls, in ms. Default: 500. */
+	pollIntervalMs?: number;
+}
+
+/**
+ * Execution outcome of a posted order, normalized across servers that return
+ * transaction hashes synchronously and servers that execute asynchronously.
+ */
+export interface OrderTransactions {
+	/**
+	 * Settlement transaction hashes for the order's executed trades. Note that
+	 * a hash can still be replaced later if the transaction is retried (e.g.
+	 * after a reorg).
+	 */
+	transactionsHashes: string[];
+	/** Trades that executed and carry a transaction hash. Empty when the hashes came directly from the order response. */
+	trades: Trade[];
+	/** Trades that failed execution and will never produce a transaction hash. */
+	failedTrades: Trade[];
 }
 
 export interface OpenOrderParams {
