@@ -153,4 +153,38 @@ describe("waitForTrades", () => {
 		expect(trades).toEqual([executed]);
 		expect(getTrades).toHaveBeenCalledTimes(1);
 	});
+
+	it("does not treat unrelated resolved trades as satisfying requested ids", async () => {
+		const client = makeClient();
+		const unrelated = makeTrade({
+			id: "trade-other",
+			status: "MINED",
+			transaction_hash: "0xother",
+		});
+		const executed = makeTrade({
+			id: "trade-2",
+			status: "MINED",
+			transaction_hash: "0x222",
+		});
+		let trade1Lookups = 0;
+		vi.spyOn(client, "getTrades").mockImplementation(async params => {
+			if (params?.id === "trade-1") {
+				trade1Lookups += 1;
+				return trade1Lookups >= 2
+					? [makeTrade({ id: "trade-1", status: "MINED", transaction_hash: "0x111" })]
+					: [unrelated];
+			}
+			return [executed];
+		});
+
+		const trades = await client.waitForTrades(["trade-1", "trade-2"], {
+			pollIntervalMs: 1,
+			timeoutMs: 1000,
+		});
+
+		expect(trades).toEqual([
+			makeTrade({ id: "trade-1", status: "MINED", transaction_hash: "0x111" }),
+			executed,
+		]);
+	});
 });

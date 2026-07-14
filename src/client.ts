@@ -1257,6 +1257,7 @@ export class ClobClient {
 		if (ids.length === 0) return [];
 
 		const resolved = new Map<string, Trade>();
+		const requestedIDs = new Set(ids);
 		const deadline = Date.now() + timeoutMs;
 
 		for (;;) {
@@ -1264,14 +1265,14 @@ export class ClobClient {
 			const pages = await Promise.all(pending.map(id => this.getTrades({ id }, true)));
 			for (const trades of pages) {
 				for (const trade of trades) {
-					if (isTradeResolved(trade)) {
+					if (isTradeResolved(trade) && requestedIDs.has(trade.id)) {
 						resolved.set(trade.id, trade);
 					}
 				}
 			}
 
-			if (resolved.size === ids.length) {
-				return ids.map(id => resolved.get(id) as Trade);
+			if (ids.every(id => resolved.has(id))) {
+				return ids.map(id => resolved.get(id)!);
 			}
 			if (Date.now() >= deadline) {
 				const unresolved = ids.filter(id => !resolved.has(id));
