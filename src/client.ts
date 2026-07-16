@@ -161,7 +161,7 @@ import {
 
 export { adjustBuyAmountForFees } from "./fees/index.js";
 
-const RESOLVE_TRADES_TIMEOUT_MS = 10_000;
+const RESOLVE_TRADES_TIMEOUT_MS = 30_000;
 const RESOLVE_TRADES_POLL_INTERVAL_MS = 250;
 const FAILED_TRADE_STATUS = "FAILED";
 
