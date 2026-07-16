@@ -231,6 +231,33 @@ describe("postOrder transaction hash resolution", () => {
 
 		expect(res.transactionsHashes).toEqual(["0x111"]);
 	});
+
+	it("retries after transient trade polling failures", async () => {
+		const client = makeClient();
+		mockRawPostResponse(client, makeOrderResponse({ tradeIDs: ["trade-1"] }));
+		const getTrades = vi
+			.spyOn(client, "getTrades")
+			.mockRejectedValueOnce(new Error("trades api unavailable"))
+			.mockResolvedValueOnce([makeTrade({ status: "MINED", transaction_hash: "0xfff" })]);
+
+		const res = await client.postOrder(makeSignedOrder(), OrderType.FOK);
+
+		expect(res.transactionsHashes).toEqual(["0xfff"]);
+		expect(getTrades).toHaveBeenCalledTimes(2);
+	});
+
+	it("never rejects a successful post when trade polling keeps failing", async () => {
+		vi.useFakeTimers();
+		const client = makeClient();
+		mockRawPostResponse(client, makeOrderResponse({ tradeIDs: ["trade-1"] }));
+		vi.spyOn(client, "getTrades").mockRejectedValue(new Error("trades api unavailable"));
+
+		const res = await settleWithFakeTimers(client.postOrder(makeSignedOrder(), OrderType.FOK));
+
+		expect(res.transactionsHashes).toBeUndefined();
+		expect(res.tradeIDs).toEqual(["trade-1"]);
+		expect(res.status).toBe("matched");
+	});
 });
 
 describe("postOrders transaction hash resolution", () => {

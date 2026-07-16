@@ -1258,7 +1258,11 @@ export class ClobClient {
 
 		for (;;) {
 			const pending = ids.filter(id => !resolved.has(id));
-			const pages = await Promise.all(pending.map(id => this.getTrades({ id }, true)));
+			// A failed poll must never reject a successfully posted order;
+			// treat it as "not resolved yet" and let the loop retry.
+			const pages = await Promise.all(
+				pending.map(id => this.getTrades({ id }, true).catch(() => [] as Trade[])),
+			);
 			for (const trades of pages) {
 				for (const trade of trades) {
 					if (isTradeResolved(trade) && requestedIDs.has(trade.id)) {
