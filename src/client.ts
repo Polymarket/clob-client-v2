@@ -129,7 +129,6 @@ import type {
 	OrderScoringParams,
 	OrdersScoring,
 	OrdersScoringParams,
-	OrderTransactions,
 	PaginationPayload,
 	PostOrdersArgs,
 	PreMigrationOrder,
@@ -150,7 +149,6 @@ import type {
 	UserOrderV1,
 	UserOrderV2,
 	UserRewardsEarning,
-	WaitForTradesOptions,
 } from "./types/index.js";
 import { OrderType, orderToJsonV1, orderToJsonV2, Side } from "./types/index.js";
 import { isV2Order, type SignedOrder } from "./types/unifiedOrder.js";
@@ -163,8 +161,8 @@ import {
 
 export { adjustBuyAmountForFees } from "./fees/index.js";
 
-const DEFAULT_WAIT_FOR_TRADES_TIMEOUT_MS = 30_000;
-const DEFAULT_WAIT_FOR_TRADES_POLL_INTERVAL_MS = 500;
+const RESOLVE_TRADES_TIMEOUT_MS = 30_000;
+const RESOLVE_TRADES_POLL_INTERVAL_MS = 250;
 const FAILED_TRADE_STATUS = "FAILED";
 
 const sleep = (ms: number) => new Promise(resolve => setTimeout(resolve, ms));
@@ -1140,11 +1138,10 @@ export class ClobClient {
 	/**
 	 * Posts an order to the CLOB.
 	 *
-	 * When the order matches, the response's `transactionsHashes` field is only
-	 * populated by servers that execute trades synchronously; async execution
-	 * (deferExec orders or async-commit servers) returns `tradeIDs` instead.
-	 * Use `resolveOrderTransactions` to obtain hashes independently of the
-	 * server's execution mode.
+	 * When the order matches, the response carries the settlement transaction
+	 * hashes of its fills in `transactionsHashes`, resolved on a best-effort
+	 * basis. If a hash is not available yet, the fill's trade can be followed
+	 * via `tradeIDs`.
 	 */
 	public async postOrder<T extends OrderType = OrderType.GTC>(
 		order: SignedOrder,
@@ -1186,7 +1183,11 @@ export class ClobClient {
 
 		if (this._isOrderVersionMismatch(res)) await this.resolveVersion(true);
 
-		return this.throwIfError(res);
+		const response: OrderResponse = this.throwIfError(res);
+		if (deferExec) {
+			return response;
+		}
+		return this.resolveTransactionsHashes(response);
 	}
 
 	public async postOrders(
@@ -1236,29 +1237,24 @@ export class ClobClient {
 
 		if (this._isOrderVersionMismatch(res)) await this.resolveVersion(true);
 
-		return this.throwIfError(res);
+		const responses: OrderResponse[] = this.throwIfError(res);
+		if (deferExec || !Array.isArray(responses)) {
+			return responses;
+		}
+		return Promise.all(responses.map(response => this.resolveTransactionsHashes(response)));
 	}
 
-	/**
-	 * Polls the given trades until every one reaches a terminal execution
-	 * outcome: either it carries a settlement transaction hash or its status
-	 * is FAILED.
-	 *
-	 * Throws if the trades have not all resolved within `timeoutMs`.
-	 */
-	public async waitForTrades(
-		tradeIDs: string[],
-		options?: WaitForTradesOptions,
-	): Promise<Trade[]> {
-		const timeoutMs = options?.timeoutMs ?? DEFAULT_WAIT_FOR_TRADES_TIMEOUT_MS;
-		const pollIntervalMs = options?.pollIntervalMs ?? DEFAULT_WAIT_FOR_TRADES_POLL_INTERVAL_MS;
-
+	// Polls the given trades until every one reaches a terminal execution
+	// outcome (it carries a settlement transaction hash or its status is
+	// FAILED) or the polling window elapses. Best-effort: returns whatever
+	// trades resolved in time and never throws.
+	private async waitForResolvedTrades(tradeIDs: string[]): Promise<Trade[]> {
 		const ids = [...new Set(tradeIDs.filter(id => id.length > 0))];
 		if (ids.length === 0) return [];
 
 		const resolved = new Map<string, Trade>();
 		const requestedIDs = new Set(ids);
-		const deadline = Date.now() + timeoutMs;
+		const deadline = Date.now() + RESOLVE_TRADES_TIMEOUT_MS;
 
 		for (;;) {
 			const pending = ids.filter(id => !resolved.has(id));
@@ -1271,70 +1267,40 @@ export class ClobClient {
 				}
 			}
 
-			if (ids.every(id => resolved.has(id))) {
-				return ids.map(id => resolved.get(id)!);
+			if (ids.every(id => resolved.has(id)) || Date.now() >= deadline) {
+				return ids
+					.map(id => resolved.get(id))
+					.filter((trade): trade is Trade => trade !== undefined);
 			}
-			if (Date.now() >= deadline) {
-				const unresolved = ids.filter(id => !resolved.has(id));
-				throw new Error(
-					`timed out waiting for trades to resolve: ${unresolved.join(", ")}`,
-				);
-			}
-			await sleep(pollIntervalMs);
+			await sleep(RESOLVE_TRADES_POLL_INTERVAL_MS);
 		}
 	}
 
-	/**
-	 * Resolves the settlement transaction hashes for a posted order,
-	 * regardless of whether the server executed the trades synchronously
-	 * (hashes embedded in the order response) or asynchronously (only
-	 * `tradeIDs` returned; hashes appear on the trades once execution runs).
-	 *
-	 * Replaces direct reads of `OrderResponse.transactionsHashes`:
-	 *
-	 * ```ts
-	 * const res = await client.createAndPostMarketOrder(order);
-	 * const { transactionsHashes, failedTrades } = await client.resolveOrderTransactions(res);
-	 * ```
-	 *
-	 * Returns an empty result for orders that did not match (live/delayed).
-	 * Throws if matched trades do not resolve within `options.timeoutMs`.
-	 */
-	public async resolveOrderTransactions(
-		response: OrderResponse,
-		options?: WaitForTradesOptions,
-	): Promise<OrderTransactions> {
+	// Fills `transactionsHashes` on an order response whose trades executed
+	// asynchronously (the server returned `tradeIDs` without hashes), by
+	// polling the trades until they resolve. Best-effort: on timeout the
+	// response is returned with whatever hashes resolved, which may be none.
+	// Trades that failed execution never contribute a hash.
+	private async resolveTransactionsHashes(response: OrderResponse): Promise<OrderResponse> {
 		if (response.transactionsHashes && response.transactionsHashes.length > 0) {
-			return {
-				transactionsHashes: [...response.transactionsHashes],
-				trades: [],
-				failedTrades: [],
-			};
+			return response;
 		}
 
 		const tradeIDs = response.tradeIDs ?? [];
 		if (tradeIDs.length === 0) {
-			return { transactionsHashes: [], trades: [], failedTrades: [] };
+			return response;
 		}
 
-		const resolvedTrades = await this.waitForTrades(tradeIDs, options);
-		const trades: Trade[] = [];
-		const failedTrades: Trade[] = [];
-		for (const trade of resolvedTrades) {
-			if (trade.status.toUpperCase() === FAILED_TRADE_STATUS) {
-				failedTrades.push(trade);
-			} else {
-				trades.push(trade);
-			}
-		}
+		const resolvedTrades = await this.waitForResolvedTrades(tradeIDs);
+		const transactionsHashes = resolvedTrades
+			.filter(trade => trade.status.toUpperCase() !== FAILED_TRADE_STATUS)
+			.map(trade => trade.transaction_hash)
+			.filter((hash): hash is string => Boolean(hash));
 
-		return {
-			transactionsHashes: trades
-				.map(trade => trade.transaction_hash)
-				.filter((hash): hash is string => Boolean(hash)),
-			trades,
-			failedTrades,
-		};
+		if (transactionsHashes.length === 0) {
+			return response;
+		}
+		return { ...response, transactionsHashes };
 	}
 
 	public async cancelOrder(payload: OrderPayload): Promise<any> {
