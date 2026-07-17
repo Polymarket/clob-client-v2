@@ -58,7 +58,12 @@ export interface OrderResponse {
 	success: boolean;
 	errorMsg: string;
 	orderID: string;
+	/**
+	 * Settlement transaction hashes for the order's trades, returned on a
+	 * best-effort basis when the order matched.
+	 */
 	transactionsHashes?: string[];
+	/** IDs of the trades created when the order matched. */
 	tradeIDs?: string[];
 	status: string;
 	takingAmount: string;
