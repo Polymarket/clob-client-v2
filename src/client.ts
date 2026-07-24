@@ -1040,7 +1040,8 @@ export class ClobClient {
 		orderType: T = OrderType.GTC as T,
 		postOnly = false,
 		deferExec = false,
-	): Promise<OrderResponse> {
+		/** When throwOnError is false (default), a rejected order resolves to ClobErrorResponseBody. */
+	): Promise<OrderResponse | ClobErrorResponseBody> {
 		let postOrderResponse: OrderResponse | undefined;
 
 		await this._retryOnVersionUpdate(async () => {
@@ -1194,7 +1195,8 @@ export class ClobClient {
 		args: PostOrdersArgs[],
 		postOnly = false,
 		deferExec = false,
-	): Promise<OrderResponse[]> {
+		/** When throwOnError is false (default), failed orders resolve to ClobErrorResponseBody entries. */
+	): Promise<(OrderResponse | ClobErrorResponseBody)[]> {
 		this.canL2Auth();
 		if (
 			postOnly &&
