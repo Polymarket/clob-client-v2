@@ -1726,11 +1726,23 @@ export class ClobClient {
 		if (!builderCode || builderCode === bytes32Zero) return;
 		if (builderCode in this.builderFeeRates) return;
 
-		const result = await this.get(`${this.host}${GET_BUILDER_FEES}${builderCode}`);
-		this.builderFeeRates[builderCode] = {
-			maker: result.builder_maker_fee_rate_bps / BUILDER_FEES_BPS,
-			taker: result.builder_taker_fee_rate_bps / BUILDER_FEES_BPS,
-		};
+		try {
+			const result = await this.get(`${this.host}${GET_BUILDER_FEES}${builderCode}`);
+			this.builderFeeRates[builderCode] = {
+				maker: result.builder_maker_fee_rate_bps / BUILDER_FEES_BPS,
+				taker: result.builder_taker_fee_rate_bps / BUILDER_FEES_BPS,
+			};
+		} catch {
+			// GET /fees/builder-fees/<code> returns 404 with no CORS headers in
+			// browser environments, causing createOrder/createMarketOrder to fail
+			// before any order is built. Default to zero so order creation is not
+			// blocked in browser contexts. Only write the fallback when the slot is
+			// still empty — guards against a parallel-call race where a successful
+			// fetch already populated real rates before this catch branch fires.
+			if (!(builderCode in this.builderFeeRates)) {
+				this.builderFeeRates[builderCode] = { maker: 0, taker: 0 };
+			}
+		}
 	}
 
 	private async _resolveTickSize(tokenID: string, tickSize?: TickSize): Promise<TickSize> {
