@@ -1736,8 +1736,12 @@ export class ClobClient {
 			// GET /fees/builder-fees/<code> returns 404 with no CORS headers in
 			// browser environments, causing createOrder/createMarketOrder to fail
 			// before any order is built. Default to zero so order creation is not
-			// blocked in browser contexts. Fixes #51.
-			this.builderFeeRates[builderCode] = { maker: 0, taker: 0 };
+			// blocked in browser contexts. Only write the fallback when the slot is
+			// still empty — guards against a parallel-call race where a successful
+			// fetch already populated real rates before this catch branch fires.
+			if (!(builderCode in this.builderFeeRates)) {
+				this.builderFeeRates[builderCode] = { maker: 0, taker: 0 };
+			}
 		}
 	}
 
