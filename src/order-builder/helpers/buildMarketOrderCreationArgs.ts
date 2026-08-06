@@ -34,6 +34,14 @@ export async function buildMarketOrderCreationArgs(
 	signatureType: SignatureTypeV2,
 	userMarketOrder: UserMarketOrderV1 | UserMarketOrderV2,
 	roundConfig: RoundConfig,
+	version: 3,
+): Promise<OrderDataV2>;
+export async function buildMarketOrderCreationArgs(
+	signer: string,
+	maker: string,
+	signatureType: SignatureTypeV2,
+	userMarketOrder: UserMarketOrderV1 | UserMarketOrderV2,
+	roundConfig: RoundConfig,
 	version: number,
 ): Promise<OrderDataV1 | OrderDataV2>;
 export async function buildMarketOrderCreationArgs(

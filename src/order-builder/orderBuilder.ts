@@ -3,12 +3,14 @@ import type { ClobSigner } from "../signing/signer.js";
 import type {
 	Chain,
 	CreateOrderOptions,
+	ExchangeV3OrderAmounts,
 	UserMarketOrderV1,
 	UserMarketOrderV2,
 	UserOrderV1,
 	UserOrderV2,
 } from "../types/index.js";
 
+import { createExchangeV3OrderFromAmounts } from "./helpers/createExchangeV3OrderFromAmounts.js";
 import { createMarketOrder, createOrder } from "./helpers/index.js";
 
 export class OrderBuilder {
@@ -84,6 +86,22 @@ export class OrderBuilder {
 			userMarketOrder,
 			options,
 			version,
+		);
+	}
+
+	/**
+	 * Generate and sign an ExchangeV3 order using exact base-unit amounts.
+	 */
+	public async buildExchangeV3OrderFromAmounts(
+		userOrder: ExchangeV3OrderAmounts,
+	): Promise<SignedOrderV2> {
+		const signer = await this.resolveSigner();
+		return createExchangeV3OrderFromAmounts(
+			signer,
+			this.chainId,
+			this.signatureType,
+			this.funderAddress,
+			userOrder,
 		);
 	}
 

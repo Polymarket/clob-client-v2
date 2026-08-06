@@ -9,24 +9,28 @@ export type PostOrdersArgs = { order: SignedOrder; orderType: OrderType };
 
 export type VersionedSignedOrder =
 	| { version: 1; order: SignedOrderV1 }
-	| { version: 2; order: SignedOrderV2 };
+	| { version: 2; order: SignedOrderV2 }
+	| { version: 3; order: SignedOrderV2 };
 
 export type VersionedUserOrder =
 	| { version: 1; order: UserOrderV1 }
-	| { version: 2; order: UserOrderV2 };
+	| { version: 2; order: UserOrderV2 }
+	| { version: 3; order: UserOrderV2 };
 
 export type VersionedUserMarketOrder =
 	| { version: 1; order: UserMarketOrderV1 }
-	| { version: 2; order: UserMarketOrderV2 };
+	| { version: 2; order: UserMarketOrderV2 }
+	| { version: 3; order: UserMarketOrderV2 };
 
 export type VersionedPostOrdersArgs =
 	| { version: 1; args: PostOrdersV1Args }
-	| { version: 2; args: PostOrdersV2Args };
+	| { version: 2; args: PostOrdersV2Args }
+	| { version: 3; args: PostOrdersV2Args };
 
 export function isV2Order(order: SignedOrder | VersionedSignedOrder): order is SignedOrderV2 {
 	if ("version" in order && "order" in order) {
 		// VersionedSignedOrder type
-		return order.version === 2;
+		return order.version === 2 || order.version === 3;
 	}
 	// Check for V2-specific fields
 	return "timestamp" in order && "metadata" in order && "builder" in order;

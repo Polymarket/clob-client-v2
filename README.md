@@ -1,3 +1,6 @@
+> [!NOTE]
+> We've released a new unified SDK that combines all our REST APIs and WebSockets into one package. We recommend [Polymarket/ts-sdk](https://github.com/Polymarket/ts-sdk) for new projects.
+
 # Polymarket CLOB Client V2
 
 <a href='https://www.npmjs.com/package/@polymarket/clob-client-v2'>

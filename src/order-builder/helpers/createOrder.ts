@@ -20,10 +20,13 @@ export const createOrder = async (
 
 	// If funder address is not given, use the signer address
 	const maker = funderAddress === undefined ? eoaSignerAddress : funderAddress;
+
+	// For POLY_1271, both maker and signer in the order are the wallet address
+	const signerForOrder = signatureType === SignatureTypeV2.POLY_1271 ? maker : eoaSignerAddress;
 	const contractConfig = getContractConfig(chainId);
 
 	const orderData = await buildOrderCreationArgs(
-		eoaSignerAddress,
+		signerForOrder,
 		maker,
 		signatureType,
 		userOrder,
@@ -44,6 +47,9 @@ export const createOrder = async (
 			exchangeContract = options.negRisk
 				? contractConfig.negRiskExchangeV2
 				: contractConfig.exchangeV2;
+			break;
+		case 3:
+			exchangeContract = contractConfig.exchangeV3;
 			break;
 		default:
 			throw new Error(`unsupported order version ${version}`);

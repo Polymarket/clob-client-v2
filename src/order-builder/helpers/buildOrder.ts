@@ -1,6 +1,7 @@
 import {
 	ExchangeOrderBuilderV1,
 	ExchangeOrderBuilderV2,
+	ExchangeOrderBuilderV3,
 	type OrderDataV1,
 	type OrderDataV2,
 	type SignedOrderV1,
@@ -29,6 +30,8 @@ export const buildOrder = async (
 			return buildOrderV1(signer, exchangeAddress, chainId, orderData as OrderDataV1);
 		case 2:
 			return buildOrderV2(signer, exchangeAddress, chainId, orderData as OrderDataV2);
+		case 3:
+			return buildOrderV3(signer, exchangeAddress, chainId, orderData as OrderDataV2);
 		default:
 			throw new Error(`unsupported order version ${version}`);
 	}
@@ -51,5 +54,15 @@ export const buildOrderV2 = async (
 	orderData: OrderDataV2,
 ): Promise<SignedOrderV2> => {
 	const ctfExchangeOrderBuilder = new ExchangeOrderBuilderV2(exchangeAddress, chainId, signer);
+	return ctfExchangeOrderBuilder.buildSignedOrder(orderData);
+};
+
+export const buildOrderV3 = async (
+	signer: ClobSigner,
+	exchangeAddress: string,
+	chainId: number,
+	orderData: OrderDataV2,
+): Promise<SignedOrderV2> => {
+	const ctfExchangeOrderBuilder = new ExchangeOrderBuilderV3(exchangeAddress, chainId, signer);
 	return ctfExchangeOrderBuilder.buildSignedOrder(orderData);
 };

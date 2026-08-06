@@ -97,6 +97,14 @@ export interface UserOrderV2 {
 	 * Expiration timestamp (unix seconds). Defaults to 0 (no expiration).
 	 */
 	expiration?: number;
+
+	/**
+	 * User's USDC balance. If provided and sufficient to cover amount + fees, the order
+	 * size is used as-is. Otherwise fees are deducted from the order notional and size is reduced.
+	 * If this field is left empty, the default flow is to use the order size as-is.
+	 * This is used for marketable limit orders
+	 */
+	userUSDCBalance?: number;
 }
 
 // Simplified market order for users

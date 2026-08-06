@@ -7,6 +7,7 @@ type ContractConfig = {
 
 	exchangeV2: string;
 	negRiskExchangeV2: string;
+	exchangeV3: string;
 };
 
 const AMOY_CONTRACTS: ContractConfig = {
@@ -17,6 +18,7 @@ const AMOY_CONTRACTS: ContractConfig = {
 	conditionalTokens: "0x69308FB512518e39F9b16112fA8d994F4e2Bf8bB",
 	exchangeV2: "0xE111180000d2663C0091e4f400237545B87B996B",
 	negRiskExchangeV2: "0xe2222d279d744050d28e00520010520000310F59",
+	exchangeV3: "0x9fE6e61422AdB6F610d8597F9684b16912D50C3D",
 };
 
 const MATIC_CONTRACTS: ContractConfig = {
@@ -27,6 +29,7 @@ const MATIC_CONTRACTS: ContractConfig = {
 	conditionalTokens: "0x4D97DCd97eC945f40cF65F87097ACe5EA0476045",
 	exchangeV2: "0xE111180000d2663C0091e4f400237545B87B996B",
 	negRiskExchangeV2: "0xe2222d279d744050d28e00520010520000310F59",
+	exchangeV3: "0xe3333700cA9d93003F00f0F71f8515005F6c00Aa",
 };
 
 const COLLATERAL_TOKEN_DECIMALS = 6;

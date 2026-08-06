@@ -14,8 +14,9 @@ export const buildClobEip712Signature = async (
 	chainId: Chain,
 	timestamp: number,
 	nonce: number,
+	address?: string,
 ): Promise<string> => {
-	const address = await getSignerAddress(signer);
+	const resolvedAddress = address ?? (await getSignerAddress(signer));
 	const ts = timestamp.toString();
 
 	const domain = {
@@ -33,7 +34,7 @@ export const buildClobEip712Signature = async (
 		],
 	};
 	const value = {
-		address,
+		address: resolvedAddress,
 		timestamp: ts,
 		nonce,
 		message: MSG_TO_SIGN,
