@@ -46,6 +46,22 @@ const resp = await client.createAndPostOrder(
 console.log(resp);
 ```
 
+For a position-backed outcome, provide `positionID` instead. The client uses
+the identifier field to select Exchange V3 signing automatically:
+
+```ts
+const resp = await client.createAndPostOrder(
+    {
+        positionID: "", // position ID of the market outcome
+        price: 0.4,
+        side: Side.BUY,
+        size: 100,
+    },
+    { tickSize: "0.01" },
+    OrderType.GTC,
+);
+```
+
 See [examples](examples/) for more information.
 
 ### Market Orders

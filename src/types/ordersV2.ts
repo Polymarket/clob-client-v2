@@ -61,20 +61,28 @@ export interface NewOrderV2<T extends OrderType> {
 	readonly postOnly: boolean;
 }
 
-// Simplified order for users
-export interface UserOrderV2 {
-	/**
-	 * TokenID of the Conditional token asset being traded
-	 */
-	tokenID: string;
+/** Identifies the outcome to trade. Provide exactly one identifier. */
+export type OrderAsset =
+	| {
+			/** Token identifier for a CTF outcome. */
+			tokenID: string;
+			positionID?: never;
+	  }
+	| {
+			/** Position identifier for a Polymarket V2 outcome. */
+			positionID: string;
+			tokenID?: never;
+	  };
 
+// Simplified order for users
+type BaseUserOrderV2 = {
 	/**
 	 * Price used to create the order
 	 */
 	price: number;
 
 	/**
-	 * Size in terms of the ConditionalToken
+	 * Size in outcome shares.
 	 */
 	size: number;
 
@@ -105,15 +113,12 @@ export interface UserOrderV2 {
 	 * This is used for marketable limit orders
 	 */
 	userUSDCBalance?: number;
-}
+};
+
+export type UserOrderV2 = OrderAsset & BaseUserOrderV2;
 
 // Simplified market order for users
-export interface UserMarketOrderV2 {
-	/**
-	 * TokenID of the Conditional token asset being traded
-	 */
-	tokenID: string;
-
+type BaseUserMarketOrderV2 = {
 	/**
 	 * Price used to create the order
 	 * If it is not present the market price will be used.
@@ -154,4 +159,6 @@ export interface UserMarketOrderV2 {
 	 * Builder code (bytes32)
 	 */
 	builderCode?: string;
-}
+};
+
+export type UserMarketOrderV2 = OrderAsset & BaseUserMarketOrderV2;

@@ -10,6 +10,7 @@ import type {
 } from "../../types/index.js";
 import { buildMarketOrderCreationArgs } from "./buildMarketOrderCreationArgs.js";
 import { buildOrder } from "./buildOrder.js";
+import { resolveOrderRouting } from "./orderAsset.js";
 import { ROUNDING_CONFIG } from "./roundingConfig.js";
 
 export const createMarketOrder = async (
@@ -29,6 +30,7 @@ export const createMarketOrder = async (
 	// For POLY_1271, both maker and signer in the order are the wallet address
 	const signerForOrder = signatureType === SignatureTypeV2.POLY_1271 ? maker : eoaSignerAddress;
 	const contractConfig = getContractConfig(chainId);
+	const orderVersion = resolveOrderRouting(userMarketOrder, version).exchangeVersion ?? version;
 
 	const orderData = await buildMarketOrderCreationArgs(
 		signerForOrder,
@@ -36,11 +38,11 @@ export const createMarketOrder = async (
 		signatureType,
 		userMarketOrder,
 		ROUNDING_CONFIG[options.tickSize],
-		version,
+		orderVersion,
 	);
 
 	let exchangeContract: string;
-	switch (version) {
+	switch (orderVersion) {
 		case 1:
 			if (signatureType === SignatureTypeV2.POLY_1271) {
 				throw new Error(`signature type POLY_1271 is not supported for v1 orders`);
@@ -58,8 +60,8 @@ export const createMarketOrder = async (
 			exchangeContract = contractConfig.exchangeV3;
 			break;
 		default:
-			throw new Error(`unsupported order version ${version}`);
+			throw new Error(`unsupported order version ${orderVersion}`);
 	}
 
-	return buildOrder(eoaSigner, exchangeContract, chainId, orderData, version);
+	return buildOrder(eoaSigner, exchangeContract, chainId, orderData, orderVersion);
 };

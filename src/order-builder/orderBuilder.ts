@@ -55,7 +55,7 @@ export class OrderBuilder {
 	public async buildOrder(
 		userOrder: UserOrderV1 | UserOrderV2,
 		options: CreateOrderOptions,
-		version: number,
+		version: number = 2,
 	): Promise<SignedOrderV1 | SignedOrderV2> {
 		const signer = await this.resolveSigner();
 		return createOrder(
@@ -75,7 +75,7 @@ export class OrderBuilder {
 	public async buildMarketOrder(
 		userMarketOrder: UserMarketOrderV1 | UserMarketOrderV2,
 		options: CreateOrderOptions,
-		version: number,
+		version: number = 2,
 	): Promise<SignedOrderV1 | SignedOrderV2> {
 		const signer = await this.resolveSigner();
 		return createMarketOrder(
