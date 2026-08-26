@@ -849,6 +849,66 @@ describe("fee calculations", () => {
 			expect(order.size).toBe(100);
 		});
 
+		it("does not poison builder fee cache when fee lookup returns an API error", async () => {
+			const builderCode =
+				"0x1234567890abcdef1234567890abcdef1234567890abcdef1234567890abcdef";
+			const client = createCachedClient(20);
+			let feeLookups = 0;
+			(client as any).get = async (endpoint: string) => {
+				if (endpoint.includes("/fees/builder-fees/")) {
+					feeLookups += 1;
+					return { error: "builder code not found", status: 404 };
+				}
+				throw new Error(`unexpected GET ${endpoint}`);
+			};
+
+			const order: UserOrderV2 = {
+				tokenID,
+				price: 0.5,
+				size: 100,
+				side: Side.BUY,
+				userUSDCBalance: 50,
+				builderCode,
+			};
+
+			const signedOrder = await client.createOrder(order, { tickSize: "0.01" });
+
+			expect(signedOrder.makerAmount).toBe("48125000");
+			expect(signedOrder.takerAmount).toBe("96250000");
+			expect(client.builderFeeRates[builderCode]).toBeUndefined();
+			expect(feeLookups).toBe(1);
+		});
+
+		it("does not cache malformed builder fee responses with missing rates", async () => {
+			const builderCode =
+				"0x1234567890abcdef1234567890abcdef1234567890abcdef1234567890abcdef";
+			const client = createCachedClient(20);
+			let feeLookups = 0;
+			(client as any).get = async (endpoint: string) => {
+				if (endpoint.includes("/fees/builder-fees/")) {
+					feeLookups += 1;
+					return { status: "pending" };
+				}
+				throw new Error(`unexpected GET ${endpoint}`);
+			};
+
+			const order: UserOrderV2 = {
+				tokenID,
+				price: 0.5,
+				size: 100,
+				side: Side.BUY,
+				userUSDCBalance: 50,
+				builderCode,
+			};
+
+			const signedOrder = await client.createOrder(order, { tickSize: "0.01" });
+
+			expect(signedOrder.makerAmount).toBe("48125000");
+			expect(signedOrder.takerAmount).toBe("96250000");
+			expect(client.builderFeeRates[builderCode]).toBeUndefined();
+			expect(feeLookups).toBe(1);
+		});
+
 		it("keeps adjusted V2 BUY limit within balance when price rounds up to tick", async () => {
 			const client = createCachedClient(20);
 			const balance = 50;

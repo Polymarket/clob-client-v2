@@ -1726,11 +1726,38 @@ export class ClobClient {
 		if (!builderCode || builderCode === bytes32Zero) return;
 		if (builderCode in this.builderFeeRates) return;
 
-		const result = await this.get(`${this.host}${GET_BUILDER_FEES}${builderCode}`);
-		this.builderFeeRates[builderCode] = {
-			maker: result.builder_maker_fee_rate_bps / BUILDER_FEES_BPS,
-			taker: result.builder_taker_fee_rate_bps / BUILDER_FEES_BPS,
-		};
+		try {
+			const result = await this.get(`${this.host}${GET_BUILDER_FEES}${builderCode}`);
+			if (!result || typeof result !== "object" || "error" in result) return;
+
+			const feeResult = result as {
+				builder_maker_fee_rate_bps?: unknown;
+				builder_taker_fee_rate_bps?: unknown;
+			};
+			const makerFeeRate = feeResult.builder_maker_fee_rate_bps;
+			const takerFeeRate = feeResult.builder_taker_fee_rate_bps;
+			if (
+				makerFeeRate === undefined ||
+				makerFeeRate === null ||
+				takerFeeRate === undefined ||
+				takerFeeRate === null ||
+				(typeof makerFeeRate === "string" && makerFeeRate.trim() === "") ||
+				(typeof takerFeeRate === "string" && takerFeeRate.trim() === "")
+			) {
+				return;
+			}
+
+			const makerFeeRateBps = Number(makerFeeRate);
+			const takerFeeRateBps = Number(takerFeeRate);
+			if (!Number.isFinite(makerFeeRateBps) || !Number.isFinite(takerFeeRateBps)) return;
+
+			this.builderFeeRates[builderCode] = {
+				maker: makerFeeRateBps / BUILDER_FEES_BPS,
+				taker: takerFeeRateBps / BUILDER_FEES_BPS,
+			};
+		} catch {
+			return;
+		}
 	}
 
 	private async _resolveTickSize(tokenID: string, tickSize?: TickSize): Promise<TickSize> {
