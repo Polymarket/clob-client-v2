@@ -17,7 +17,7 @@ const overloadHeaders = (
 		return;
 	}
 
-	headers["User-Agent"] = `@polymarket/clob-client`;
+	headers["User-Agent"] = `@polymarket/clob-client-v2`;
 	headers.Accept = "*/*";
 	headers.Connection = "keep-alive";
 	headers["Content-Type"] = "application/json";
