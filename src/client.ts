@@ -1044,14 +1044,10 @@ export class ClobClient {
 	): Promise<OrderResponse> {
 		let postOrderResponse: OrderResponse | undefined;
 
-		await this._retryOnVersionUpdate(
-			async () => {
-				const order = await this.createOrder(userOrder, options);
-				postOrderResponse = await this.postOrder(order, orderType, postOnly, deferExec);
-			},
-			userOrder.tokenID,
-			options?.version,
-		);
+		await this._retryOnVersionUpdate(userOrder.tokenID, options?.version, async () => {
+			const order = await this.createOrder(userOrder, options);
+			postOrderResponse = await this.postOrder(order, orderType, postOnly, deferExec);
+		});
 
 		return postOrderResponse as OrderResponse;
 	}
@@ -1064,14 +1060,10 @@ export class ClobClient {
 	): Promise<OrderResponse> {
 		let postOrderMarketResponse: OrderResponse | undefined;
 
-		await this._retryOnVersionUpdate(
-			async () => {
-				const order = await this.createMarketOrder(userMarketOrder, options);
-				postOrderMarketResponse = await this.postOrder(order, orderType, false, deferExec);
-			},
-			userMarketOrder.tokenID,
-			options?.version,
-		);
+		await this._retryOnVersionUpdate(userMarketOrder.tokenID, options?.version, async () => {
+			const order = await this.createMarketOrder(userMarketOrder, options);
+			postOrderMarketResponse = await this.postOrder(order, orderType, false, deferExec);
+		});
 
 		return postOrderMarketResponse as OrderResponse;
 	}
@@ -1788,9 +1780,9 @@ export class ClobClient {
 	}
 
 	private async _retryOnVersionUpdate(
-		retryFunc: () => Promise<unknown>,
 		tokenID: string,
-		explicitVersion?: number,
+		explicitVersion: number | undefined,
+		retryFunc: () => Promise<unknown>,
 	) {
 		// Only server-selected versions can change during migration recovery.
 		if (explicitVersion != null || isV2PositionId(tokenID)) {
