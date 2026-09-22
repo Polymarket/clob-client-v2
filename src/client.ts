@@ -224,6 +224,10 @@ export class ClobClient {
 
 	private cachedVersion?: number;
 
+	private versionRequest?: Promise<number | undefined>;
+
+	private readonly marketInfoRequests = new Map<string, Promise<MarketDetails>>();
+
 	readonly retryOnError?: boolean;
 
 	readonly throwOnError?: boolean;
@@ -300,8 +304,18 @@ export class ClobClient {
 		});
 	}
 
+	/**
+	 * Fetches the current order version from the server and adopts it for the
+	 * orders this client signs afterwards. An error response yields the default
+	 * version 2 without caching it, so the next order asks the server again.
+	 */
 	public async getVersion(): Promise<number> {
+		return this.resolveVersion(true);
+	}
+
+	private async fetchVersion(): Promise<number | undefined> {
 		const response = await this.get(`${this.host}/version`);
+		if (response && typeof response === "object" && "error" in response) return undefined;
 		// default to v2
 		return response?.version ?? 2;
 	}
@@ -340,7 +354,25 @@ export class ClobClient {
 		return this.get(`${this.host}${GET_MARKET}${conditionID}`);
 	}
 
+	/**
+	 * Fetches the market parameters for a condition and caches the tick size,
+	 * neg-risk flag, and fee details of both outcomes for later orders. Every
+	 * call refreshes the caches. Concurrent calls for a condition share one request.
+	 */
 	public async getClobMarketInfo(conditionID: string): Promise<MarketDetails> {
+		const pending = this.marketInfoRequests.get(conditionID);
+		if (pending) return pending;
+
+		const request = this.fetchClobMarketInfo(conditionID);
+		this.marketInfoRequests.set(conditionID, request);
+		try {
+			return await request;
+		} finally {
+			this.marketInfoRequests.delete(conditionID);
+		}
+	}
+
+	private async fetchClobMarketInfo(conditionID: string): Promise<MarketDetails> {
 		const result: MarketDetails = await this.get(
 			`${this.host}${GET_CLOB_MARKET}${conditionID}`,
 		);
@@ -1719,6 +1751,8 @@ export class ClobClient {
 			this.tokenConditionMap[tokenID] = result.condition_id as string;
 		}
 
+		// A market fetch may have filled the caches while the token was resolving.
+		if (tokenID in this.feeInfos) return;
 		await this.getClobMarketInfo(this.tokenConditionMap[tokenID]);
 	}
 
@@ -1767,11 +1801,39 @@ export class ClobClient {
 			return this.cachedVersion;
 		}
 
-		// Query API and cache the result
-		const apiVersion = await this.getVersion();
-		this.cachedVersion = apiVersion;
+		// Join the request already in flight unless a refresh was requested
+		if (!forceUpdate && this.versionRequest) {
+			return this.settleVersion(this.versionRequest);
+		}
 
-		return apiVersion;
+		const request = this.fetchVersion();
+		this.versionRequest = request;
+		return this.settleVersion(request);
+	}
+
+	// Waits for a version request and caches its result. A forced refresh that
+	// starts while the request is pending replaces it: callers of the replaced
+	// request receive the newer result and the superseded one is never cached.
+	private async settleVersion(request: Promise<number | undefined>): Promise<number> {
+		let apiVersion: number | undefined;
+		try {
+			apiVersion = await request;
+		} catch (err) {
+			if (this.versionRequest === request) this.versionRequest = undefined;
+			else if (this.versionRequest !== undefined)
+				return this.settleVersion(this.versionRequest);
+			throw err;
+		}
+
+		if (this.versionRequest === request) {
+			this.versionRequest = undefined;
+			if (apiVersion !== undefined) this.cachedVersion = apiVersion;
+			return apiVersion ?? 2;
+		}
+
+		// Superseded: defer to the pending refresh, or to what it already cached
+		if (this.versionRequest !== undefined) return this.settleVersion(this.versionRequest);
+		return this.cachedVersion ?? apiVersion ?? 2;
 	}
 
 	private async _retryOnVersionUpdate(retryFunc: () => Promise<unknown>) {

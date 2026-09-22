@@ -67,6 +67,27 @@ const resp = await client.createAndPostMarketOrder(
 console.log(resp);
 ```
 
+### Priming order metadata
+
+The first order on a new client fetches the order version and the market's tick size,
+neg-risk flag, and fee details before it can be signed. Both are public GET requests and
+need no signer or credentials. To take them off the first trade, run them ahead of time
+on the same client instance that will submit orders:
+
+```ts
+await Promise.all([
+    client.getVersion(), // adopted as the order version for this client
+    client.getClobMarketInfo(conditionID), // caches tick size, neg risk, and fees for both outcomes
+]);
+```
+
+Each call refreshes the caches, so repeating it costs one request. A new client instance
+starts with empty caches. Order creation reuses a version or market request that is still
+in flight instead of starting another one. Orders never require these calls. An order
+placed before `getClobMarketInfo` resolves still performs its own token-to-market lookup.
+Books, balances, allowances, credentials, and builder fee rates are not cached by these
+calls.
+
 ### Authentication
 
 The client has two authentication levels:
