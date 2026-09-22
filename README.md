@@ -67,7 +67,7 @@ const resp = await client.createAndPostMarketOrder(
 console.log(resp);
 ```
 
-### Priming order metadata
+### Warm up order cache metadata
 
 The first order on a new client fetches the order version and the market's tick size,
 neg-risk flag, and fee details before it can be signed. Both are public GET requests and
