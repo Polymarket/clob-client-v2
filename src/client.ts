@@ -188,6 +188,10 @@ export interface ClobClientOptions {
 	feeSlippage?: number;
 }
 
+export interface WarmUpOptions {
+	conditionID?: string;
+}
+
 export class ClobClient {
 	readonly host: string;
 
@@ -223,6 +227,12 @@ export class ClobClient {
 	readonly funderAddress?: string;
 
 	private cachedVersion?: number;
+
+	private versionRequest?: Promise<number | undefined>;
+
+	private readonly marketInfoRequests = new Map<string, Promise<MarketDetails>>();
+
+	private readonly cachedMarketConditions = new Set<string>();
 
 	readonly retryOnError?: boolean;
 
@@ -301,7 +311,30 @@ export class ClobClient {
 	}
 
 	public async getVersion(): Promise<number> {
+		return (await this.fetchVersion()) ?? 2;
+	}
+
+	/**
+	 * Warms the order-version cache and, optionally, both outcomes of a market.
+	 * Uses public endpoints only; never signs or posts an order. Repeated calls
+	 * reuse this client's caches. A failed warm-up can be retried by a later call.
+	 */
+	public async warmUp({ conditionID }: WarmUpOptions = {}): Promise<void> {
+		await Promise.all([
+			this.resolveVersion().then(() => {
+				if (this.cachedVersion === undefined) {
+					throw new Error("failed to warm order version");
+				}
+			}),
+			conditionID !== undefined && !this.cachedMarketConditions.has(conditionID)
+				? this.getClobMarketInfo(conditionID)
+				: undefined,
+		]);
+	}
+
+	private async fetchVersion(): Promise<number | undefined> {
 		const response = await this.get(`${this.host}/version`);
+		if (response && typeof response === "object" && "error" in response) return undefined;
 		// default to v2
 		return response?.version ?? 2;
 	}
@@ -341,6 +374,19 @@ export class ClobClient {
 	}
 
 	public async getClobMarketInfo(conditionID: string): Promise<MarketDetails> {
+		const pending = this.marketInfoRequests.get(conditionID);
+		if (pending) return pending;
+
+		const request = this.fetchClobMarketInfo(conditionID);
+		this.marketInfoRequests.set(conditionID, request);
+		try {
+			return await request;
+		} finally {
+			this.marketInfoRequests.delete(conditionID);
+		}
+	}
+
+	private async fetchClobMarketInfo(conditionID: string): Promise<MarketDetails> {
 		const result: MarketDetails = await this.get(
 			`${this.host}${GET_CLOB_MARKET}${conditionID}`,
 		);
@@ -361,6 +407,9 @@ export class ClobClient {
 				rate: result.fd?.r ?? 0,
 				exponent: result.fd?.e ?? 0,
 			};
+		}
+		if (result.t.some(token => token != null)) {
+			this.cachedMarketConditions.add(conditionID);
 		}
 
 		return result;
@@ -1719,6 +1768,7 @@ export class ClobClient {
 			this.tokenConditionMap[tokenID] = result.condition_id as string;
 		}
 
+		if (tokenID in this.feeInfos) return;
 		await this.getClobMarketInfo(this.tokenConditionMap[tokenID]);
 	}
 
@@ -1767,11 +1817,19 @@ export class ClobClient {
 			return this.cachedVersion;
 		}
 
-		// Query API and cache the result
-		const apiVersion = await this.getVersion();
-		this.cachedVersion = apiVersion;
+		if (!forceUpdate && this.versionRequest) return (await this.versionRequest) ?? 2;
 
-		return apiVersion;
+		const request = this.fetchVersion();
+		this.versionRequest = request;
+		try {
+			const apiVersion = await request;
+			if (this.versionRequest === request && apiVersion !== undefined) {
+				this.cachedVersion = apiVersion;
+			}
+			return apiVersion ?? 2;
+		} finally {
+			if (this.versionRequest === request) this.versionRequest = undefined;
+		}
 	}
 
 	private async _retryOnVersionUpdate(retryFunc: () => Promise<unknown>) {

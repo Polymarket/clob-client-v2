@@ -67,6 +67,28 @@ const resp = await client.createAndPostMarketOrder(
 console.log(resp);
 ```
 
+### Warming order metadata
+
+Call `warmUp` on the same client that will submit orders. It uses public GET
+endpoints without signing, posting orders, or requiring credentials.
+
+```ts
+await client.warmUp(); // Cache the order version for this client.
+await client.warmUp({ conditionID: "<condition-id>" });
+```
+
+With a condition ID, the version and market metadata requests run concurrently.
+The market response fills tick size, neg-risk, and fee caches for both outcomes,
+avoiding a token-to-market lookup on subsequent orders. Successful warm-ups are
+reused for this client; a new client needs its own warm-up. `getClobMarketInfo`
+remains an explicit refresh, and version-mismatch recovery still refreshes the
+version. Concurrent requests for the same metadata share their in-flight work.
+
+In a UI, schedule this after rendering and handle rejection as a background
+failure. Order placement does not require a successful warm-up. An order placed
+before market warm-up finishes can still need its token-to-market lookup. Books,
+balances, approvals, credentials, and builder fee rates are not warmed.
+
 ### Authentication
 
 The client has two authentication levels:
