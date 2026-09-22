@@ -81,12 +81,15 @@ await Promise.all([
 ]);
 ```
 
-Each call refreshes the caches, so repeating it costs one request. A new client instance
-starts with empty caches. Order creation reuses a version or market request that is still
-in flight instead of starting another one. Orders never require these calls. An order
-placed before `getClobMarketInfo` resolves still performs its own token-to-market lookup.
-Books, balances, allowances, credentials, and builder fee rates are not cached by these
-calls.
+Each call asks the server and refreshes the caches, so repeating it costs one request. If
+the version request fails, `getVersion` adopts the default version 2 and the first order
+corrects it through the mismatch recovery built into order posting. With `throwOnError`
+both calls throw `ApiError` instead, so treat a rejected warm-up as a background failure.
+A new client instance starts with empty caches. Order creation and `getVersion` reuse a
+version or market request that is still in flight instead of starting another one. Orders
+never require these calls. An order placed before `getClobMarketInfo` resolves still
+performs its own token-to-market lookup. Books, balances, allowances, credentials, and
+builder fee rates are not cached by these calls.
 
 ### Authentication
 

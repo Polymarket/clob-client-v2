@@ -53,6 +53,8 @@ const mockGet = (
 
 const calls = (get: ReturnType<typeof mockGet>, path: string) =>
 	get.mock.calls.filter(([url]) => String(url).includes(path)).length;
+const posts = (client: ClobClient) =>
+	((client as any).post as ReturnType<typeof vi.fn>).mock.calls.length;
 const builtVersions = (client: ClobClient) =>
 	vi.mocked(client.orderBuilder.buildMarketOrder).mock.calls.map(call => call[2]);
 const marketOrder = (client: ClobClient, tokenID = "a-yes") =>
@@ -98,40 +100,50 @@ describe("order metadata caches", () => {
 		expect(client.tickSizes["a-yes"]).toBe("0.001");
 	});
 
-	it.each([
-		false,
-		true,
-	])("does not cache a failed version fetch (throwOnError=%s)", async throwOnError => {
-		const client = makeClient([], throwOnError);
-		const failure = new ApiError("unavailable", 503);
-		const version = vi.fn().mockReturnValue({ version: 3 });
-		if (throwOnError) {
-			version.mockImplementationOnce(() => {
-				throw failure;
-			});
-		} else {
-			version.mockReturnValueOnce({ error: "unavailable", status: 503 });
-		}
+	it("adopts the default version when the version request fails and posts the order once", async () => {
+		const client = makeClient();
+		const version = vi
+			.fn()
+			.mockReturnValueOnce({ error: "unavailable", status: 503 })
+			.mockReturnValue({ version: 3 });
 		const get = mockGet(client, version);
 
-		const attempt = client.getVersion();
-		await (throwOnError
-			? expect(attempt).rejects.toBe(failure)
-			: expect(attempt).resolves.toBe(2));
+		await expect(client.getVersion()).resolves.toBe(2);
+		await expect(marketOrder(client)).resolves.toEqual(placed);
+
+		expect(calls(get, "/version")).toBe(1);
+		expect(builtVersions(client)).toEqual([2]);
+		expect(posts(client)).toBe(1);
+	});
+
+	it("propagates ApiError from getVersion under throwOnError and leaves the cache empty", async () => {
+		const client = makeClient([], true);
+		const failure = new ApiError("unavailable", 503);
+		const version = vi.fn().mockRejectedValueOnce(failure).mockReturnValue({ version: 3 });
+		const get = mockGet(client, version);
+
+		await expect(client.getVersion()).rejects.toBe(failure);
 		await marketOrder(client);
 
 		expect(calls(get, "/version")).toBe(2);
 		expect(builtVersions(client)).toEqual([3]);
 	});
 
-	it("shares in-flight version and market requests between concurrent orders", async () => {
+	it("shares one in-flight version request between concurrent orders and getVersion", async () => {
 		const client = makeClient();
-		const get = mockGet(client);
+		const version = deferred<unknown>();
+		const get = mockGet(client, () => version.promise);
 
-		await Promise.all([marketOrder(client), marketOrder(client, "a-no")]);
+		const orders = Promise.all([marketOrder(client), marketOrder(client, "a-no")]);
+		await vi.waitFor(() => expect(calls(get, "/version")).toBe(1));
+		const poll = client.getVersion();
+		version.resolve({ version: 3 });
 
+		await expect(poll).resolves.toBe(3);
+		await orders;
 		expect(calls(get, "/version")).toBe(1);
 		expect(calls(get, "/clob-markets/")).toBe(1);
+		expect(builtVersions(client)).toEqual([3, 3]);
 	});
 
 	it("retries every concurrent order with the refreshed version after a mismatch", async () => {
@@ -157,25 +169,28 @@ describe("order metadata caches", () => {
 		expect(builtVersions(client)).toEqual([2, 2, 3, 3]);
 	});
 
-	it("hands a pending order the version of a forced refresh that overtook its request", async () => {
-		const client = makeClient([mismatch]);
-		const older = deferred<unknown>();
-		const version = vi.fn().mockReturnValueOnce(older.promise).mockReturnValue({ version: 3 });
-		const get = mockGet(client, version);
-		await client.getClobMarketInfo("market-a");
+	it("retries once after a mismatch under throwOnError", async () => {
+		const client = makeClient([mismatch], true);
+		mockGet(
+			client,
+			vi.fn().mockReturnValueOnce({ version: 2 }).mockReturnValue({ version: 3 }),
+		);
 
-		const pending = client.createMarketOrder({
-			tokenID: "a-yes",
-			amount: 10,
-			side: Side.BUY,
-			price: 0.5,
-		});
-		await vi.waitFor(() => expect(calls(get, "/version")).toBe(1));
-		await client.postOrder(signedOrder); // the mismatch forces a refresh that resolves to 3
-		older.resolve({ version: 2 });
-		await pending;
+		await expect(marketOrder(client)).resolves.toEqual(placed);
 
-		expect(builtVersions(client)).toEqual([3]);
-		expect(calls(get, "/version")).toBe(2);
+		expect(builtVersions(client)).toEqual([2, 3]);
+	});
+
+	it("returns the mismatch response when the retry is rejected again", async () => {
+		const client = makeClient([mismatch, mismatch]);
+		mockGet(
+			client,
+			vi.fn().mockReturnValueOnce({ version: 2 }).mockReturnValue({ version: 3 }),
+		);
+
+		await expect(marketOrder(client)).resolves.toEqual(mismatch);
+
+		expect(posts(client)).toBe(2);
+		expect(builtVersions(client)).toEqual([2, 3]);
 	});
 });

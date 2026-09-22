@@ -224,7 +224,7 @@ export class ClobClient {
 
 	private cachedVersion?: number;
 
-	private versionRequest?: Promise<number | undefined>;
+	private versionRequest?: Promise<number>;
 
 	private readonly marketInfoRequests = new Map<string, Promise<MarketDetails>>();
 
@@ -306,18 +306,28 @@ export class ClobClient {
 
 	/**
 	 * Fetches the current order version from the server and adopts it for the
-	 * orders this client signs afterwards. An error response yields the default
-	 * version 2 without caching it, so the next order asks the server again.
+	 * orders this client signs afterwards. Joins a version request that is
+	 * already in flight. An error response yields the default version 2, which
+	 * the first order corrects through the order version mismatch recovery.
+	 * Throws ApiError when the client was created with throwOnError.
 	 */
 	public async getVersion(): Promise<number> {
-		return this.resolveVersion(true);
+		return this.versionRequest ?? this.startVersionRequest();
 	}
 
-	private async fetchVersion(): Promise<number | undefined> {
-		const response = await this.get(`${this.host}/version`);
-		if (response && typeof response === "object" && "error" in response) return undefined;
-		// default to v2
-		return response?.version ?? 2;
+	private startVersionRequest(): Promise<number> {
+		const request = this.get(`${this.host}/version`)
+			.then(response => {
+				// default to v2
+				const version: number = response?.version ?? 2;
+				this.cachedVersion = version;
+				return version;
+			})
+			.finally(() => {
+				if (this.versionRequest === request) this.versionRequest = undefined;
+			});
+		this.versionRequest = request;
+		return request;
 	}
 
 	public async getServerTime(): Promise<number> {
@@ -1073,14 +1083,10 @@ export class ClobClient {
 		postOnly = false,
 		deferExec = false,
 	): Promise<OrderResponse> {
-		let postOrderResponse: OrderResponse | undefined;
-
-		await this._retryOnVersionUpdate(async () => {
+		return this._retryOnVersionUpdate(async () => {
 			const order = await this.createOrder(userOrder, options);
-			postOrderResponse = await this.postOrder(order, orderType, postOnly, deferExec);
+			return this.postOrder(order, orderType, postOnly, deferExec);
 		});
-
-		return postOrderResponse as OrderResponse;
 	}
 
 	public async createAndPostMarketOrder<T extends OrderType.FOK | OrderType.FAK = OrderType.FOK>(
@@ -1089,14 +1095,10 @@ export class ClobClient {
 		orderType: T = OrderType.FOK as T,
 		deferExec = false,
 	): Promise<OrderResponse> {
-		let postOrderMarketResponse: OrderResponse | undefined;
-
-		await this._retryOnVersionUpdate(async () => {
+		return this._retryOnVersionUpdate(async () => {
 			const order = await this.createMarketOrder(userMarketOrder, options);
-			postOrderMarketResponse = await this.postOrder(order, orderType, false, deferExec);
+			return this.postOrder(order, orderType, false, deferExec);
 		});
-
-		return postOrderMarketResponse as OrderResponse;
 	}
 
 	public async getOpenOrders(
@@ -1801,53 +1803,28 @@ export class ClobClient {
 			return this.cachedVersion;
 		}
 
-		// Join the request already in flight unless a refresh was requested
-		if (!forceUpdate && this.versionRequest) {
-			return this.settleVersion(this.versionRequest);
-		}
-
-		const request = this.fetchVersion();
-		this.versionRequest = request;
-		return this.settleVersion(request);
+		// Concurrent orders share the request in flight. A refresh after an order
+		// version mismatch asks the server again, since a pending answer may predate
+		// the change. Every request adopts its result when it settles.
+		if (!forceUpdate && this.versionRequest) return this.versionRequest;
+		return this.startVersionRequest();
 	}
 
-	// Waits for a version request and caches its result. A forced refresh that
-	// starts while the request is pending replaces it: callers of the replaced
-	// request receive the newer result and the superseded one is never cached.
-	private async settleVersion(request: Promise<number | undefined>): Promise<number> {
-		let apiVersion: number | undefined;
+	// Runs a create-and-post attempt and repeats it once when the CLOB rejected
+	// the order for a version mismatch. postOrder refreshes the cached version on
+	// a mismatch, so the second attempt signs with the current version.
+	private async _retryOnVersionUpdate<T>(attempt: () => Promise<T>): Promise<T> {
 		try {
-			apiVersion = await request;
+			const response = await attempt();
+			if (!this._isOrderVersionMismatch(response as ClobErrorResponseBody)) return response;
 		} catch (err) {
-			if (this.versionRequest === request) this.versionRequest = undefined;
-			else if (this.versionRequest !== undefined)
-				return this.settleVersion(this.versionRequest);
-			throw err;
+			const data = err instanceof ApiError ? (err.data as ClobErrorResponseBody) : undefined;
+			if (!this._isOrderVersionMismatch(data)) throw err;
 		}
-
-		if (this.versionRequest === request) {
-			this.versionRequest = undefined;
-			if (apiVersion !== undefined) this.cachedVersion = apiVersion;
-			return apiVersion ?? 2;
-		}
-
-		// Superseded: defer to the pending refresh, or to what it already cached
-		if (this.versionRequest !== undefined) return this.settleVersion(this.versionRequest);
-		return this.cachedVersion ?? apiVersion ?? 2;
+		return attempt();
 	}
 
-	private async _retryOnVersionUpdate(retryFunc: () => Promise<unknown>) {
-		const version = await this.resolveVersion();
-
-		for (let attempt = 0; attempt < 2; attempt++) {
-			await retryFunc();
-
-			// no need to retry if version is unchanged
-			if (version === (await this.resolveVersion())) break;
-		}
-	}
-
-	private _isOrderVersionMismatch(resp: ClobErrorResponseBody) {
+	private _isOrderVersionMismatch(resp?: ClobErrorResponseBody) {
 		const error = resp?.error;
 		if (!error) return false;
 		const message = typeof error === "string" ? error : JSON.stringify(error);
