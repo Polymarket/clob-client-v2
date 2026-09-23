@@ -67,6 +67,30 @@ const resp = await client.createAndPostMarketOrder(
 console.log(resp);
 ```
 
+### Warm up order cache metadata
+
+The first order on a new client fetches the order version and the market's tick size,
+neg-risk flag, and fee details before it can be signed. Both are public GET requests and
+need no signer or credentials. To take them off the first trade, run them ahead of time
+on the same client instance that will submit orders:
+
+```ts
+await Promise.all([
+    client.getVersion(), // adopted as the order version for this client
+    client.getClobMarketInfo(conditionID), // caches tick size, neg risk, and fees for both outcomes
+]);
+```
+
+Each call asks the server and refreshes the caches, so repeating it costs one request. If
+the version request fails, `getVersion` adopts the default version 2 and the first order
+corrects it through the mismatch recovery built into order posting. With `throwOnError`
+both calls throw `ApiError` instead, so treat a rejected warm-up as a background failure.
+A new client instance starts with empty caches. Order creation and `getVersion` reuse a
+version or market request that is still in flight instead of starting another one. Orders
+never require these calls. An order placed before `getClobMarketInfo` resolves still
+performs its own token-to-market lookup. Books, balances, allowances, credentials, and
+builder fee rates are not cached by these calls.
+
 ### Authentication
 
 The client has two authentication levels:

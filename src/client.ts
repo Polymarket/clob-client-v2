@@ -224,6 +224,10 @@ export class ClobClient {
 
 	private cachedVersion?: number;
 
+	private versionRequest?: Promise<number>;
+
+	private readonly marketInfoRequests = new Map<string, Promise<MarketDetails>>();
+
 	readonly retryOnError?: boolean;
 
 	readonly throwOnError?: boolean;
@@ -300,10 +304,30 @@ export class ClobClient {
 		});
 	}
 
+	/**
+	 * Fetches the current order version from the server and adopts it for the
+	 * orders this client signs afterwards. Joins a version request that is
+	 * already in flight. An error response yields the default version 2, which
+	 * the first order corrects through the order version mismatch recovery.
+	 * Throws ApiError when the client was created with throwOnError.
+	 */
 	public async getVersion(): Promise<number> {
-		const response = await this.get(`${this.host}/version`);
-		// default to v2
-		return response?.version ?? 2;
+		return this.versionRequest ?? this.startVersionRequest();
+	}
+
+	private startVersionRequest(): Promise<number> {
+		const request = this.get(`${this.host}/version`)
+			.then(response => {
+				// default to v2
+				const version: number = response?.version ?? 2;
+				this.cachedVersion = version;
+				return version;
+			})
+			.finally(() => {
+				if (this.versionRequest === request) this.versionRequest = undefined;
+			});
+		this.versionRequest = request;
+		return request;
 	}
 
 	public async getServerTime(): Promise<number> {
@@ -340,7 +364,25 @@ export class ClobClient {
 		return this.get(`${this.host}${GET_MARKET}${conditionID}`);
 	}
 
+	/**
+	 * Fetches the market parameters for a condition and caches the tick size,
+	 * neg-risk flag, and fee details of both outcomes for later orders. Every
+	 * call refreshes the caches. Concurrent calls for a condition share one request.
+	 */
 	public async getClobMarketInfo(conditionID: string): Promise<MarketDetails> {
+		const pending = this.marketInfoRequests.get(conditionID);
+		if (pending) return pending;
+
+		const request = this.fetchClobMarketInfo(conditionID);
+		this.marketInfoRequests.set(conditionID, request);
+		try {
+			return await request;
+		} finally {
+			this.marketInfoRequests.delete(conditionID);
+		}
+	}
+
+	private async fetchClobMarketInfo(conditionID: string): Promise<MarketDetails> {
 		const result: MarketDetails = await this.get(
 			`${this.host}${GET_CLOB_MARKET}${conditionID}`,
 		);
@@ -1041,14 +1083,10 @@ export class ClobClient {
 		postOnly = false,
 		deferExec = false,
 	): Promise<OrderResponse> {
-		let postOrderResponse: OrderResponse | undefined;
-
-		await this._retryOnVersionUpdate(async () => {
+		return this._retryOnVersionUpdate(async () => {
 			const order = await this.createOrder(userOrder, options);
-			postOrderResponse = await this.postOrder(order, orderType, postOnly, deferExec);
+			return this.postOrder(order, orderType, postOnly, deferExec);
 		});
-
-		return postOrderResponse as OrderResponse;
 	}
 
 	public async createAndPostMarketOrder<T extends OrderType.FOK | OrderType.FAK = OrderType.FOK>(
@@ -1057,14 +1095,10 @@ export class ClobClient {
 		orderType: T = OrderType.FOK as T,
 		deferExec = false,
 	): Promise<OrderResponse> {
-		let postOrderMarketResponse: OrderResponse | undefined;
-
-		await this._retryOnVersionUpdate(async () => {
+		return this._retryOnVersionUpdate(async () => {
 			const order = await this.createMarketOrder(userMarketOrder, options);
-			postOrderMarketResponse = await this.postOrder(order, orderType, false, deferExec);
+			return this.postOrder(order, orderType, false, deferExec);
 		});
-
-		return postOrderMarketResponse as OrderResponse;
 	}
 
 	public async getOpenOrders(
@@ -1719,6 +1753,8 @@ export class ClobClient {
 			this.tokenConditionMap[tokenID] = result.condition_id as string;
 		}
 
+		// A market fetch may have filled the caches while the token was resolving.
+		if (tokenID in this.feeInfos) return;
 		await this.getClobMarketInfo(this.tokenConditionMap[tokenID]);
 	}
 
@@ -1767,25 +1803,28 @@ export class ClobClient {
 			return this.cachedVersion;
 		}
 
-		// Query API and cache the result
-		const apiVersion = await this.getVersion();
-		this.cachedVersion = apiVersion;
-
-		return apiVersion;
+		// Concurrent orders share the request in flight. A refresh after an order
+		// version mismatch asks the server again, since a pending answer may predate
+		// the change. Every request adopts its result when it settles.
+		if (!forceUpdate && this.versionRequest) return this.versionRequest;
+		return this.startVersionRequest();
 	}
 
-	private async _retryOnVersionUpdate(retryFunc: () => Promise<unknown>) {
-		const version = await this.resolveVersion();
-
-		for (let attempt = 0; attempt < 2; attempt++) {
-			await retryFunc();
-
-			// no need to retry if version is unchanged
-			if (version === (await this.resolveVersion())) break;
+	// Runs a create-and-post attempt and repeats it once when the CLOB rejected
+	// the order for a version mismatch. postOrder refreshes the cached version on
+	// a mismatch, so the second attempt signs with the current version.
+	private async _retryOnVersionUpdate<T>(attempt: () => Promise<T>): Promise<T> {
+		try {
+			const response = await attempt();
+			if (!this._isOrderVersionMismatch(response as ClobErrorResponseBody)) return response;
+		} catch (err) {
+			const data = err instanceof ApiError ? (err.data as ClobErrorResponseBody) : undefined;
+			if (!this._isOrderVersionMismatch(data)) throw err;
 		}
+		return attempt();
 	}
 
-	private _isOrderVersionMismatch(resp: ClobErrorResponseBody) {
+	private _isOrderVersionMismatch(resp?: ClobErrorResponseBody) {
 		const error = resp?.error;
 		if (!error) return false;
 		const message = typeof error === "string" ? error : JSON.stringify(error);
