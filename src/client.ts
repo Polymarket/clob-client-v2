@@ -87,7 +87,6 @@ import {
 } from "./order-builder/helpers/index.js";
 import { OrderBuilder } from "./order-builder/index.js";
 import { SignatureTypeV2 } from "./order-utils/model/signatureTypeV2.js";
-import { isV2PositionId } from "./protocol.js";
 import type { ClobSigner } from "./signing/signer.js";
 import type {
 	ApiKeyCreds,
@@ -910,7 +909,7 @@ export class ClobClient {
 		}
 		orderToSign.price = roundNormal(orderToSign.price, ROUNDING_CONFIG[tickSize].price);
 
-		const version = await this.resolveOrderVersion(tokenID, options?.version);
+		const version = options?.version ?? (await this.resolveVersion());
 
 		if (
 			version !== 1 &&
@@ -1001,7 +1000,7 @@ export class ClobClient {
 		}
 
 		const negRisk = options?.negRisk ?? (await this.getNegRisk(tokenID));
-		const version = await this.resolveOrderVersion(tokenID, options?.version);
+		const version = options?.version ?? (await this.resolveVersion());
 
 		if (version === 1) {
 			const userFeeRateBps =
@@ -1044,7 +1043,7 @@ export class ClobClient {
 	): Promise<OrderResponse> {
 		let postOrderResponse: OrderResponse | undefined;
 
-		await this._retryOnVersionUpdate(userOrder.tokenID, options?.version, async () => {
+		await this._retryOnVersionUpdate(async () => {
 			const order = await this.createOrder(userOrder, options);
 			postOrderResponse = await this.postOrder(order, orderType, postOnly, deferExec);
 		});
@@ -1060,7 +1059,7 @@ export class ClobClient {
 	): Promise<OrderResponse> {
 		let postOrderMarketResponse: OrderResponse | undefined;
 
-		await this._retryOnVersionUpdate(userMarketOrder.tokenID, options?.version, async () => {
+		await this._retryOnVersionUpdate(async () => {
 			const order = await this.createMarketOrder(userMarketOrder, options);
 			postOrderMarketResponse = await this.postOrder(order, orderType, false, deferExec);
 		});
@@ -1762,10 +1761,6 @@ export class ClobClient {
 		return marketFeeRateBps;
 	}
 
-	private async resolveOrderVersion(tokenID: string, version?: number): Promise<number> {
-		return version ?? (isV2PositionId(tokenID) ? 3 : this.resolveVersion());
-	}
-
 	private async resolveVersion(forceUpdate: boolean = false): Promise<number> {
 		// Use cached version if given
 		if (!forceUpdate && this.cachedVersion !== undefined) {
@@ -1779,17 +1774,7 @@ export class ClobClient {
 		return apiVersion;
 	}
 
-	private async _retryOnVersionUpdate(
-		tokenID: string,
-		explicitVersion: number | undefined,
-		retryFunc: () => Promise<unknown>,
-	) {
-		// Only server-selected versions can change during migration recovery.
-		if (explicitVersion != null || isV2PositionId(tokenID)) {
-			await retryFunc();
-			return;
-		}
-
+	private async _retryOnVersionUpdate(retryFunc: () => Promise<unknown>) {
 		const version = await this.resolveVersion();
 
 		for (let attempt = 0; attempt < 2; attempt++) {
