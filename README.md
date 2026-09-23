@@ -48,11 +48,6 @@ console.log(resp);
 
 See [examples](examples/) for more information.
 
-Limit and market orders automatically use Exchange V3 for protocol V2 position IDs.
-Legacy CTF token IDs use the server's exchange version. To override automatic
-selection, pass `version: 1`, `version: 2`, or `version: 3` in the order options,
-for example `{ tickSize: "0.01", version: 3 }`.
-
 ### Market Orders
 
 ```ts

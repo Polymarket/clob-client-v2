@@ -252,7 +252,6 @@ export type OrderVersion = 1 | 2 | 3;
 export type CreateOrderOptions = {
 	tickSize: TickSize;
 	negRisk?: boolean;
-	/** Omit to select Exchange V3 for protocol V2 positions, or the server version for CTF tokens. */
 	version?: OrderVersion;
 };
 
