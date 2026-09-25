@@ -6,7 +6,17 @@ export type OrderRouting = {
 };
 
 export function resolveOrderAssetID(asset: OrderAsset): string {
-	return asset.positionID ?? asset.tokenID;
+	const assetID = asset.positionID === undefined ? asset.tokenID : asset.positionID;
+	if (
+		(asset.tokenID !== undefined) === (asset.positionID !== undefined) ||
+		typeof assetID !== "string" ||
+		assetID.trim().length === 0
+	) {
+		throw new Error(
+			"Exactly one of tokenID or positionID must be provided as a non-empty string",
+		);
+	}
+	return assetID;
 }
 
 export function resolveOrderRouting(asset: OrderAsset, requestedVersion?: number): OrderRouting {
