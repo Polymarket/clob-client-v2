@@ -5,6 +5,24 @@ import { type OrderDataV2, SignatureTypeV2 } from "../../../src/order-utils";
 import { Side, type UserOrderV1, type UserOrderV2 } from "../../../src/types";
 
 describe("buildOrderCreationArgs", () => {
+	it("encodes a position ID in the protocol tokenId field", async () => {
+		const orderData: OrderDataV2 = await buildOrderCreationArgs(
+			"0x0000000000000000000000000000000000000001",
+			"0x0000000000000000000000000000000000000002",
+			SignatureTypeV2.EOA,
+			{
+				positionID: "456",
+				price: 0.5,
+				size: 1,
+				side: Side.BUY,
+			},
+			ROUNDING_CONFIG["0.01"],
+			3,
+		);
+
+		expect(orderData.tokenId).toBe("456");
+	});
+
 	it("uses Date.now milliseconds as the V2/V3 order timestamp", async () => {
 		const nowMS = 1780452718728;
 		const dateNow = vi.spyOn(Date, "now").mockReturnValue(nowMS);

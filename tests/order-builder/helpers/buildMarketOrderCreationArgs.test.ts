@@ -6,6 +6,24 @@ import { Side, type UserMarketOrderV1, type UserMarketOrderV2 } from "../../../s
 import { roundDown } from "../../../src/utilities";
 
 describe("buildMarketOrderCreationArgs", () => {
+	it("encodes a position ID in the protocol tokenId field", async () => {
+		const orderData: OrderDataV2 = await buildMarketOrderCreationArgs(
+			"0x0000000000000000000000000000000000000001",
+			"0x0000000000000000000000000000000000000002",
+			SignatureTypeV2.EOA,
+			{
+				positionID: "456",
+				price: 0.5,
+				amount: 100,
+				side: Side.BUY,
+			},
+			ROUNDING_CONFIG["0.01"],
+			3,
+		);
+
+		expect(orderData.tokenId).toBe("456");
+	});
+
 	describe("market buy order", () => {
 		it("0.1", async () => {
 			const order: UserMarketOrderV1 = {

@@ -85,6 +85,7 @@ import {
 	calculateSellMarketPrice,
 	ROUNDING_CONFIG,
 } from "./order-builder/helpers/index.js";
+import { resolveOrderRouting } from "./order-builder/helpers/orderAsset.js";
 import { OrderBuilder } from "./order-builder/index.js";
 import { SignatureTypeV2 } from "./order-utils/model/signatureTypeV2.js";
 import type { ClobSigner } from "./signing/signer.js";
@@ -938,9 +939,10 @@ export class ClobClient {
 			orderToSign.builderCode = this.builderConfig.builderCode;
 		}
 
-		const { tokenID } = orderToSign;
+		const routing = resolveOrderRouting(orderToSign, options?.version);
+		const { assetID } = routing;
 
-		const tickSize = await this._resolveTickSize(tokenID, options?.tickSize);
+		const tickSize = await this._resolveTickSize(assetID, options?.tickSize);
 
 		if (!priceValid(orderToSign.price, tickSize)) {
 			throw new Error(
@@ -951,7 +953,7 @@ export class ClobClient {
 		}
 		orderToSign.price = roundNormal(orderToSign.price, ROUNDING_CONFIG[tickSize].price);
 
-		const version = options?.version ?? (await this.resolveVersion());
+		const version = routing.exchangeVersion ?? (await this.resolveVersion());
 
 		if (
 			version !== 1 &&
@@ -960,7 +962,7 @@ export class ClobClient {
 			orderToSign.userUSDCBalance !== undefined
 		) {
 			const adjustedAmount = await this.adjustBuyAmountForBalance(
-				tokenID,
+				assetID,
 				orderToSign.size * orderToSign.price,
 				orderToSign.price,
 				orderToSign.userUSDCBalance,
@@ -969,12 +971,13 @@ export class ClobClient {
 			orderToSign.size = adjustedAmount / orderToSign.price;
 		}
 
-		const negRisk = options?.negRisk ?? (await this.getNegRisk(tokenID));
+		const negRisk =
+			version === 3 ? false : (options?.negRisk ?? (await this.getNegRisk(assetID)));
 
 		if (version === 1) {
 			const userFeeRateBps =
 				"feeRateBps" in orderToSign ? (orderToSign as UserOrderV1).feeRateBps : undefined;
-			const feeRateBps = await this._resolveFeeRateBps(tokenID, userFeeRateBps);
+			const feeRateBps = await this._resolveFeeRateBps(assetID, userFeeRateBps);
 			(orderToSign as UserOrderV1).feeRateBps = feeRateBps;
 		}
 
@@ -994,15 +997,16 @@ export class ClobClient {
 	): Promise<SignedOrder> {
 		this.canL1Auth();
 
-		const { tokenID } = userMarketOrder;
+		const routing = resolveOrderRouting(userMarketOrder, options?.version);
+		const { assetID } = routing;
 
-		await this._ensureMarketInfoCached(tokenID);
+		await this._ensureMarketInfoCached(assetID);
 
-		const tickSize = await this._resolveTickSize(tokenID, options?.tickSize);
+		const tickSize = await this._resolveTickSize(assetID, options?.tickSize);
 
 		if (!userMarketOrder.price) {
 			userMarketOrder.price = await this.calculateMarketPrice(
-				tokenID,
+				assetID,
 				userMarketOrder.side,
 				userMarketOrder.amount,
 				userMarketOrder.orderType,
@@ -1033,7 +1037,7 @@ export class ClobClient {
 			// biome-ignore lint/style/noNonNullAssertion: price is validated above
 			const price = orderToSign.price!;
 			orderToSign.amount = await this.adjustBuyAmountForBalance(
-				tokenID,
+				assetID,
 				orderToSign.amount,
 				price,
 				orderToSign.userUSDCBalance,
@@ -1041,15 +1045,16 @@ export class ClobClient {
 			);
 		}
 
-		const negRisk = options?.negRisk ?? (await this.getNegRisk(tokenID));
-		const version = options?.version ?? (await this.resolveVersion());
+		const version = routing.exchangeVersion ?? (await this.resolveVersion());
+		const negRisk =
+			version === 3 ? false : (options?.negRisk ?? (await this.getNegRisk(assetID)));
 
 		if (version === 1) {
 			const userFeeRateBps =
 				"feeRateBps" in orderToSign
 					? (orderToSign as UserMarketOrderV1).feeRateBps
 					: undefined;
-			const feeRateBps = await this._resolveFeeRateBps(tokenID, userFeeRateBps);
+			const feeRateBps = await this._resolveFeeRateBps(assetID, userFeeRateBps);
 			(orderToSign as UserMarketOrderV1).feeRateBps = feeRateBps;
 		}
 

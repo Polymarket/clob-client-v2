@@ -11,6 +11,7 @@ import type {
 import type { RoundConfig, UserOrderV1, UserOrderV2 } from "../../types/index.js";
 
 import { getOrderRawAmounts } from "./getOrderRawAmounts.js";
+import { resolveOrderAssetID } from "./orderAsset.js";
 
 export async function buildOrderCreationArgs(
 	signer: string,
@@ -67,7 +68,7 @@ export async function buildOrderCreationArgs(
 		return {
 			maker,
 			taker: v1Order.taker ?? zeroAddress,
-			tokenId: userOrder.tokenID,
+			tokenId: resolveOrderAssetID(userOrder),
 			makerAmount,
 			takerAmount,
 			side,
@@ -81,7 +82,7 @@ export async function buildOrderCreationArgs(
 
 	return {
 		maker,
-		tokenId: userOrder.tokenID,
+		tokenId: resolveOrderAssetID(userOrder),
 		makerAmount,
 		takerAmount,
 		side,

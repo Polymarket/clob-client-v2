@@ -65,6 +65,7 @@ export interface UserOrderV1 {
 	 * TokenID of the Conditional token asset being traded
 	 */
 	tokenID: string;
+	positionID?: never;
 
 	/**
 	 * Price used to create the order
@@ -113,6 +114,7 @@ export interface UserMarketOrderV1 {
 	 * TokenID of the Conditional token asset being traded
 	 */
 	tokenID: string;
+	positionID?: never;
 
 	/**
 	 * Price used to create the order

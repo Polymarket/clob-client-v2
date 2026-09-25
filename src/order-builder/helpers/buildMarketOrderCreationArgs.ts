@@ -11,6 +11,7 @@ import type {
 import type { RoundConfig, UserMarketOrderV1, UserMarketOrderV2 } from "../../types/index.js";
 
 import { getMarketOrderRawAmounts } from "./index.js";
+import { resolveOrderAssetID } from "./orderAsset.js";
 
 export async function buildMarketOrderCreationArgs(
 	signer: string,
@@ -67,7 +68,7 @@ export async function buildMarketOrderCreationArgs(
 		return {
 			maker,
 			taker: v1Order.taker ?? zeroAddress,
-			tokenId: userMarketOrder.tokenID,
+			tokenId: resolveOrderAssetID(userMarketOrder),
 			makerAmount,
 			takerAmount,
 			side,
@@ -80,7 +81,7 @@ export async function buildMarketOrderCreationArgs(
 
 	return {
 		maker,
-		tokenId: userMarketOrder.tokenID,
+		tokenId: resolveOrderAssetID(userMarketOrder),
 		makerAmount,
 		takerAmount,
 		side,
