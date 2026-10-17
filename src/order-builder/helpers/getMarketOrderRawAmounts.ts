@@ -1,6 +1,9 @@
 import { type RoundConfig, Side } from "../../types/index.js";
 import { decimalPlaces, roundDown, roundUp } from "../../utilities.js";
 
+/** API max precision for market-order taker amounts */
+const MAX_TAKER_DECIMALS = 4;
+
 export const getMarketOrderRawAmounts = (
 	side: Side,
 	amount: number,
@@ -19,6 +22,10 @@ export const getMarketOrderRawAmounts = (
 				rawTakerAmt = roundDown(rawTakerAmt, roundConfig.amount);
 			}
 		}
+		// Cap taker amount at API max precision (4 decimals)
+		if (decimalPlaces(rawTakerAmt) > MAX_TAKER_DECIMALS) {
+			rawTakerAmt = roundDown(rawTakerAmt, MAX_TAKER_DECIMALS);
+		}
 		return {
 			side: Side.BUY,
 			rawMakerAmt,
@@ -33,7 +40,10 @@ export const getMarketOrderRawAmounts = (
 				rawTakerAmt = roundDown(rawTakerAmt, roundConfig.amount);
 			}
 		}
-
+		// Cap taker amount at API max precision (4 decimals)
+		if (decimalPlaces(rawTakerAmt) > MAX_TAKER_DECIMALS) {
+			rawTakerAmt = roundDown(rawTakerAmt, MAX_TAKER_DECIMALS);
+		}
 		return {
 			side: Side.SELL,
 			rawMakerAmt,
