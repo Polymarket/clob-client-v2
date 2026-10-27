@@ -73,8 +73,8 @@ describe("createMarketOrder", () => {
 				expect(signedOrder.maker).toBe("0xf39Fd6e51aad88F6F4ce6aB8827279cffFb92266");
 				expect(signedOrder.signer).toBe("0xf39Fd6e51aad88F6F4ce6aB8827279cffFb92266");
 				expect(signedOrder.tokenId).toBe("123");
-				expect(signedOrder.makerAmount).toBe("100000000");
-				expect(signedOrder.takerAmount).toBe("178571400");
+				expect(signedOrder.makerAmount).toBe("99999200");
+				expect(signedOrder.takerAmount).toBe("178570000");
 				expect(signedOrder.side).toBe(Side.BUY);
 				expect(signedOrder.timestamp).toBeDefined();
 				expect(signedOrder.builder).toBe(bytes32Zero);
@@ -108,8 +108,8 @@ describe("createMarketOrder", () => {
 				expect(signedOrder.maker).toBe("0xf39Fd6e51aad88F6F4ce6aB8827279cffFb92266");
 				expect(signedOrder.signer).toBe("0xf39Fd6e51aad88F6F4ce6aB8827279cffFb92266");
 				expect(signedOrder.tokenId).toBe("123");
-				expect(signedOrder.makerAmount).toBe("100000000");
-				expect(signedOrder.takerAmount).toBe("1785714280");
+				expect(signedOrder.makerAmount).toBe("99999970");
+				expect(signedOrder.takerAmount).toBe("1785713750");
 				expect(signedOrder.side).toBe(Side.BUY);
 				expect(signedOrder.timestamp).toBeDefined();
 				expect(signedOrder.builder).toBe(bytes32Zero);
@@ -143,8 +143,8 @@ describe("createMarketOrder", () => {
 				expect(signedOrder.maker).toBe("0xf39Fd6e51aad88F6F4ce6aB8827279cffFb92266");
 				expect(signedOrder.signer).toBe("0xf39Fd6e51aad88F6F4ce6aB8827279cffFb92266");
 				expect(signedOrder.tokenId).toBe("123");
-				expect(signedOrder.makerAmount).toBe("100000000");
-				expect(signedOrder.takerAmount).toBe("17857142857");
+				expect(signedOrder.makerAmount).toBe("99999998");
+				expect(signedOrder.takerAmount).toBe("17857142500");
 				expect(signedOrder.side).toBe(Side.BUY);
 				expect(signedOrder.timestamp).toBeDefined();
 				expect(signedOrder.builder).toBe(bytes32Zero);
@@ -359,8 +359,8 @@ describe("createMarketOrder", () => {
 				expect(signedOrder.maker).toBe("0xf39Fd6e51aad88F6F4ce6aB8827279cffFb92266");
 				expect(signedOrder.signer).toBe("0xf39Fd6e51aad88F6F4ce6aB8827279cffFb92266");
 				expect(signedOrder.tokenId).toBe("123");
-				expect(signedOrder.makerAmount).toBe("100000000");
-				expect(signedOrder.takerAmount).toBe("178571400");
+				expect(signedOrder.makerAmount).toBe("99999200");
+				expect(signedOrder.takerAmount).toBe("178570000");
 				expect(signedOrder.side).toBe(Side.BUY);
 				expect(signedOrder.timestamp).toBeDefined();
 				expect(signedOrder.builder).toBe(bytes32Zero);
@@ -394,8 +394,8 @@ describe("createMarketOrder", () => {
 				expect(signedOrder.maker).toBe("0xf39Fd6e51aad88F6F4ce6aB8827279cffFb92266");
 				expect(signedOrder.signer).toBe("0xf39Fd6e51aad88F6F4ce6aB8827279cffFb92266");
 				expect(signedOrder.tokenId).toBe("123");
-				expect(signedOrder.makerAmount).toBe("100000000");
-				expect(signedOrder.takerAmount).toBe("1785714280");
+				expect(signedOrder.makerAmount).toBe("99999970");
+				expect(signedOrder.takerAmount).toBe("1785713750");
 				expect(signedOrder.side).toBe(Side.BUY);
 				expect(signedOrder.timestamp).toBeDefined();
 				expect(signedOrder.builder).toBe(bytes32Zero);
@@ -429,8 +429,8 @@ describe("createMarketOrder", () => {
 				expect(signedOrder.maker).toBe("0xf39Fd6e51aad88F6F4ce6aB8827279cffFb92266");
 				expect(signedOrder.signer).toBe("0xf39Fd6e51aad88F6F4ce6aB8827279cffFb92266");
 				expect(signedOrder.tokenId).toBe("123");
-				expect(signedOrder.makerAmount).toBe("100000000");
-				expect(signedOrder.takerAmount).toBe("17857142857");
+				expect(signedOrder.makerAmount).toBe("99999998");
+				expect(signedOrder.takerAmount).toBe("17857142500");
 				expect(signedOrder.side).toBe(Side.BUY);
 				expect(signedOrder.timestamp).toBeDefined();
 				expect(signedOrder.builder).toBe(bytes32Zero);
