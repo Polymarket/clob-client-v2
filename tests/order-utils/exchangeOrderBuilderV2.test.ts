@@ -11,7 +11,7 @@ describe("exchangeOrderBuilderV2", () => {
 	const wallet = new Wallet(privateKey);
 	const chainId = 80002;
 	const exchangeV2 = "0xE111180000d2663C0091e4f400237545B87B996B";
-	const exchangeV3 = "0x9fE6e61422AdB6F610d8597F9684b16912D50C3D";
+	const exchangeV3 = "0xe3333700cA9d93003F00f0F71f8515005F6c00Aa";
 	const generateSalt = () => "479249096354";
 
 	it("uses ExchangeV3's EIP-712 domain while preserving the V2 order schema", async () => {
