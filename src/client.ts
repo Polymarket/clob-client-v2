@@ -756,16 +756,16 @@ export class ClobClient {
 			requestPath: endpoint,
 		};
 
-		const headers = await createL2Headers(
-			this.signer as ClobSigner,
-			this.creds as ApiKeyCreds,
-			headerArgs,
-			this.useServerTime ? await this.getServerTime() : undefined,
-		);
-
 		let results: Trade[] = [];
 		next_cursor = next_cursor || INITIAL_CURSOR;
 		while (next_cursor !== END_CURSOR && (next_cursor === INITIAL_CURSOR || !only_first_page)) {
+			// Rebuild L2 headers per page: the HMAC timestamp goes stale on long runs.
+			const headers = await createL2Headers(
+				this.signer as ClobSigner,
+				this.creds as ApiKeyCreds,
+				headerArgs,
+				this.useServerTime ? await this.getServerTime() : undefined,
+			);
 			const _params: any = {
 				...params,
 				next_cursor,
@@ -774,8 +774,9 @@ export class ClobClient {
 				headers,
 				params: _params,
 			});
-			next_cursor = response.next_cursor;
-			results = [...results, ...response.data];
+			const page = this.extractPage<Trade>(response);
+			next_cursor = page.next_cursor;
+			results = [...results, ...page.data];
 		}
 		return results;
 	}
@@ -1118,16 +1119,16 @@ export class ClobClient {
 			requestPath: endpoint,
 		};
 
-		const headers = await createL2Headers(
-			this.signer as ClobSigner,
-			this.creds as ApiKeyCreds,
-			l2HeaderArgs,
-			this.useServerTime ? await this.getServerTime() : undefined,
-		);
-
 		let results: OpenOrder[] = [];
 		next_cursor = next_cursor || INITIAL_CURSOR;
 		while (next_cursor !== END_CURSOR && (next_cursor === INITIAL_CURSOR || !only_first_page)) {
+			// Rebuild L2 headers per page: the HMAC timestamp goes stale on long runs.
+			const headers = await createL2Headers(
+				this.signer as ClobSigner,
+				this.creds as ApiKeyCreds,
+				l2HeaderArgs,
+				this.useServerTime ? await this.getServerTime() : undefined,
+			);
 			const _params: any = {
 				...params,
 				next_cursor,
@@ -1136,8 +1137,9 @@ export class ClobClient {
 				headers,
 				params: _params,
 			});
-			next_cursor = response.next_cursor;
-			results = [...results, ...response.data];
+			const page = this.extractPage<OpenOrder>(response);
+			next_cursor = page.next_cursor;
+			results = [...results, ...page.data];
 		}
 		return results;
 	}
@@ -1153,23 +1155,24 @@ export class ClobClient {
 			requestPath: endpoint,
 		};
 
-		const headers = await createL2Headers(
-			this.signer as ClobSigner,
-			this.creds as ApiKeyCreds,
-			l2HeaderArgs,
-			this.useServerTime ? await this.getServerTime() : undefined,
-		);
-
 		let results: PreMigrationOrder[] = [];
 		next_cursor = next_cursor || INITIAL_CURSOR;
 		while (next_cursor !== END_CURSOR && (next_cursor === INITIAL_CURSOR || !only_first_page)) {
+			// Rebuild L2 headers per page: the HMAC timestamp goes stale on long runs.
+			const headers = await createL2Headers(
+				this.signer as ClobSigner,
+				this.creds as ApiKeyCreds,
+				l2HeaderArgs,
+				this.useServerTime ? await this.getServerTime() : undefined,
+			);
 			const _params: any = { next_cursor };
 			const response = await this.get(`${this.host}${endpoint}`, {
 				headers,
 				params: _params,
 			});
-			next_cursor = response.next_cursor;
-			results = [...results, ...response.data];
+			const page = this.extractPage<PreMigrationOrder>(response);
+			next_cursor = page.next_cursor;
+			results = [...results, ...page.data];
 		}
 		return results;
 	}
@@ -1470,16 +1473,16 @@ export class ClobClient {
 			requestPath: endpoint,
 		};
 
-		const headers = await createL2Headers(
-			this.signer as ClobSigner,
-			this.creds as ApiKeyCreds,
-			headerArgs,
-			this.useServerTime ? await this.getServerTime() : undefined,
-		);
-
 		let results: UserEarning[] = [];
 		let next_cursor = INITIAL_CURSOR;
 		while (next_cursor !== END_CURSOR) {
+			// Rebuild L2 headers per page: the HMAC timestamp goes stale on long runs.
+			const headers = await createL2Headers(
+				this.signer as ClobSigner,
+				this.creds as ApiKeyCreds,
+				headerArgs,
+				this.useServerTime ? await this.getServerTime() : undefined,
+			);
 			const params = {
 				date,
 				signature_type: this.orderBuilder.signatureType,
@@ -1490,8 +1493,9 @@ export class ClobClient {
 				headers,
 				params,
 			});
-			next_cursor = response.next_cursor;
-			results = [...results, ...response.data];
+			const page = this.extractPage<UserEarning>(response);
+			next_cursor = page.next_cursor;
+			results = [...results, ...page.data];
 		}
 		return results;
 	}
@@ -1537,16 +1541,16 @@ export class ClobClient {
 			requestPath: endpoint,
 		};
 
-		const headers = await createL2Headers(
-			this.signer as ClobSigner,
-			this.creds as ApiKeyCreds,
-			headerArgs,
-			this.useServerTime ? await this.getServerTime() : undefined,
-		);
-
 		let results: UserRewardsEarning[] = [];
 		let next_cursor = INITIAL_CURSOR;
 		while (next_cursor !== END_CURSOR) {
+			// Rebuild L2 headers per page: the HMAC timestamp goes stale on long runs.
+			const headers = await createL2Headers(
+				this.signer as ClobSigner,
+				this.creds as ApiKeyCreds,
+				headerArgs,
+				this.useServerTime ? await this.getServerTime() : undefined,
+			);
 			const params = {
 				date,
 				signature_type: this.orderBuilder.signatureType,
@@ -1560,8 +1564,9 @@ export class ClobClient {
 				headers,
 				params,
 			});
-			next_cursor = response.next_cursor;
-			results = [...results, ...response.data];
+			const page = this.extractPage<UserRewardsEarning>(response);
+			next_cursor = page.next_cursor;
+			results = [...results, ...page.data];
 		}
 		return results;
 	}
@@ -1843,6 +1848,35 @@ export class ClobClient {
 			throw new ApiError(msg, result.status, result);
 		}
 		return result;
+	}
+
+	/**
+	 * Validates a single page of a cursor-paginated response before its data is
+	 * appended to the accumulated results.
+	 *
+	 * A pagination loop returns an array, so unlike single-shot endpoints it
+	 * cannot hand an `{ error, status }` object back to the caller when
+	 * `throwOnError` is disabled. Rather than spreading a missing `data` field —
+	 * which throws a misleading "undefined is not iterable" and hides the real
+	 * failure — any error-shaped or malformed page is surfaced here as an
+	 * ApiError carrying the actual API message and status.
+	 */
+	private extractPage<T>(response: any): { data: T[]; next_cursor: string } {
+		if (response && typeof response === "object" && "error" in response) {
+			const msg =
+				typeof response.error === "string"
+					? response.error
+					: JSON.stringify(response.error);
+			throw new ApiError(msg, response.status, response);
+		}
+		if (!response || !Array.isArray(response.data)) {
+			throw new ApiError(
+				"Malformed paginated response: expected a data array",
+				response?.status,
+				response,
+			);
+		}
+		return { data: response.data as T[], next_cursor: response.next_cursor as string };
 	}
 
 	// http methods
