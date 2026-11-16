@@ -150,18 +150,46 @@ describe.each(listMethods)("%s", (_name, path, list) => {
 		expect((err as ApiError).data).toEqual({ trades: [] });
 	});
 
-	it("stops after a page that has no next_cursor", async () => {
+	it.each([false, true])("rejects a missing cursor (throwOnError: %s)", async throwOnError => {
+		const body = { data: [1], limit: 300, count: 1 };
+		const { host, requests } = await serve([{ status: 200, body }]);
+
+		const err = await rejection(list(makeClient(host, throwOnError)));
+
+		expect(err).toBeInstanceOf(ApiError);
+		expect(err).toMatchObject({
+			message: `unexpected response from ${path}: expected a non-empty next_cursor string`,
+			data: body,
+		});
+		expect(requests).toHaveLength(1);
+	});
+
+	it("rejects instead of returning a partial list when a later page has no cursor", async () => {
 		const { host, requests } = await serve([
-			{ status: 200, body: { data: [1], limit: 300, count: 1 } },
-			page([2]),
+			page([1], "MTAw"),
+			{ status: 200, body: { data: [2], limit: 300, count: 1 } },
 		]);
 
-		await expect(list(makeClient(host))).resolves.toEqual([1]);
-		expect(requests).toHaveLength(1);
+		await expect(list(makeClient(host))).rejects.toBeInstanceOf(ApiError);
+		expect(requests).toHaveLength(2);
 	});
 });
 
 describe("cursor arguments of the list methods", () => {
+	it.each([null, "", 1, {}])("rejects an invalid next_cursor: %j", async next_cursor => {
+		const { host, requests } = await serve([{ status: 200, body: { data: [1], next_cursor } }]);
+
+		await expect(makeClient(host).getCurrentRewards()).rejects.toBeInstanceOf(ApiError);
+		expect(requests).toHaveLength(1);
+	});
+
+	it("returns the requested page without a cursor when only_first_page is set", async () => {
+		const { host, requests } = await serve([{ status: 200, body: { data: [2] } }]);
+
+		await expect(makeClient(host).getTrades(undefined, true, "MTAw")).resolves.toEqual([2]);
+		expect(requests.map(request => request.query.next_cursor)).toEqual(["MTAw"]);
+	});
+
 	it("passes the filters along with the cursor on every page", async () => {
 		const { host, requests } = await serve([page([1], "MTAw"), page([2])]);
 

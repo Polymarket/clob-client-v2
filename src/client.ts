@@ -1850,8 +1850,14 @@ export class ClobClient {
 				params: { ...options.params, next_cursor: nextCursor },
 			});
 			items.push(...pageItems<T>(page, endpoint));
-			// Without a cursor the next request would start over at the first page.
-			if (onlyFirstPage || !page.next_cursor) break;
+			if (onlyFirstPage) break;
+			if (typeof page.next_cursor !== "string" || page.next_cursor.length === 0) {
+				throw new ApiError(
+					`unexpected response from ${endpoint}: expected a non-empty next_cursor string`,
+					undefined,
+					page,
+				);
+			}
 			nextCursor = page.next_cursor;
 		}
 		return items;
