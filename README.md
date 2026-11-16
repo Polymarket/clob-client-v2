@@ -131,7 +131,20 @@ const client = new ClobClient({ host, chain: chainId, signer: walletClient, cred
 
 ### Error Handling
 
-By default, API errors are returned as `{ error: "...", status: ... }` objects. To have the client throw instead, pass `throwOnError: true`:
+By default, API errors are returned as `{ error: "...", status: ... }` objects. Check a result with `isApiErrorResponse` before using it:
+
+```ts
+import { isApiErrorResponse, Side } from "@polymarket/clob-client-v2";
+
+const books = await client.getOrderBooks([{ token_id: tokenID, side: Side.BUY }]);
+if (isApiErrorResponse(books)) {
+    console.log(books.status, books.error); // 500 "Internal server error"
+} else {
+    books.forEach(book => console.log(book.market));
+}
+```
+
+To have the client throw instead, pass `throwOnError: true`:
 
 ```ts
 import { ApiError, ClobClient } from "@polymarket/clob-client-v2";
@@ -153,5 +166,6 @@ Methods that collect every page of a list (`getTrades`, `getOpenOrders`, `getPre
 `getEarningsForUserForDay`, `getUserEarningsAndMarketsConfig`, `getCurrentRewards`,
 `getRawRewardsForMarket`) throw `ApiError` when any page fails, with or without `throwOnError`,
 because a partial list cannot be told apart from a complete one. The market metadata the client
-caches (`getTickSize`, `getNegRisk`, `getFeeRateBps`, builder fee rates) is also never cached from
-a failed response: those lookups throw `ApiError` instead.
+caches (`getTickSize`, `getNegRisk`, `getFeeRateBps`, builder fee rates, `getClobMarketInfo`) is
+also never cached from a failed response: those lookups throw `ApiError` instead, and so does
+market order pricing when the order book request fails.

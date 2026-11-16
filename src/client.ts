@@ -67,7 +67,13 @@ import {
 	TIME,
 	UPDATE_BALANCE_ALLOWANCE,
 } from "./endpoints.js";
-import { ApiError, L1_AUTH_UNAVAILABLE_ERROR, L2_AUTH_NOT_AVAILABLE } from "./errors.js";
+import {
+	ApiError,
+	type ApiErrorResponse,
+	isApiErrorResponse,
+	L1_AUTH_UNAVAILABLE_ERROR,
+	L2_AUTH_NOT_AVAILABLE,
+} from "./errors.js";
 import { adjustBuyAmountForFees, validateFeeSlippage } from "./fees/index.js";
 import { createL1Headers, createL2Headers } from "./headers/index.js";
 import {
@@ -174,21 +180,14 @@ const isTradeResolved = (trade: Trade): boolean =>
 	trade.status.toUpperCase() === FAILED_TRADE_STATUS ||
 	Boolean(trade.transaction_hash && trade.transaction_hash.length > 0);
 
-// The http helpers resolve a failed request to an object carrying `error`, plus `status`
-// when the server answered.
-type ErrorResponse = ClobErrorResponseBody & { status?: number };
-
-const isErrorResponse = (result: unknown): result is ErrorResponse =>
-	typeof result === "object" && result !== null && "error" in result;
-
-const toApiError = (result: ErrorResponse): ApiError => {
+const toApiError = (result: ApiErrorResponse): ApiError => {
 	const message = typeof result.error === "string" ? result.error : JSON.stringify(result.error);
 	return new ApiError(message, result.status, result);
 };
 
 const pageItems = <T>(page: any, endpoint: string): T[] => {
 	if (Array.isArray(page?.data)) return page.data;
-	if (isErrorResponse(page)) throw toApiError(page);
+	if (isApiErrorResponse(page)) throw toApiError(page);
 	throw new ApiError(
 		`unexpected response from ${endpoint}: expected a page with a data array`,
 		undefined,
@@ -199,7 +198,7 @@ const pageItems = <T>(page: any, endpoint: string): T[] => {
 // For responses the client caches: a failed or incomplete response must never leave a
 // value that later orders are built with.
 const requireFields = (result: any, endpoint: string, ...fields: string[]): any => {
-	if (isErrorResponse(result)) throw toApiError(result);
+	if (isApiErrorResponse(result)) throw toApiError(result);
 	const missing = fields.filter(field => result?.[field] === undefined || result[field] === null);
 	if (missing.length > 0) {
 		throw new ApiError(
@@ -425,8 +424,13 @@ export class ClobClient {
 			`${this.host}${GET_CLOB_MARKET}${conditionID}`,
 		);
 
+		if (isApiErrorResponse(result)) throw toApiError(result);
 		if (!result?.t) {
-			throw new Error(`failed to fetch market info for condition id ${conditionID}`);
+			throw new ApiError(
+				`failed to fetch market info for condition id ${conditionID}`,
+				undefined,
+				result,
+			);
 		}
 
 		for (const token of result.t) {
@@ -1595,6 +1599,7 @@ export class ClobClient {
 		orderType: OrderType = OrderType.FOK,
 	): Promise<number> {
 		const book = await this.getOrderBook(tokenID);
+		if (isApiErrorResponse(book)) throw toApiError(book);
 		if (!book) {
 			throw new Error("no orderbook");
 		}
@@ -1725,8 +1730,13 @@ export class ClobClient {
 
 		if (!(tokenID in this.tokenConditionMap)) {
 			const result = await this.get(`${this.host}${GET_MARKET_BY_TOKEN}${tokenID}`);
+			if (isApiErrorResponse(result)) throw toApiError(result);
 			if (!result?.condition_id) {
-				throw new Error(`failed to resolve condition id for token ${tokenID}`);
+				throw new ApiError(
+					`failed to resolve condition id for token ${tokenID}`,
+					undefined,
+					result,
+				);
 			}
 			this.tokenConditionMap[tokenID] = result.condition_id as string;
 		}
@@ -1816,7 +1826,7 @@ export class ClobClient {
 	}
 
 	private throwIfError(result: any): any {
-		if (this.throwOnError && isErrorResponse(result)) throw toApiError(result);
+		if (this.throwOnError && isApiErrorResponse(result)) throw toApiError(result);
 		return result;
 	}
 

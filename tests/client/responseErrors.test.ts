@@ -6,10 +6,13 @@ import { ClobClient } from "../../src/client.js";
 import { END_CURSOR, INITIAL_CURSOR } from "../../src/constants.js";
 import {
 	GET_BUILDER_FEES,
+	GET_CLOB_MARKET,
 	GET_EARNINGS_FOR_USER_FOR_DAY,
 	GET_FEE_RATE,
+	GET_MARKET_BY_TOKEN,
 	GET_NEG_RISK,
 	GET_OPEN_ORDERS,
+	GET_ORDER_BOOK,
 	GET_PRE_MIGRATION_ORDERS,
 	GET_REWARDS_EARNINGS_PERCENTAGES,
 	GET_REWARDS_MARKETS,
@@ -17,8 +20,8 @@ import {
 	GET_TICK_SIZE,
 	GET_TRADES,
 } from "../../src/endpoints.js";
-import { ApiError } from "../../src/errors.js";
-import { Chain } from "../../src/types/index.js";
+import { ApiError, isApiErrorResponse } from "../../src/errors.js";
+import { Chain, Side } from "../../src/types/index.js";
 
 // These tests run the client against a real HTTP server, so a failed request takes the
 // same axios and error-mapping path it takes against the CLOB.
@@ -35,9 +38,11 @@ const page = (data: unknown[], next_cursor = END_CURSOR): Reply => ({
 let server: Server | undefined;
 
 afterEach(async () => {
-	server?.closeAllConnections();
-	await new Promise(resolve => server?.close(resolve));
+	const running = server;
+	if (!running) return;
 	server = undefined;
+	running.closeAllConnections();
+	await new Promise(resolve => running.close(resolve));
 });
 
 // Serves `replies` in order, one per request, answering 500 once they run out.
@@ -304,5 +309,103 @@ describe("builder fee rates", () => {
 			`unexpected response from ${GET_BUILDER_FEES}${builderCode}: missing builder_taker_fee_rate_bps`,
 		);
 		expect(client.builderFeeRates).toEqual({});
+	});
+});
+
+describe("market info lookups", () => {
+	it.each([
+		false,
+		true,
+	])("getClobMarketInfo rejects with the server's ApiError (throwOnError: %s)", async throwOnError => {
+		const { host, requests } = await serve([internalError]);
+
+		const err = await rejection(makeClient(host, throwOnError).getClobMarketInfo("0xcond"));
+
+		expect(err).toBeInstanceOf(ApiError);
+		expect(err).toMatchObject({ message: "Internal server error", status: 500 });
+		expect(requests.map(request => request.path)).toEqual([`${GET_CLOB_MARKET}0xcond`]);
+	});
+
+	it("getClobMarketInfo keeps its message for a response without tokens", async () => {
+		const { host } = await serve([{ status: 200, body: { mts: 0.01 } }]);
+
+		const err = await rejection(makeClient(host).getClobMarketInfo("0xcond"));
+
+		expect(err).toBeInstanceOf(ApiError);
+		expect((err as ApiError).message).toBe(
+			"failed to fetch market info for condition id 0xcond",
+		);
+		expect((err as ApiError).data).toEqual({ mts: 0.01 });
+	});
+
+	it("rejects with the server's ApiError when resolving a token's market fails", async () => {
+		const { host, requests } = await serve([internalError]);
+
+		const err = await rejection(makeClient(host).getFeeExponent("123"));
+
+		expect(err).toBeInstanceOf(ApiError);
+		expect(err).toMatchObject({ message: "Internal server error", status: 500 });
+		expect(requests.map(request => request.path)).toEqual([`${GET_MARKET_BY_TOKEN}123`]);
+	});
+
+	it("keeps its message when a token's market has no condition id", async () => {
+		const { host } = await serve([{ status: 200, body: {} }]);
+
+		const err = await rejection(makeClient(host).getFeeExponent("123"));
+
+		expect(err).toBeInstanceOf(ApiError);
+		expect((err as ApiError).message).toBe("failed to resolve condition id for token 123");
+	});
+});
+
+describe("calculateMarketPrice", () => {
+	it("rejects with the server's ApiError when the book request fails", async () => {
+		const { host, requests } = await serve([internalError]);
+
+		const err = await rejection(makeClient(host).calculateMarketPrice("123", Side.BUY, 10));
+
+		expect(err).toBeInstanceOf(ApiError);
+		expect(err).toMatchObject({ message: "Internal server error", status: 500 });
+		expect(requests.map(request => request.path)).toEqual([GET_ORDER_BOOK]);
+	});
+
+	it("still reports no match for a book without the side it needs", async () => {
+		const { host } = await serve([
+			{ status: 200, body: { bids: [{ price: "0.4", size: "100" }] } },
+		]);
+
+		await expect(makeClient(host).calculateMarketPrice("123", Side.BUY, 10)).rejects.toThrow(
+			"no match",
+		);
+	});
+
+	it("prices from the book when the request succeeds", async () => {
+		const { host } = await serve([
+			{ status: 200, body: { asks: [{ price: "0.55", size: "100" }], bids: [] } },
+		]);
+
+		await expect(makeClient(host).calculateMarketPrice("123", Side.BUY, 10)).resolves.toBe(
+			0.55,
+		);
+	});
+});
+
+describe("isApiErrorResponse", () => {
+	it("recognises what a failed request resolves to without throwOnError", async () => {
+		const { host } = await serve([internalError]);
+
+		const books = await makeClient(host).getOrderBooks([{ token_id: "123", side: Side.BUY }]);
+
+		expect(isApiErrorResponse(books)).toBe(true);
+		if (isApiErrorResponse(books)) expect(books.status).toBe(500);
+	});
+
+	it.each([
+		["a list", [{ error_msg: "" }]],
+		["an object", { market: "0xm", asks: [] }],
+		["null", null],
+		["a string", "error"],
+	])("does not match %s", (_kind, value) => {
+		expect(isApiErrorResponse(value)).toBe(false);
 	});
 });
