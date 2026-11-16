@@ -148,3 +148,10 @@ try {
     }
 }
 ```
+
+Methods that collect every page of a list (`getTrades`, `getOpenOrders`, `getPreMigrationOrders`,
+`getEarningsForUserForDay`, `getUserEarningsAndMarketsConfig`, `getCurrentRewards`,
+`getRawRewardsForMarket`) throw `ApiError` when any page fails, with or without `throwOnError`,
+because a partial list cannot be told apart from a complete one. The market metadata the client
+caches (`getTickSize`, `getNegRisk`, `getFeeRateBps`, builder fee rates) is also never cached from
+a failed response: those lookups throw `ApiError` instead.
