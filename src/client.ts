@@ -67,7 +67,13 @@ import {
 	TIME,
 	UPDATE_BALANCE_ALLOWANCE,
 } from "./endpoints.js";
-import { ApiError, L1_AUTH_UNAVAILABLE_ERROR, L2_AUTH_NOT_AVAILABLE } from "./errors.js";
+import {
+	ApiError,
+	type ApiErrorResponse,
+	isApiErrorResponse,
+	L1_AUTH_UNAVAILABLE_ERROR,
+	L2_AUTH_NOT_AVAILABLE,
+} from "./errors.js";
 import { adjustBuyAmountForFees, validateFeeSlippage } from "./fees/index.js";
 import { createL1Headers, createL2Headers } from "./headers/index.js";
 import {
@@ -173,6 +179,36 @@ const sleep = (ms: number) => new Promise(resolve => setTimeout(resolve, ms));
 const isTradeResolved = (trade: Trade): boolean =>
 	trade.status.toUpperCase() === FAILED_TRADE_STATUS ||
 	Boolean(trade.transaction_hash && trade.transaction_hash.length > 0);
+
+const toApiError = (result: ApiErrorResponse): ApiError => {
+	const message = typeof result.error === "string" ? result.error : JSON.stringify(result.error);
+	return new ApiError(message, result.status, result);
+};
+
+const pageItems = <T>(page: any, endpoint: string): T[] => {
+	if (Array.isArray(page?.data)) return page.data;
+	if (isApiErrorResponse(page)) throw toApiError(page);
+	throw new ApiError(
+		`unexpected response from ${endpoint}: expected a page with a data array`,
+		undefined,
+		page,
+	);
+};
+
+// For responses the client caches: a failed or incomplete response must never leave a
+// value that later orders are built with.
+const requireFields = (result: any, endpoint: string, ...fields: string[]): any => {
+	if (isApiErrorResponse(result)) throw toApiError(result);
+	const missing = fields.filter(field => result?.[field] === undefined || result[field] === null);
+	if (missing.length > 0) {
+		throw new ApiError(
+			`unexpected response from ${endpoint}: missing ${missing.join(", ")}`,
+			undefined,
+			result,
+		);
+	}
+	return result;
+};
 
 export interface ClobClientOptions {
 	host: string;
@@ -388,8 +424,13 @@ export class ClobClient {
 			`${this.host}${GET_CLOB_MARKET}${conditionID}`,
 		);
 
+		if (isApiErrorResponse(result)) throw toApiError(result);
 		if (!result?.t) {
-			throw new Error(`failed to fetch market info for condition id ${conditionID}`);
+			throw new ApiError(
+				`failed to fetch market info for condition id ${conditionID}`,
+				undefined,
+				result,
+			);
 		}
 
 		for (const token of result.t) {
@@ -431,9 +472,11 @@ export class ClobClient {
 			return this.tickSizes[tokenID];
 		}
 
-		const result = await this.get(`${this.host}${GET_TICK_SIZE}`, {
-			params: { token_id: tokenID },
-		});
+		const result = requireFields(
+			await this.get(`${this.host}${GET_TICK_SIZE}`, { params: { token_id: tokenID } }),
+			GET_TICK_SIZE,
+			"minimum_tick_size",
+		);
 		this.tickSizes[tokenID] = result.minimum_tick_size.toString() as TickSize;
 
 		return this.tickSizes[tokenID];
@@ -449,9 +492,11 @@ export class ClobClient {
 			return this.negRisk[tokenID];
 		}
 
-		const result = await this.get(`${this.host}${GET_NEG_RISK}`, {
-			params: { token_id: tokenID },
-		});
+		const result = requireFields(
+			await this.get(`${this.host}${GET_NEG_RISK}`, { params: { token_id: tokenID } }),
+			GET_NEG_RISK,
+			"neg_risk",
+		);
 		this.negRisk[tokenID] = result.neg_risk as boolean;
 
 		return this.negRisk[tokenID];
@@ -462,9 +507,11 @@ export class ClobClient {
 			return this.feeRates[tokenID];
 		}
 
-		const result = await this.get(`${this.host}${GET_FEE_RATE}`, {
-			params: { token_id: tokenID },
-		});
+		const result = requireFields(
+			await this.get(`${this.host}${GET_FEE_RATE}`, { params: { token_id: tokenID } }),
+			GET_FEE_RATE,
+			"base_fee",
+		);
 		this.feeRates[tokenID] = result.base_fee as number;
 
 		return this.feeRates[tokenID];
@@ -763,21 +810,7 @@ export class ClobClient {
 			this.useServerTime ? await this.getServerTime() : undefined,
 		);
 
-		let results: Trade[] = [];
-		next_cursor = next_cursor || INITIAL_CURSOR;
-		while (next_cursor !== END_CURSOR && (next_cursor === INITIAL_CURSOR || !only_first_page)) {
-			const _params: any = {
-				...params,
-				next_cursor,
-			};
-			const response = await this.get(`${this.host}${endpoint}`, {
-				headers,
-				params: _params,
-			});
-			next_cursor = response.next_cursor;
-			results = [...results, ...response.data];
-		}
-		return results;
+		return this.getAllPages<Trade>(endpoint, { headers, params }, next_cursor, only_first_page);
 	}
 
 	public async getTradesPaginated(
@@ -1125,21 +1158,12 @@ export class ClobClient {
 			this.useServerTime ? await this.getServerTime() : undefined,
 		);
 
-		let results: OpenOrder[] = [];
-		next_cursor = next_cursor || INITIAL_CURSOR;
-		while (next_cursor !== END_CURSOR && (next_cursor === INITIAL_CURSOR || !only_first_page)) {
-			const _params: any = {
-				...params,
-				next_cursor,
-			};
-			const response = await this.get(`${this.host}${endpoint}`, {
-				headers,
-				params: _params,
-			});
-			next_cursor = response.next_cursor;
-			results = [...results, ...response.data];
-		}
-		return results;
+		return this.getAllPages<OpenOrder>(
+			endpoint,
+			{ headers, params },
+			next_cursor,
+			only_first_page,
+		);
 	}
 
 	public async getPreMigrationOrders(
@@ -1160,18 +1184,12 @@ export class ClobClient {
 			this.useServerTime ? await this.getServerTime() : undefined,
 		);
 
-		let results: PreMigrationOrder[] = [];
-		next_cursor = next_cursor || INITIAL_CURSOR;
-		while (next_cursor !== END_CURSOR && (next_cursor === INITIAL_CURSOR || !only_first_page)) {
-			const _params: any = { next_cursor };
-			const response = await this.get(`${this.host}${endpoint}`, {
-				headers,
-				params: _params,
-			});
-			next_cursor = response.next_cursor;
-			results = [...results, ...response.data];
-		}
-		return results;
+		return this.getAllPages<PreMigrationOrder>(
+			endpoint,
+			{ headers },
+			next_cursor,
+			only_first_page,
+		);
 	}
 
 	/**
@@ -1477,23 +1495,10 @@ export class ClobClient {
 			this.useServerTime ? await this.getServerTime() : undefined,
 		);
 
-		let results: UserEarning[] = [];
-		let next_cursor = INITIAL_CURSOR;
-		while (next_cursor !== END_CURSOR) {
-			const params = {
-				date,
-				signature_type: this.orderBuilder.signatureType,
-				next_cursor,
-			};
-
-			const response = await this.get(`${this.host}${endpoint}`, {
-				headers,
-				params,
-			});
-			next_cursor = response.next_cursor;
-			results = [...results, ...response.data];
-		}
-		return results;
+		return this.getAllPages<UserEarning>(endpoint, {
+			headers,
+			params: { date, signature_type: this.orderBuilder.signatureType },
+		});
 	}
 
 	public async getTotalEarningsForUserForDay(date: string): Promise<TotalUserEarning[]> {
@@ -1544,26 +1549,16 @@ export class ClobClient {
 			this.useServerTime ? await this.getServerTime() : undefined,
 		);
 
-		let results: UserRewardsEarning[] = [];
-		let next_cursor = INITIAL_CURSOR;
-		while (next_cursor !== END_CURSOR) {
-			const params = {
+		return this.getAllPages<UserRewardsEarning>(endpoint, {
+			headers,
+			params: {
 				date,
 				signature_type: this.orderBuilder.signatureType,
-				next_cursor,
 				order_by,
 				position,
 				no_competition,
-			};
-
-			const response = await this.get(`${this.host}${endpoint}`, {
-				headers,
-				params,
-			});
-			next_cursor = response.next_cursor;
-			results = [...results, ...response.data];
-		}
-		return results;
+			},
+		});
 	}
 
 	public async getRewardPercentages(): Promise<RewardsPercentages> {
@@ -1590,29 +1585,11 @@ export class ClobClient {
 	}
 
 	public async getCurrentRewards(): Promise<MarketReward[]> {
-		let results: MarketReward[] = [];
-		let next_cursor = INITIAL_CURSOR;
-		while (next_cursor !== END_CURSOR) {
-			const response = await this.get(`${this.host}${GET_REWARDS_MARKETS_CURRENT}`, {
-				params: { next_cursor },
-			});
-			next_cursor = response.next_cursor;
-			results = [...results, ...response.data];
-		}
-		return results;
+		return this.getAllPages<MarketReward>(GET_REWARDS_MARKETS_CURRENT);
 	}
 
 	public async getRawRewardsForMarket(conditionId: string): Promise<MarketReward[]> {
-		let results: MarketReward[] = [];
-		let next_cursor = INITIAL_CURSOR;
-		while (next_cursor !== END_CURSOR) {
-			const response = await this.get(`${this.host}${GET_REWARDS_MARKETS}${conditionId}`, {
-				params: { next_cursor },
-			});
-			next_cursor = response.next_cursor;
-			results = [...results, ...response.data];
-		}
-		return results;
+		return this.getAllPages<MarketReward>(`${GET_REWARDS_MARKETS}${conditionId}`);
 	}
 
 	public async calculateMarketPrice(
@@ -1622,6 +1599,7 @@ export class ClobClient {
 		orderType: OrderType = OrderType.FOK,
 	): Promise<number> {
 		const book = await this.getOrderBook(tokenID);
+		if (isApiErrorResponse(book)) throw toApiError(book);
 		if (!book) {
 			throw new Error("no orderbook");
 		}
@@ -1752,8 +1730,13 @@ export class ClobClient {
 
 		if (!(tokenID in this.tokenConditionMap)) {
 			const result = await this.get(`${this.host}${GET_MARKET_BY_TOKEN}${tokenID}`);
+			if (isApiErrorResponse(result)) throw toApiError(result);
 			if (!result?.condition_id) {
-				throw new Error(`failed to resolve condition id for token ${tokenID}`);
+				throw new ApiError(
+					`failed to resolve condition id for token ${tokenID}`,
+					undefined,
+					result,
+				);
 			}
 			this.tokenConditionMap[tokenID] = result.condition_id as string;
 		}
@@ -1767,7 +1750,13 @@ export class ClobClient {
 		if (!builderCode || builderCode === bytes32Zero) return;
 		if (builderCode in this.builderFeeRates) return;
 
-		const result = await this.get(`${this.host}${GET_BUILDER_FEES}${builderCode}`);
+		const endpoint = `${GET_BUILDER_FEES}${builderCode}`;
+		const result = requireFields(
+			await this.get(`${this.host}${endpoint}`),
+			endpoint,
+			"builder_maker_fee_rate_bps",
+			"builder_taker_fee_rate_bps",
+		);
 		this.builderFeeRates[builderCode] = {
 			maker: result.builder_maker_fee_rate_bps / BUILDER_FEES_BPS,
 			taker: result.builder_taker_fee_rate_bps / BUILDER_FEES_BPS,
@@ -1837,12 +1826,41 @@ export class ClobClient {
 	}
 
 	private throwIfError(result: any): any {
-		if (this.throwOnError && result && typeof result === "object" && "error" in result) {
-			const msg =
-				typeof result.error === "string" ? result.error : JSON.stringify(result.error);
-			throw new ApiError(msg, result.status, result);
-		}
+		if (this.throwOnError && isApiErrorResponse(result)) throw toApiError(result);
 		return result;
+	}
+
+	/**
+	 * Collects the items of a cursor-paginated GET endpoint, starting at `cursor` and
+	 * following `next_cursor` until the server returns END_CURSOR. With `onlyFirstPage`
+	 * it fetches the page at `cursor` alone. A failed page rejects with ApiError whatever
+	 * `throwOnError` is, since a partial list cannot be told apart from a complete one.
+	 */
+	private async getAllPages<T>(
+		endpoint: string,
+		options: RequestOptions = {},
+		cursor?: string,
+		onlyFirstPage = false,
+	): Promise<T[]> {
+		const items: T[] = [];
+		let nextCursor = cursor || INITIAL_CURSOR;
+		while (nextCursor !== END_CURSOR) {
+			const page = await this.get(`${this.host}${endpoint}`, {
+				...options,
+				params: { ...options.params, next_cursor: nextCursor },
+			});
+			items.push(...pageItems<T>(page, endpoint));
+			if (onlyFirstPage) break;
+			if (typeof page.next_cursor !== "string" || page.next_cursor.length === 0) {
+				throw new ApiError(
+					`unexpected response from ${endpoint}: expected a non-empty next_cursor string`,
+					undefined,
+					page,
+				);
+			}
+			nextCursor = page.next_cursor;
+		}
+		return items;
 	}
 
 	// http methods
