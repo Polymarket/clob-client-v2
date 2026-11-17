@@ -1764,7 +1764,12 @@ export class ClobClient {
 	}
 
 	private async _resolveTickSize(tokenID: string, tickSize?: TickSize): Promise<TickSize> {
-		const minTickSize = await this.getTickSize(tokenID);
+		let minTickSize = await this.getTickSize(tokenID);
+		// The cached tick may predate a tick size change, so refetch once before rejecting.
+		if (tickSize && isTickSizeSmaller(tickSize, minTickSize)) {
+			delete this.tickSizes[tokenID];
+			minTickSize = await this.getTickSize(tokenID);
+		}
 		if (tickSize) {
 			if (isTickSizeSmaller(tickSize, minTickSize)) {
 				throw new Error(
