@@ -100,6 +100,41 @@ describe("order metadata caches", () => {
 		expect(client.tickSizes["a-yes"]).toBe("0.001");
 	});
 
+	it("refetches a stale cached tick size when the order asks for a finer one", async () => {
+		const client = makeClient();
+		const details = vi
+			.fn()
+			.mockReturnValueOnce(market)
+			.mockReturnValue({ ...market, mts: 0.001 });
+		const get = mockGet(client, undefined, details);
+		await client.getClobMarketInfo("market-a");
+
+		await client.createAndPostOrder(
+			{ tokenID: "a-yes", price: 0.035, size: 20, side: Side.BUY },
+			{ tickSize: "0.001" },
+		);
+
+		expect(calls(get, "/clob-markets/")).toBe(2);
+		expect(client.tickSizes["a-yes"]).toBe("0.001");
+		expect(posts(client)).toBe(1);
+	});
+
+	it("rejects a tick size finer than the market's after refetching once", async () => {
+		const client = makeClient();
+		const get = mockGet(client);
+		await client.getClobMarketInfo("market-a");
+
+		await expect(
+			client.createAndPostOrder(
+				{ tokenID: "a-yes", price: 0.035, size: 20, side: Side.BUY },
+				{ tickSize: "0.001" },
+			),
+		).rejects.toThrow("invalid tick size (0.001), minimum for the market is 0.01");
+
+		expect(calls(get, "/clob-markets/")).toBe(2);
+		expect(posts(client)).toBe(0);
+	});
+
 	it("adopts the default version when the version request fails and posts the order once", async () => {
 		const client = makeClient();
 		const version = vi
