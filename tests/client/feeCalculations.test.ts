@@ -929,16 +929,16 @@ describe("fee calculations", () => {
 			 *
 			 * adjustedNotional = balance - paddedPlatformFee = 50 - 1.875 = 48.125
 			 *
-			 * Market BUY raw amounts:
-			 * rawMakerAmt = roundDown(adjustedNotional, 2) = roundDown(48.125, 2) = 48.12
+			 * Market BUY raw amounts (cash and shares both 4 decimals, cash / shares = price):
+			 * budget = roundDown(adjustedNotional, 4) = 48.125
 			 * rawPrice = roundDown(price, 2) = 0.5
-			 * rawTakerAmt = rawMakerAmt / rawPrice = 48.12 / 0.5 = 96.24
-			 * makerAmount = 48.12 * 1e6 = 48120000
-			 * takerAmount = 96.24 * 1e6 = 96240000
+			 * at 0.5, 0.0001 cash buys exactly 0.0002 shares, so all of 48.125 is spent
+			 * makerAmount = 48.125 * 1e6 = 48125000
+			 * takerAmount = 96.25 * 1e6 = 96250000
 			 */
 
-			expect(signedOrder.makerAmount).toBe("48120000");
-			expect(signedOrder.takerAmount).toBe("96240000");
+			expect(signedOrder.makerAmount).toBe("48125000");
+			expect(signedOrder.takerAmount).toBe("96250000");
 			expect(order.amount).toBe(50);
 		});
 
